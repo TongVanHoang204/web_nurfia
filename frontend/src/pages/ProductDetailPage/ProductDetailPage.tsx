@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Heart, Star, Maximize2, X } from 'lucide-react';
+import { Minus, Plus, Heart, Star, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../api/client';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { useCartStore } from '../../stores/cartStore';
@@ -35,6 +35,18 @@ export default function ProductDetailPage() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!product?.images?.length) return;
+    setActiveImageIndex((prev) => (prev <= 0 ? product.images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!product?.images?.length) return;
+    setActiveImageIndex((prev) => (prev >= product.images.length - 1 ? 0 : prev + 1));
+  };
 
 
   useEffect(() => {
@@ -674,6 +686,18 @@ export default function ProductDetailPage() {
           <button className="pd-lightbox-close" onClick={() => setIsLightboxOpen(false)} aria-label="Close" title="Close">
             <X size={32} />
           </button>
+          
+          {product.images.length > 1 && (
+            <>
+              <button className="pd-lightbox-nav-btn prev" onClick={handlePrevImage} aria-label="Previous Image">
+                <ChevronLeft size={48} />
+              </button>
+              <button className="pd-lightbox-nav-btn next" onClick={handleNextImage} aria-label="Next Image">
+                <ChevronRight size={48} />
+              </button>
+            </>
+          )}
+
           <div className="pd-lightbox-content" onClick={(e) => e.stopPropagation()}>
             <img 
               src={product.images[activeImageIndex]?.url?.startsWith('http') ? product.images[activeImageIndex].url : `${API_URL}${product.images[activeImageIndex]?.url}`}

@@ -491,3 +491,43 @@
 .pd-gallery-zoom-btn:hover {
   transform: scale(1.05);
 }
+
+.pd-lightbox-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 10001;
+}
+.pd-lightbox-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.pd-lightbox-nav-btn.prev {
+  left: 40px;
+}
+.pd-lightbox-nav-btn.next {
+  right: 40px;
+}
+
+@media (max-width: 768px) {
+  .pd-lightbox-nav-btn {
+    width: 48px;
+    height: 48px;
+  }
+  .pd-lightbox-nav-btn.prev {
+    left: 10px;
+  }
+  .pd-lightbox-nav-btn.next {
+    right: 10px;
+  }
+}
