@@ -92,7 +92,7 @@ export const inventoryController = {
 
       const stockOnlyWhere = stockOnlyWhereAnd.length > 0 ? { AND: stockOnlyWhereAnd } : undefined;
 
-      const standaloneProductSearchFilter = search
+      const standaloneProductSearchFilter: any = search
         ? {
             OR: [
               { name: { contains: search, mode: 'insensitive' } },
@@ -101,7 +101,7 @@ export const inventoryController = {
           }
         : {};
 
-      const variantSearchFilter = search
+      const variantSearchFilter: any = search
         ? {
             OR: [
               { sku: { contains: search, mode: 'insensitive' } },
@@ -211,7 +211,7 @@ export const inventoryController = {
         pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
         stats: {
           totalProducts: total,
-          totalUnits: (standaloneStockAggregate._sum.stock || 0) + (variantStockAggregate._sum.stock || 0),
+          totalUnits: (standaloneStockAggregate._sum?.stock || 0) + (variantStockAggregate._sum?.stock || 0),
           lowStockProducts,
           outOfStockProducts,
           lowThreshold,
@@ -364,7 +364,7 @@ getInventoryHistory: async (req: Request, res: Response, next: NextFunction) => 
 
           await tx.product.update({
             where: { id: productId },
-            data: { stock: variantStockAggregate._sum.stock || 0 }
+            data: { stock: variantStockAggregate._sum?.stock || 0 }
           });
         } else {
           previousQuantity = product.stock;
