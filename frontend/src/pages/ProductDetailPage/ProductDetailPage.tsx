@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Heart, Star } from 'lucide-react';
+import { Minus, Plus, Heart, Star, Maximize2, X } from 'lucide-react';
 import api from '../../api/client';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { useCartStore } from '../../stores/cartStore';
@@ -34,6 +34,7 @@ export default function ProductDetailPage() {
   const [canReview, setCanReview] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
 
   useEffect(() => {
@@ -314,7 +315,12 @@ export default function ProductDetailPage() {
                 src={product.images[activeImageIndex]?.url?.startsWith('http') ? product.images[activeImageIndex].url : `${API_URL}${product.images[activeImageIndex]?.url}`}
                 alt={product.images[activeImageIndex]?.alt || product.name}
                 onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/600x600/f5f5f5/999?text=${encodeURIComponent(product.name.substring(0,16))}`; }}
+                onClick={() => setIsLightboxOpen(true)}
+                style={{ cursor: 'zoom-in' }}
               />
+              <button className="pd-gallery-zoom-btn" onClick={() => setIsLightboxOpen(true)} aria-label="Zoom Image">
+                <Maximize2 size={20} color="#333" />
+              </button>
             </div>
             {product.images.length > 1 && (
             <div className="pd-gallery-thumbnails">
@@ -662,6 +668,21 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
+
+      {isLightboxOpen && (
+        <div className="pd-lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
+          <button className="pd-lightbox-close" onClick={() => setIsLightboxOpen(false)} aria-label="Close" title="Close">
+            <X size={32} />
+          </button>
+          <div className="pd-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={product.images[activeImageIndex]?.url?.startsWith('http') ? product.images[activeImageIndex].url : `${API_URL}${product.images[activeImageIndex]?.url}`}
+              alt={product.images[activeImageIndex]?.alt || product.name} 
+              className="pd-lightbox-img"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
