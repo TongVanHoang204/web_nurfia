@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Hỗ trợ MIME types cho các file JS/CSS trong trường hợp Host chưa cấu hình
+  <IfModule mod_mime.c>
+    AddType application/javascript .js
+    AddType text/css .css
+  </IfModule>
+
+  # Nếu file hoặc thư mục tồn tại thì truy cập trực tiếp
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Nếu không tồn tại thì trỏ về index.html để React Router xử lý
+  RewriteRule ^ index.html [L]
+</IfModule>
