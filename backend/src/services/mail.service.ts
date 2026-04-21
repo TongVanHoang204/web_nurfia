@@ -20,9 +20,13 @@ const getTransporter = () => {
       host: config.smtp.host,
       port: config.smtp.port,
       secure: config.smtp.port === 465,
+      pool: true, // Reuse connections
       auth: {
         user: config.smtp.user,
         pass: config.smtp.pass,
+      },
+      tls: {
+        rejectUnauthorized: false, // Handle self-signed or untrusted certs
       },
     });
   }
@@ -50,7 +54,9 @@ const sendMailSafely = async (
   }
 
   try {
-    await sendAction(activeTransporter);
+    const info = await sendAction(activeTransporter);
+    const messageId = (info as any)?.messageId;
+    console.info(`[mail:${label}] Delivered successfully${messageId ? `: ${messageId}` : ''}`);
     return { delivered: true };
   } catch (error) {
     const message = getErrorMessage(error);

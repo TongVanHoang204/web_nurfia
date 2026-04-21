@@ -511,28 +511,27 @@ async function main() {
 
   // ─── Site Settings ─────────────────────────────────────────────────────────
   const settings = [
-    { key: 'site_name', value: 'Nurfia', group: 'general' },
-    { key: 'site_tagline', value: 'Fashion eCommerce', group: 'general' },
-    { key: 'site_description', value: 'Premium fashion for women and men', group: 'seo' },
-    { key: 'contact_email', value: 'contact@nurfia.com', group: 'contact' },
-    { key: 'contact_phone', value: '+1 234 567 890', group: 'contact' },
-    { key: 'contact_address', value: '123 Fashion Street, New York, NY 10001', group: 'contact' },
-    { key: 'social_facebook', value: 'https://facebook.com/nurfia', group: 'social' },
-    { key: 'social_instagram', value: 'https://instagram.com/nurfia', group: 'social' },
-    { key: 'social_twitter', value: 'https://twitter.com/nurfia', group: 'social' },
-    { key: 'social_pinterest', value: 'https://pinterest.com/nurfia', group: 'social' },
+    { key: 'siteName', value: 'Nurfia', group: 'general' },
+    { key: 'tagline', value: 'Fashion eCommerce', group: 'general' },
+    { key: 'siteTitle', value: 'Nurfia - Fashion eCommerce', group: 'seo' },
+    { key: 'siteDescription', value: 'Premium fashion for women and men', group: 'seo' },
+    { key: 'email', value: 'contact@nurfia.com', group: 'contact' },
+    { key: 'phone', value: '+1 234 567 890', group: 'contact' },
+    { key: 'address', value: '123 Fashion Street, New York, NY 10001', group: 'contact' },
+    { key: 'facebook', value: 'https://facebook.com/nurfia', group: 'social' },
+    { key: 'instagram', value: 'https://instagram.com/nurfia', group: 'social' },
+    { key: 'twitter', value: 'https://twitter.com/nurfia', group: 'social' },
     { key: 'currency', value: 'USD', group: 'general' },
-    { key: 'currency_symbol', value: '$', group: 'general' },
   ];
 
   for (const s of settings) {
     await prisma.setting.upsert({
       where: { key: s.key },
-      update: { value: s.value },
+      update: {}, // DO NOT overwrite existing values on seed
       create: s,
     });
   }
-  console.log('✅ Settings created');
+  console.log('✅ Settings initialized (existing values preserved)');
 
   console.log('\n🎉 Seed complete!');
 }

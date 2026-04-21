@@ -180,6 +180,8 @@ export const authService = {
       throw new AppError('New password must be different from current password.', 400);
     }
 
+    console.info(`[auth:otp] Requesting change password OTP for user ID: ${userId} (${user.email})`);
+
     const otp = String(crypto.randomInt(100000, 1000000));
     const otpHash = await bcrypt.hash(otp, 10);
     changePasswordOtpStore.set(user.id, {
