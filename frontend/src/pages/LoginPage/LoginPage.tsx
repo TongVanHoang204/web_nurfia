@@ -26,6 +26,7 @@ export default function LoginPage() {
   const [authNotice, setAuthNotice] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showRegisterConfirmPassword, setShowRegisterConfirmPassword] = useState(false);
   const [showResetNewPassword, setShowResetNewPassword] = useState(false);
   const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
   const [isSubmittingAux, setIsSubmittingAux] = useState(false);
@@ -57,6 +58,7 @@ export default function LoginPage() {
     setAuthNotice('');
     setShowLoginPassword(false);
     setShowRegisterPassword(false);
+    setShowRegisterConfirmPassword(false);
     setShowResetNewPassword(false);
     setShowResetConfirmPassword(false);
 
@@ -144,6 +146,11 @@ export default function LoginPage() {
 
     if (mode === 'register' && /\s/.test(form.password)) {
       setError('Password cannot contain spaces.');
+      return;
+    }
+
+    if (mode === 'register' && form.password !== form.confirmPassword) {
+      setError('Password confirmation does not match.');
       return;
     }
 
@@ -281,6 +288,34 @@ export default function LoginPage() {
                         onClick={() => setShowRegisterPassword((prev) => !prev)}
                       >
                         {showRegisterPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="reg-confirm-password">Confirm Password</label>
+                    <div className="password-field-wrap">
+                      <input
+                        id="reg-confirm-password"
+                        className="form-input password-field-input"
+                        type={showRegisterConfirmPassword ? 'text' : 'password'}
+                        value={form.confirmPassword}
+                        onChange={(e) => update('confirmPassword', stripWhitespace(e.target.value))}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ') {
+                            e.preventDefault();
+                          }
+                        }}
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        aria-label={showRegisterConfirmPassword ? 'Hide password' : 'Show password'}
+                        title={showRegisterConfirmPassword ? 'Hide password' : 'Show password'}
+                        onClick={() => setShowRegisterConfirmPassword((prev) => !prev)}
+                      >
+                        {showRegisterConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                   </div>

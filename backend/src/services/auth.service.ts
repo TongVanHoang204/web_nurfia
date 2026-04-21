@@ -286,6 +286,12 @@ export const authService = {
       throw new AppError('Reset link is invalid or has expired.', 400);
     }
 
+    // Security: New password must be different from the old password
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      throw new AppError('New password must be different from your old password.', 400);
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
     await prisma.user.update({
       where: { id: user.id },
