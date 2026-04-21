@@ -54,8 +54,8 @@ const parseDurationToMs = (value: string) => {
 
 export const getAuthCookieOptions = () => ({
   httpOnly: true,
-  secure: config.env === 'production',
-  sameSite: 'lax' as const,
+  secure: true, // Always true for SameSite=None
+  sameSite: 'none' as const,
   path: '/',
   maxAge: parseDurationToMs(config.jwt.expiresIn),
 });
