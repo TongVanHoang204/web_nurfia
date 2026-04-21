@@ -104,9 +104,12 @@ export const mailService = {
   },
 
   async sendContactReply(email: string, fullName: string, subject: string, message: string) {
+    // Strip HTML tags for the plain text version
+    const plainText = message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
     return sendMailSafely(
       'contact-reply',
-      `[contact-reply] ${email} (${fullName || 'customer'}): ${subject}\n${message}`,
+      `[contact-reply] ${email} (${fullName || 'customer'}): ${subject}\n${plainText}`,
       async (activeTransporter) => {
         await activeTransporter.sendMail({
           from: config.smtp.from,
@@ -115,16 +118,16 @@ export const mailService = {
           text: [
             `Hello ${fullName || 'there'},`,
             '',
-            message,
+            plainText,
             '',
             'Regards,',
-            'Nurfia Support',
+            config.smtp.from.includes('gmail') ? 'Support Team' : config.smtp.from.split('@')[0],
           ].join('\n'),
           html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
               <p>Hello ${fullName || 'there'},</p>
-              <p style="white-space: pre-line;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
-              <p>Regards,<br />Nurfia Support</p>
+              <div style="margin: 16px 0;">${message}</div>
+              <p>Regards,<br />Support Team</p>
             </div>
           `,
         });

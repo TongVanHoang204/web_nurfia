@@ -217,7 +217,7 @@ export const contactController = {
         success: true,
         message: mailResult.delivered
           ? 'Reply sent successfully.'
-          : 'SMTP is not configured. Reply was not delivered, but the action was logged.',
+          : mailResult.error || 'Mail delivery failed. The action was logged but the email was not sent.',
         data: {
           delivered: mailResult.delivered,
         },
