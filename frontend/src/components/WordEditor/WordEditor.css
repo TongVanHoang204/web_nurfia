@@ -1,0 +1,66 @@
+.word-editor-wrap {
+  width: 100%;
+}
+
+.word-editor-wrap .rsw-editor.word-editor-surface {
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.word-editor-wrap .rsw-editor.word-editor-surface:focus-within {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.word-editor-wrap .rsw-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  background: #f8fafc;
+}
+
+.word-editor-wrap .rsw-btn,
+.word-editor-wrap .rsw-dd {
+  border-radius: 8px;
+}
+
+.word-editor-wrap .rsw-btn:hover,
+.word-editor-wrap .rsw-dd:hover {
+  background: #e2e8f0;
+}
+
+.word-editor-wrap .rsw-ce {
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #1f2937;
+}
+
+.word-editor-wrap .rsw-ce:focus {
+  outline: none;
+}
+
+.word-editor-wrap .rsw-ce p {
+  margin: 0 0 10px;
+}
+
+.word-editor-wrap .rsw-ce p:last-child {
+  margin-bottom: 0;
+}
+
+.word-editor-wrap .rsw-editor.word-editor-sm .rsw-ce {
+  min-height: 90px;
+}
+
+.word-editor-wrap .rsw-editor.word-editor-md .rsw-ce {
+  min-height: 140px;
+}
+
+.word-editor-wrap .rsw-editor.word-editor-lg .rsw-ce {
+  min-height: 260px;
+}

@@ -1,0 +1,2 @@
+ALTER TABLE `orders`
+MODIFY COLUMN `payment_method` ENUM('COD', 'BANK_TRANSFER', 'MOMO') NOT NULL;

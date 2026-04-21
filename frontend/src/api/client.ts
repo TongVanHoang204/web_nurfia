@@ -1,0 +1,28 @@
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+  withCredentials: true,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+// Handle 401 globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const hasStoredUser = Boolean(localStorage.getItem('nurfia_user'));
+      if (!hasStoredUser) {
+        return Promise.reject(error);
+      }
+
+      const message = String(error.response?.data?.message || '').toLowerCase();
+      const reason = message.includes('deactivated') ? 'deactivated' : 'unauthorized';
+      localStorage.removeItem('nurfia_user');
+      window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { reason } }));
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;

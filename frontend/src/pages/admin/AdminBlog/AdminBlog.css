@@ -1,0 +1,151 @@
+.admin-blog-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #9ca3af;
+}
+
+.admin-blog-img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.admin-blog-img-placeholder {
+  width: 44px;
+  height: 44px;
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.admin-blog-title {
+  font-weight: 600;
+}
+
+.admin-blog-slug {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.admin-blog-add-icon {
+  margin-right: 8px;
+}
+
+.admin-blog-add-btn {
+  white-space: nowrap;
+}
+
+.admin-blog-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-blog-table-wrap .admin-table {
+  min-width: 760px;
+}
+
+.admin-blog-th-image {
+  width: 60px;
+}
+
+.admin-blog-publish-btn {
+  margin: 0;
+}
+
+.admin-blog-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-blog-checkbox {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-blog-modal-large {
+  max-width: 800px;
+}
+
+.admin-blog-upload-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-blog-upload-input {
+  flex: 1;
+}
+
+.admin-blog-upload-btn {
+  cursor: pointer;
+  margin: 0;
+  padding: 0 12px;
+  height: 42px;
+  line-height: 40px;
+  white-space: nowrap;
+}
+
+.admin-blog-upload-btn.is-uploading {
+  opacity: 0.7;
+}
+
+.admin-blog-hidden-input {
+  display: none;
+}
+
+.admin-blog-preview-image {
+  margin-top: 10px;
+  max-height: 100px;
+  border-radius: 4px;
+}
+
+.admin-blog-publish-row {
+  margin-top: 10px;
+}
+
+.admin-blog-publish-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-blog-publish-checkbox {
+  width: auto;
+}
+
+.admin-blog-actions {
+  justify-content: flex-end;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-danger {
+  color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .admin-blog-upload-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-blog-upload-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-blog-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-blog-table-wrap .admin-table {
+    min-width: 680px;
+  }
+}

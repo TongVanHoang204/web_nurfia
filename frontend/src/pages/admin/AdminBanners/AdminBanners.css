@@ -1,0 +1,90 @@
+.admin-banners-table-image {
+  height: 40px;
+  width: 74px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.admin-banners-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-banners-table-wrap .admin-table {
+  min-width: 760px;
+}
+
+.admin-banners-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.admin-banners-upload-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-banners-upload-input {
+  flex: 1;
+}
+
+.admin-banners-upload-button {
+  cursor: pointer;
+  margin: 0;
+  padding: 0 12px;
+  height: 42px;
+  line-height: 40px;
+  white-space: nowrap;
+}
+
+.admin-banners-upload-button.is-uploading {
+  opacity: 0.7;
+}
+
+.admin-banners-hidden-input {
+  display: none;
+}
+
+.admin-banners-preview-image {
+  margin-top: 10px;
+  max-height: 100px;
+  border-radius: 4px;
+}
+
+.admin-banners-checkbox-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding-top: 32px;
+}
+
+.admin-banners-checkbox-group label {
+  cursor: pointer;
+  margin: 0;
+  font-weight: normal;
+}
+
+@media (max-width: 768px) {
+  .admin-banners-upload-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-banners-upload-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .admin-banners-checkbox-group {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-banners-table-wrap .admin-table {
+    min-width: 680px;
+  }
+}
