@@ -2,9 +2,8 @@ import { Link } from 'react-router-dom';
 import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '../../stores/cartStore';
 import { useAuthStore } from '../../stores/authStore';
+import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import './CartPage.css';
-
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000';
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, getSubtotal, isLoading } = useCartStore();
@@ -66,7 +65,7 @@ export default function CartPage() {
                   <div className="col-product">
                     <div className="cart-product-img">
                       <img
-                        src={imgUrl.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`}
+                        src={resolveSiteAssetUrl(imgUrl)}
                         alt={item.product.name}
                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x130/f5f5f5/999?text=img'; }}
                       />

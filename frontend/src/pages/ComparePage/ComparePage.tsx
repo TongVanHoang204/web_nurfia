@@ -1,6 +1,7 @@
 import { useCompareStore } from '../../stores/compareStore';
 import { Link } from 'react-router-dom';
 import { X, Star, StarHalf } from 'lucide-react';
+import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import './ComparePage.css';
 
 export default function ComparePage() {
@@ -12,7 +13,7 @@ export default function ComparePage() {
       if (i <= rating) {
         stars.push(<Star key={i} size={14} fill="currentColor" className="star-filled" />);
       } else if (i - 0.5 <= rating) {
-        stars.push(<StarHalf key={i} size={14} fill="currentColor" className="star-filled" />);
+        stars.push(< StarHalf key={i} size={14} fill="currentColor" className="star-filled" />);
       } else {
         stars.push(<Star key={i} size={14} className="star-empty" />);
       }
@@ -57,7 +58,7 @@ export default function ComparePage() {
               {items.map(item => (
                 <td key={`image-${item.id}`} className="compare-item">
                   <Link to={`/product/${item.slug}`} className="compare-image-link">
-                    <img src={item.image} alt={item.name} className="compare-image" />
+                    <img src={resolveSiteAssetUrl(item.image)} alt={item.name} className="compare-image" />
                   </Link>
                 </td>
               ))}

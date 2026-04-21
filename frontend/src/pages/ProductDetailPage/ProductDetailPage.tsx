@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Heart, Star, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Minus, Plus, Heart, Star, Maximize2, X, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
 import api from '../../api/client';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { useCartStore } from '../../stores/cartStore';
@@ -8,11 +8,9 @@ import { useAuthStore } from '../../stores/authStore';
 import { useWishlistStore } from '../../stores/wishlistStore';
 import { useCompareStore } from '../../stores/compareStore';
 import { useUIStore } from '../../stores/uiStore';
-import './ProductDetailPage.css';
-import { Repeat } from 'lucide-react';
+import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import { sanitizeRichHtml } from '../../utils/sanitizeHtml';
-
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000';
+import './ProductDetailPage.css';
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -308,7 +306,7 @@ export default function ProductDetailPage() {
   return (
     <div className="product-detail-page">
       <style>{`
-        ${colors.map(c => '.bg-color-' + c.name.replace(/\\s+/g, '-').toLowerCase() + ' { background-color: ' + c.hex + '; }').join('\n')}
+        ${colors.map(c => '.bg-color-' + c.name.replace(/\s+/g, '-').toLowerCase() + ' { background-color: ' + c.hex + '; }').join('\n')}
       `}</style>
       <div className="container">
         {/* Breadcrumb */}
@@ -324,7 +322,7 @@ export default function ProductDetailPage() {
           <div className="pd-gallery">
             <div className="pd-gallery-main">
               <img
-                src={product.images[activeImageIndex]?.url?.startsWith('http') ? product.images[activeImageIndex].url : `${API_URL}${product.images[activeImageIndex]?.url}`}
+                src={resolveSiteAssetUrl(product.images[activeImageIndex]?.url)}
                 alt={product.images[activeImageIndex]?.alt || product.name}
                 onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/600x600/f5f5f5/999?text=${encodeURIComponent(product.name.substring(0,16))}`; }}
                 onClick={() => setIsLightboxOpen(true)}
@@ -343,7 +341,7 @@ export default function ProductDetailPage() {
                   onMouseEnter={() => setActiveImageIndex(i)}
                 >
                   <img
-                    src={img.url.startsWith('http') ? img.url : `${API_URL}${img.url}`}
+                    src={resolveSiteAssetUrl(img.url)}
                     alt={img.alt || product.name}
                     onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/100x100/f5f5f5/999?text=img`; }}
                   />
@@ -357,7 +355,7 @@ export default function ProductDetailPage() {
                 {product.images.map((img: any, i: number) => (
                   <div key={i} className="pd-mobile-slide">
                     <img
-                      src={img.url.startsWith('http') ? img.url : `${API_URL}${img.url}`}
+                      src={resolveSiteAssetUrl(img.url)}
                       alt={img.alt || product.name}
                       onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/600x800/f5f5f5/999?text=${encodeURIComponent(product.name.substring(0,16))}`; }}
                     />
@@ -700,7 +698,7 @@ export default function ProductDetailPage() {
 
           <div className="pd-lightbox-content" onClick={(e) => e.stopPropagation()}>
             <img 
-              src={product.images[activeImageIndex]?.url?.startsWith('http') ? product.images[activeImageIndex].url : `${API_URL}${product.images[activeImageIndex]?.url}`}
+              src={resolveSiteAssetUrl(product.images[activeImageIndex]?.url)}
               alt={product.images[activeImageIndex]?.alt || product.name} 
               className="pd-lightbox-img"
             />
@@ -710,6 +708,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-
-

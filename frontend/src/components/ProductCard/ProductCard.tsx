@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Eye, Star } from 'lucide-react';
 import { useWishlistStore } from '../../stores/wishlistStore';
 import { useAuthStore } from '../../stores/authStore';
+import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 
 interface ProductCardProps {
   product: {
@@ -16,13 +17,6 @@ interface ProductCardProps {
     category?: { name: string; slug: string } | null;
     variants?: { attributes: { attributeValue: { value: string; colorHex?: string; attribute: { name: string } } }[] }[];
   };
-}
-
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000';
-
-function getImageUrl(url: string): string {
-  if (url.startsWith('http')) return url;
-  return `${API_URL}${url}`;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -51,12 +45,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="product-card">
       <style>{`
-        ${colors.map(c => '.bg-color-' + product.id + '-' + c.name.replace(/\\s+/g, '-').toLowerCase() + ' { background-color: ' + c.hex + '; }').join('\\n')}
+        ${colors.map(c => '.bg-color-' + product.id + '-' + c.name.replace(/\s+/g, '-').toLowerCase() + ' { background-color: ' + c.hex + '; }').join('\n')}
       `}</style>
       <div className="product-card-image">
         <Link to={`/product/${product.slug}`}>
           <img
-            src={getImageUrl(mainImage)}
+            src={resolveSiteAssetUrl(mainImage)}
             alt={product.images[0]?.alt || product.name}
             className="main-img"
             loading="lazy"
@@ -65,7 +59,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             }}
           />
           <img
-            src={getImageUrl(hoverImage)}
+            src={resolveSiteAssetUrl(hoverImage)}
             alt={product.name}
             className="hover-img"
             loading="lazy"

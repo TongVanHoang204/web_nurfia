@@ -23,12 +23,12 @@ const NAV_ITEMS = [
         { label: 'T-Shirts', href: '/category/women-tshirts' },
         { label: 'Jackets', href: '/category/women-jackets' },
       ]},
-      { group: 'Bottoms', items: [
+      { group: 'Bottom Wear', items: [
         { label: 'Pants', href: '/category/women-pants' },
         { label: 'Skirts', href: '/category/skirts' },
         { label: 'Jeans', href: '/category/women-jeans' },
       ]},
-      { group: 'More', items: [
+      { group: 'Knitwear & Suits', items: [
         { label: 'Knit', href: '/category/knit' },
         { label: 'Suits', href: '/category/suits' },
       ]},
@@ -42,7 +42,7 @@ const NAV_ITEMS = [
         { label: 'T-Shirts', href: '/category/men-tshirts' },
         { label: 'Hoodies', href: '/category/hoodies' },
       ]},
-      { group: 'Bottoms', items: [
+      { group: 'Bottom Wear', items: [
         { label: 'Jeans', href: '/category/men-jeans' },
         { label: 'Pants', href: '/category/men-pants' },
       ]},
@@ -52,13 +52,13 @@ const NAV_ITEMS = [
     label: 'Accessories', href: '/category/accessories', mega: true,
     children: [
       { group: 'Bags', items: [
-        { label: 'All Bags', href: '/category/bags' },
+        { label: 'Bags', href: '/category/bags' },
       ]},
       { group: 'Jewelry', items: [
-        { label: 'All Jewelry', href: '/category/jewelry' },
+        { label: 'Jewelry', href: '/category/jewelry' },
       ]},
       { group: 'Hats', items: [
-        { label: 'All Hats', href: '/category/hats' },
+        { label: 'Hats', href: '/category/hats' },
       ]},
     ],
   },
