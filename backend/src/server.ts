@@ -105,6 +105,11 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/compare', compareRoutes);
 
+// Health check
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // API not-found handler to keep error shape consistent for frontend
 app.use('/api', (_req, res) => {
   res.status(404).json({
@@ -112,11 +117,6 @@ app.use('/api', (_req, res) => {
     error: 'API route not found.',
     message: 'API route not found.',
   });
-});
-
-// Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Global error handler
