@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Edit2, Plus, Search, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit2, Plus, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import '../AdminBrands/AdminBrands.css';
@@ -32,7 +32,6 @@ export default function AdminAttributes() {
 
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   
   // Expanded rows to show values
   const [expandedAttrIds, setExpandedAttrIds] = useState<Set<number>>(new Set());
@@ -70,9 +69,8 @@ export default function AdminAttributes() {
 
   // ── Filtered list ─────────────────────────────────────────────────────────
   const filteredAttributes = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    return attributes.filter(a => !term || a.name.toLowerCase().includes(term) || a.slug.includes(term));
-  }, [attributes, searchTerm]);
+    return [...attributes].sort((a, b) => a.name.localeCompare(b.name));
+  }, [attributes]);
 
   // ── Toggle Expand ─────────────────────────────────────────────────────────
   const toggleExpand = (attrId: number) => {
@@ -250,36 +248,18 @@ export default function AdminAttributes() {
         </div>
       </section>
 
-      {/* Controls */}
-      <section className="ap-card brands-controls-card">
-        <div className="brands-controls-row">
-          <div className="brands-search-wrap">
-            <Search size={16} />
-            <input
-              type="text"
-              placeholder="Search attributes..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="brands-controls-summary">
-          <span>{filteredAttributes.length} result(s)</span>
-        </div>
-      </section>
-
       {/* Table */}
       <div className="ap-card brands-table-card">
         {isLoading ? (
            <div className="loading-page"><div className="spinner" /></div>
         ) : filteredAttributes.length === 0 ? (
-           <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>No attributes matched your search.</div>
+           <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>No attributes have been created yet.</div>
         ) : (
-          <div className="brands-desktop-table-wrap">
-            <table className="ap-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="ap-table-wrap">
+            <table className="ap-table">
               <thead>
                 <tr>
-                  <th style={{ width: '40px' }}></th>
+                  <th className="ap-th-check"></th>
                   <th>ATTRIBUTE</th>
                   <th>SLUG</th>
                   <th>VALUES</th>

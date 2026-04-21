@@ -3,6 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Ticket, Truck, Settings, LogOut, Menu, X, FileText, Activity, ShieldQuestion, BarChart, Layers, Image as ImageIcon, Mail, Star, Tag, Sliders } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
 import './AdminLayout.css';
+import '../admin.css';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin', permissions: [] as string[] },

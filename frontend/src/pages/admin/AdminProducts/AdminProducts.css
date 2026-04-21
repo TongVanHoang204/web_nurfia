@@ -133,7 +133,8 @@
   background-color: #f8fafc;
 }
 
-.ap-th-check, .ap-td-check {
+.ap-th-check,
+.ap-td-check {
   width: 48px;
   padding-right: 0 !important;
 }

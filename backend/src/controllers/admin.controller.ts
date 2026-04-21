@@ -1525,10 +1525,10 @@ export const adminController = {
         role: 'CUSTOMER' as const,
         ...(search ? {
           OR: [
-            { email: { contains: search } },
-            { fullName: { contains: search } },
-            { username: { contains: search } },
-            { phone: { contains: search } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { fullName: { contains: search, mode: 'insensitive' } },
+            { username: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search, mode: 'insensitive' } },
           ],
         } : {}),
       };
@@ -1779,7 +1779,7 @@ export const adminController = {
       const andClauses: any[] = [];
 
       if (search) {
-        andClauses.push({ code: { contains: search } });
+        andClauses.push({ code: { contains: search, mode: 'insensitive' } });
       }
 
       if (type === 'PERCENTAGE' || type === 'FIXED_AMOUNT') {
@@ -2101,14 +2101,25 @@ export const adminController = {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
+      const search = String(req.query.search || '').trim();
+
+      const where: any = {};
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { author: { contains: search, mode: 'insensitive' } },
+          { category: { contains: search, mode: 'insensitive' } },
+        ];
+      }
       
       const [posts, total] = await Promise.all([
         prisma.blogPost.findMany({
+          where,
           skip: (page - 1) * limit,
           take: limit,
           orderBy: { createdAt: 'desc' }
         }),
-        prisma.blogPost.count()
+        prisma.blogPost.count({ where })
       ]);
 
       res.json({

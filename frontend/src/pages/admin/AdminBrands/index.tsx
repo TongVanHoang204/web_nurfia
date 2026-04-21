@@ -307,7 +307,7 @@ export default function AdminBrands() {
           <div className="brands-empty-state">No brands matched your search/filter.</div>
         ) : (
           <>
-            <div className="brands-desktop-table-wrap">
+            <div className="ap-table-wrap">
               <table className="ap-table">
                 <thead>
                   <tr>

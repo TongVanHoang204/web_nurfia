@@ -43,9 +43,9 @@ export const inventoryController = {
       if (search) {
         whereAnd.push({
           OR: [
-            { name: { contains: search } },
-            { sku: { contains: search } },
-            { variants: { some: { sku: { contains: search } } } },
+            { name: { contains: search, mode: 'insensitive' } },
+            { sku: { contains: search, mode: 'insensitive' } },
+            { variants: { some: { sku: { contains: search, mode: 'insensitive' } } } },
           ],
         });
       }
@@ -83,9 +83,9 @@ export const inventoryController = {
       if (search) {
         stockOnlyWhereAnd.push({
           OR: [
-            { name: { contains: search } },
-            { sku: { contains: search } },
-            { variants: { some: { sku: { contains: search } } } },
+            { name: { contains: search, mode: 'insensitive' } },
+            { sku: { contains: search, mode: 'insensitive' } },
+            { variants: { some: { sku: { contains: search, mode: 'insensitive' } } } },
           ],
         });
       }
@@ -95,8 +95,8 @@ export const inventoryController = {
       const standaloneProductSearchFilter = search
         ? {
             OR: [
-              { name: { contains: search } },
-              { sku: { contains: search } },
+              { name: { contains: search, mode: 'insensitive' } },
+              { sku: { contains: search, mode: 'insensitive' } },
             ],
           }
         : {};
@@ -104,9 +104,9 @@ export const inventoryController = {
       const variantSearchFilter = search
         ? {
             OR: [
-              { sku: { contains: search } },
-              { product: { name: { contains: search } } },
-              { product: { sku: { contains: search } } },
+              { sku: { contains: search, mode: 'insensitive' } },
+              { product: { name: { contains: search, mode: 'insensitive' } } },
+              { product: { sku: { contains: search, mode: 'insensitive' } } },
             ],
           }
         : {};
@@ -240,11 +240,11 @@ getInventoryHistory: async (req: Request, res: Response, next: NextFunction) => 
       if (search) {
         whereAnd.push({
           OR: [
-            { note: { contains: search } },
-            { product: { name: { contains: search } } },
-            { product: { sku: { contains: search } } },
-            { variant: { sku: { contains: search } } },
-            { user: { fullName: { contains: search } } },
+            { note: { contains: search, mode: 'insensitive' } },
+            { product: { name: { contains: search, mode: 'insensitive' } } },
+            { product: { sku: { contains: search, mode: 'insensitive' } } },
+            { variant: { sku: { contains: search, mode: 'insensitive' } } },
+            { user: { fullName: { contains: search, mode: 'insensitive' } } },
           ],
         });
       }

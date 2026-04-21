@@ -258,14 +258,14 @@ export const activityController = {
 
       if (keyword) {
         where.OR = [
-          { action: { contains: keyword } },
-          { entityType: { contains: keyword } },
-          { ipAddress: { contains: keyword } },
+          { action: { contains: keyword, mode: 'insensitive' } },
+          { entityType: { contains: keyword, mode: 'insensitive' } },
+          { ipAddress: { contains: keyword, mode: 'insensitive' } },
           {
             user: {
               OR: [
-                { fullName: { contains: keyword } },
-                { email: { contains: keyword } },
+                { fullName: { contains: keyword, mode: 'insensitive' } },
+                { email: { contains: keyword, mode: 'insensitive' } },
               ],
             },
           },

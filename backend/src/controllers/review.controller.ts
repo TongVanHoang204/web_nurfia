@@ -128,12 +128,12 @@ export const reviewController = {
 
       if (search) {
         where.OR = [
-          { title: { contains: search } },
-          { comment: { contains: search } },
-          { user: { fullName: { contains: search } } },
-          { user: { username: { contains: search } } },
-          { user: { email: { contains: search } } },
-          { product: { name: { contains: search } } },
+          { title: { contains: search, mode: 'insensitive' } },
+          { comment: { contains: search, mode: 'insensitive' } },
+          { user: { fullName: { contains: search, mode: 'insensitive' } } },
+          { user: { username: { contains: search, mode: 'insensitive' } } },
+          { user: { email: { contains: search, mode: 'insensitive' } } },
+          { product: { name: { contains: search, mode: 'insensitive' } } },
         ];
       }
 
