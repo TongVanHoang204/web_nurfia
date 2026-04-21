@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, Search, Eye, ChevronDown } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
+import { getImageUrl } from '../../../utils/url';
 import './AdminProducts.css';
 
 export default function AdminProducts() {
@@ -612,7 +613,7 @@ export default function AdminProducts() {
                   <td>
                     <div className="ap-product-cell">
                       <div className="ap-product-img-box">
-                        {p.images?.[0] ? <img src={p.images[0].url.startsWith('http') ? p.images[0].url : `http://localhost:4000${p.images[0].url}`} alt="" className="ap-product-img" onError={e => (e.target as HTMLImageElement).style.display='none'} /> : <div className="ap-product-placeholder"></div>}
+                        {p.images?.[0] ? <img src={getImageUrl(p.images[0].url)} alt="" className="ap-product-img" onError={e => (e.target as HTMLImageElement).style.display='none'} /> : <div className="ap-product-placeholder"></div>}
                       </div>
                       <div className="ap-product-info">
                         <strong className="ap-product-name">{p.name}</strong>
@@ -969,7 +970,7 @@ export default function AdminProducts() {
                   <div className="ap-image-preview-list">
                     {formData.images.map((url: string, index: number) => (
                       <div key={index} className="ap-image-preview-item">
-                        <img src={url.startsWith('http') ? url : `http://localhost:4000${url}`} alt="Preview" className="admin-modal-image-preview ap-image-preview ap-image-preview-thumb" onError={(e: any) => e.target.style.display = 'none'} />
+                        <img src={getImageUrl(url)} alt="Preview" className="admin-modal-image-preview ap-image-preview ap-image-preview-thumb" onError={(e: any) => e.target.style.display = 'none'} />
                         <button type="button" onClick={() => removeImage(index)} className="ap-image-remove-btn">&times;</button>
                       </div>
                     ))}

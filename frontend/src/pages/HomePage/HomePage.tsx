@@ -9,6 +9,7 @@ import 'swiper/css/effect-fade';
 import api from '../../api/client';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
+import { getImageUrl } from '../../utils/url';
 import './HomePage.css';
 
 interface Product {
@@ -110,10 +111,10 @@ export default function HomePage() {
           {banners.length > 0 ? (
             banners.map((banner, index) => (
               <SwiperSlide key={banner.id}>
-                <div className={`hero-slide hero-slide-${index + 1}`} style={{ backgroundImage: `url(${banner.imageUrl.startsWith('http') ? banner.imageUrl : 'http://localhost:4000' + banner.imageUrl})` }}>
+                <div className={`hero-slide hero-slide-${index + 1}`} style={{ backgroundImage: `url(${getImageUrl(banner.imageUrl)})` }}>
                   {banner.videoUrl && (
-                    <video className="hero-video" autoPlay muted loop playsInline poster={banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:4000${banner.imageUrl}`}>
-                      <source src={banner.videoUrl.startsWith('http') ? banner.videoUrl : `http://localhost:4000${banner.videoUrl}`} type="video/mp4" />
+                    <video className="hero-video" autoPlay muted loop playsInline poster={getImageUrl(banner.imageUrl)}>
+                      <source src={getImageUrl(banner.videoUrl)} type="video/mp4" />
                     </video>
                   )}
                   <div className="hero-overlay" />

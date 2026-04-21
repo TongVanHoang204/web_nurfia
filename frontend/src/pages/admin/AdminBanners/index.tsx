@@ -1,8 +1,9 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
+import { getImageUrl } from '../../../utils/url';
 import './AdminBanners.css';
 
 export default function AdminBanners() {
@@ -253,7 +254,7 @@ export default function AdminBanners() {
                 </div>
                 {formData.imageUrl && (
                   <img
-                    src={formData.imageUrl.startsWith('http') ? formData.imageUrl : `http://localhost:4000${formData.imageUrl}`}
+                    src={getImageUrl(formData.imageUrl)}
                     alt="Preview"
                     className="admin-modal-image-preview admin-banners-preview-image"
                     onError={(e: any) => e.target.style.display = 'none'}

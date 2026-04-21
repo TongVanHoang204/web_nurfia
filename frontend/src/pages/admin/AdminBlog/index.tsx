@@ -1,8 +1,9 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
+import { getImageUrl } from '../../../utils/url';
 import './AdminBlog.css';
 
 const getRichTextPlainValue = (value: string) => value
@@ -138,7 +139,7 @@ export default function AdminBlog() {
                 {posts.map(post => (
                   <tr key={post.id}>
                     <td>
-                      {post.image ? <img src={post.image.startsWith('http') ? post.image : `http://localhost:4000${post.image}`} alt="Blog thumbnail" className="admin-blog-img" /> : <div className="admin-blog-img-placeholder" />}
+                      {post.image ? <img src={getImageUrl(post.image)} alt="Blog thumbnail" className="admin-blog-img" /> : <div className="admin-blog-img-placeholder" />}
                     </td>
                     <td>
                       <div className="admin-blog-title">{post.title}</div>
@@ -202,7 +203,7 @@ export default function AdminBlog() {
                     <input type="file" accept="image/*" onChange={handleFileUpload} className="admin-blog-hidden-input" disabled={isUploading} />
                   </label>
                 </div>
-                {form.image && <img src={form.image.startsWith('http') ? form.image : `http://localhost:4000${form.image}`} alt="Preview" className="admin-modal-image-preview admin-blog-preview-image" onError={(e: any) => e.target.style.display = 'none'} />}
+                {form.image && <img src={getImageUrl(form.image)} alt="Preview" className="admin-modal-image-preview admin-blog-preview-image" onError={(e: any) => e.target.style.display = 'none'} />}
               </div>
 
               <div className="admin-form-group">
