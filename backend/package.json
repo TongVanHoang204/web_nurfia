@@ -40,6 +40,7 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^22.15.2",
     "@types/nodemailer": "^6.4.17",
+    "mysql2": "^3.22.2",
     "prisma": "^6.6.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
