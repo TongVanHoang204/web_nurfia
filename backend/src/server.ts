@@ -91,6 +91,7 @@ app.use('/uploads', async (req, res, next) => {
 app.use('/uploads', express.static(path.join(process.cwd(), config.upload.dir)));
 
 // API Routes
+app.post('/api/ai/chat', aiController.chat);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -107,7 +108,6 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/compare', compareRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.post('/api/ai/chat', aiController.chat);
 
 // Health check
 app.get('/api/health', (_req, res) => {
