@@ -16,6 +16,21 @@ const DEFAULT_SETTINGS: SiteSettingsMap = {
   siteDescription: 'Nurfia - Premium Fashion eCommerce. Discover the latest trends in women\'s and men\'s clothing, accessories, and more.',
 };
 
+const DEFAULT_API_ORIGIN = 'https://web-nurfia.onrender.com';
+
+export const getApiAssetOrigin = () => {
+  const apiBase = String(import.meta.env.VITE_API_URL || '').trim();
+  if (apiBase.startsWith('http')) {
+    try {
+      return new URL(apiBase).origin;
+    } catch {
+      return DEFAULT_API_ORIGIN;
+    }
+  }
+
+  return DEFAULT_API_ORIGIN;
+};
+
 const resolveSafeAbsoluteUrl = (value: string) => {
   try {
     const url = new URL(value);
@@ -37,15 +52,14 @@ const SiteSettingsContext = createContext<SiteSettingsContextValue>({
 
 export const resolveSiteAssetUrl = (value: string) => {
   if (!value) return '';
-  if (value.startsWith('http://') || value.startsWith('https://')) return resolveSafeAbsoluteUrl(value);
+  const normalizedValue = value.trim();
+  if (normalizedValue.startsWith('http://') || normalizedValue.startsWith('https://')) return resolveSafeAbsoluteUrl(normalizedValue);
 
-  if (value === '/favicon.svg' || value.startsWith('/assets/')) return value;
-  if (!value.startsWith('/')) return '';
+  if (normalizedValue === '/favicon.svg' || normalizedValue.startsWith('/assets/')) return normalizedValue;
+  if (normalizedValue.startsWith('uploads/')) return `${getApiAssetOrigin()}/${normalizedValue}`;
+  if (!normalizedValue.startsWith('/')) return '';
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-  const apiOrigin = new URL(apiBase, window.location.origin).origin;
-  const normalizedPath = value.startsWith('/') ? value : `/${value}`;
-  return `${apiOrigin}${normalizedPath}`;
+  return `${getApiAssetOrigin()}${normalizedValue}`;
 };
 
 export const resolveExternalUrl = (value: string, fallback: string) => {

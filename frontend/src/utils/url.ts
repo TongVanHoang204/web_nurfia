@@ -1,10 +1,13 @@
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+import { getApiAssetOrigin, resolveSiteAssetUrl } from '../contexts/SiteSettingsContext';
 
 export function getImageUrl(url: string | undefined | null): string {
   if (!url) return '';
   if (url.startsWith('http')) return url;
-  
+
+  const resolvedAssetUrl = resolveSiteAssetUrl(url);
+  if (resolvedAssetUrl) return resolvedAssetUrl;
+
   // Clean up Double Slash just in case
   const cleanUrl = url.startsWith('/') ? url : `/${url}`;
-  return `${API_URL}${cleanUrl}`;
+  return `${getApiAssetOrigin()}${cleanUrl}`;
 }

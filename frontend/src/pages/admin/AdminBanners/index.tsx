@@ -6,6 +6,17 @@ import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
 import { getImageUrl } from '../../../utils/url';
 import './AdminBanners.css';
 
+const normalizeAssetInput = (value: string) => {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) return trimmed;
+  if (trimmed.startsWith('uploads/')) return `/${trimmed}`;
+
+  return trimmed;
+};
+
 export default function AdminBanners() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,12 +117,18 @@ export default function AdminBanners() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = {
+      ...formData,
+      imageUrl: normalizeAssetInput(formData.imageUrl),
+      videoUrl: normalizeAssetInput(formData.videoUrl || ''),
+    };
+
     try {
       if (editingBanner) {
-        await api.put(`/admin/banners/${editingBanner.id}`, formData);
+        await api.put(`/admin/banners/${editingBanner.id}`, payload);
         addToast('Banner updated successfully', 'success');
       } else {
-        await api.post('/admin/banners', formData);
+        await api.post('/admin/banners', payload);
         addToast('Banner created successfully', 'success');
       }
       closeModal();

@@ -4,6 +4,30 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { logActivity } from '../services/activity.service.js';
 
+const normalizeAssetUrl = (value: unknown) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  if (raw.startsWith('/uploads/')) return raw;
+  if (raw.startsWith('uploads/')) return `/${raw}`;
+  if (raw.startsWith('/assets/')) return raw;
+
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return '';
+    }
+
+    if (url.pathname.startsWith('/uploads/')) {
+      return `${url.pathname}${url.search}`;
+    }
+
+    return url.toString();
+  } catch {
+    return '';
+  }
+};
+
 export const bannerController = {
   getBanners: async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -30,8 +54,8 @@ export const bannerController = {
       const data = {
         title: String(req.body.title || '').trim(),
         subtitle: req.body.subtitle ? String(req.body.subtitle).trim() : null,
-        imageUrl: String(req.body.imageUrl || '').trim(),
-        videoUrl: req.body.videoUrl ? String(req.body.videoUrl).trim() : null,
+        imageUrl: normalizeAssetUrl(req.body.imageUrl),
+        videoUrl: req.body.videoUrl ? normalizeAssetUrl(req.body.videoUrl) : null,
         linkUrl: req.body.linkUrl ? String(req.body.linkUrl).trim() : null,
         buttonText: req.body.buttonText ? String(req.body.buttonText).trim() : null,
         position: String(req.body.position || 'homepage').trim() || 'homepage',
@@ -44,6 +68,9 @@ export const bannerController = {
       }
       if (!data.imageUrl) {
         throw new AppError('Banner image is required.', 400);
+      }
+      if (data.videoUrl === '') {
+        throw new AppError('Banner video URL must be an absolute http/https URL or an upload path starting with "/uploads/".', 400);
       }
       if (data.sortOrder < 0) {
         throw new AppError('Sort order must be a non-negative number.', 400);
@@ -78,8 +105,8 @@ export const bannerController = {
       const data = {
         ...(req.body.title !== undefined && { title: String(req.body.title).trim() }),
         ...(req.body.subtitle !== undefined && { subtitle: req.body.subtitle ? String(req.body.subtitle).trim() : null }),
-        ...(req.body.imageUrl !== undefined && { imageUrl: String(req.body.imageUrl).trim() }),
-        ...(req.body.videoUrl !== undefined && { videoUrl: req.body.videoUrl ? String(req.body.videoUrl).trim() : null }),
+        ...(req.body.imageUrl !== undefined && { imageUrl: normalizeAssetUrl(req.body.imageUrl) }),
+        ...(req.body.videoUrl !== undefined && { videoUrl: req.body.videoUrl ? normalizeAssetUrl(req.body.videoUrl) : null }),
         ...(req.body.linkUrl !== undefined && { linkUrl: req.body.linkUrl ? String(req.body.linkUrl).trim() : null }),
         ...(req.body.buttonText !== undefined && { buttonText: req.body.buttonText ? String(req.body.buttonText).trim() : null }),
         ...(req.body.position !== undefined && { position: String(req.body.position).trim() || 'homepage' }),
@@ -92,6 +119,9 @@ export const bannerController = {
       }
       if (data.imageUrl === '') {
         throw new AppError('Banner image is required.', 400);
+      }
+      if (data.videoUrl === '') {
+        throw new AppError('Banner video URL must be an absolute http/https URL or an upload path starting with "/uploads/".', 400);
       }
       if (data.sortOrder !== undefined && (!Number.isFinite(data.sortOrder) || data.sortOrder < 0)) {
         throw new AppError('Sort order must be a non-negative number.', 400);
