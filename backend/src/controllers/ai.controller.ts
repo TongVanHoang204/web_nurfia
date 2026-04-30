@@ -10,71 +10,51 @@ export const aiController = {
         throw new AppError('Message is required', 400);
       }
 
-      const apiKey = process.env.HUGGINGFACE_API_KEY;
-      // Use configured model or stable fallback
-      const model = process.env.HUGGINGFACE_MODEL || 'HuggingFaceH4/zephyr-7b-beta'; 
+      const apiKey = process.env.NVIDIA_API_KEY;
+      const apiUrl = process.env.NVIDIA_API_URL || 'https://integrate.api.nvidia.com/v1/chat/completions';
+      const model = process.env.NVIDIA_MODEL || 'mistralai/mistral-large-2-instruct'; 
 
       if (!apiKey) {
-        throw new AppError('AI Service is not configured properly.', 500);
+        throw new AppError('AI Service (NVIDIA) is not configured properly.', 500);
       }
 
-      // System prompt to set identity
-      const systemPrompt = `You are Nurfia AI, a professional and helpful shopping assistant for Nurfia eCommerce. 
-      Nurfia is a premium fashion store for women and men. 
-      Help users find products, answer questions about shipping and returns, and provide fashion advice. 
-      Keep your answers concise and professional.
-      IMPORTANT: Always respond in English only.`;
+      // Construct messages for NVIDIA API
+      const messages = [
+        {
+          role: 'system',
+          content: 'You are Nurfia AI, a professional and helpful shopping assistant for Nurfia eCommerce. Nurfia is a premium fashion store for women and men. Help users find products, answer questions about shipping and returns, and provide fashion advice. Keep your answers concise and professional. IMPORTANT: Always respond in English only.'
+        },
+        ...(history || []).map((m: any) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content
+        })),
+        { role: 'user', content: message }
+      ];
 
-      let result: any;
-      let retries = 5; // Increased retries
-      let waitTime = 6000; // 6 seconds
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: messages,
+          max_tokens: 1024,
+          temperature: 0.7,
+          top_p: 1.0,
+          stream: false
+        }),
+      });
 
-      while (retries > 0) {
-        try {
-          const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            inputs: `<s>[INST] ${systemPrompt} \n\n User history: ${JSON.stringify(history || [])} \n\n User message: ${message} [/INST]`,
-            parameters: {
-              max_new_tokens: 500,
-              temperature: 0.7,
-              return_full_text: false,
-            }
-          }),
-        });
+      const result = await response.json() as any;
 
-        result = await response.json();
-
-        if (response.ok) {
-          break;
-        }
-
-        // Check if model is loading (Common in HF Free Tier)
-        if (response.status === 503 && (result.error?.includes('loading') || result.error?.includes('currently loading'))) {
-          console.log(`[AI] Model ${model} is loading, retrying in ${waitTime/1000}s... (${retries} retries left)`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-          retries--;
-          continue;
-        }
-
-        console.error('[AI Error Details]', { status: response.status, body: result });
-        throw new AppError(result.error || 'AI service is currently unavailable.', response.status);
-      } catch (fetchErr: any) {
-        if (retries > 1) {
-          retries--;
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          continue;
-        }
-        throw fetchErr;
-      }
+      if (!response.ok) {
+        console.error('[NVIDIA AI Error]', result);
+        throw new AppError(result.error?.message || 'AI service is currently unavailable.', response.status);
       }
 
-      // HF returns an array with generated_text
-      const aiResponse = Array.isArray(result) ? result[0]?.generated_text : result?.generated_text;
+      const aiResponse = result.choices?.[0]?.message?.content;
 
       res.json({
         success: true,
