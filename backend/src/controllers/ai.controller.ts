@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import fetch from 'node-fetch';
 import { AppError } from '../middlewares/errorHandler.js';
 
 export const aiController = {
@@ -12,7 +11,8 @@ export const aiController = {
       }
 
       const apiKey = process.env.HUGGINGFACE_API_KEY;
-      const model = process.env.HUGGINGFACE_MODEL || 'mistralai/Mistral-7B-Instruct-v0.2';
+      // Using a more stable and faster model for free tier
+      const model = 'HuggingFaceH4/zephyr-7b-beta'; 
 
       if (!apiKey) {
         throw new AppError('AI Service is not configured properly.', 500);
@@ -26,11 +26,12 @@ export const aiController = {
       IMPORTANT: Always respond in English only.`;
 
       let result: any;
-      let retries = 3;
-      let waitTime = 5000; // 5 seconds
+      let retries = 5; // Increased retries
+      let waitTime = 6000; // 6 seconds
 
       while (retries > 0) {
-        const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        try {
+          const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -53,15 +54,23 @@ export const aiController = {
         }
 
         // Check if model is loading (Common in HF Free Tier)
-        if (response.status === 503 && result.error?.includes('loading')) {
-          console.log(`[AI] Model is loading, retrying in ${waitTime/1000}s... (${retries} retries left)`);
+        if (response.status === 503 && (result.error?.includes('loading') || result.error?.includes('currently loading'))) {
+          console.log(`[AI] Model ${model} is loading, retrying in ${waitTime/1000}s... (${retries} retries left)`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
           retries--;
           continue;
         }
 
-        console.error('[AI Error]', result);
+        console.error('[AI Error Details]', { status: response.status, body: result });
         throw new AppError(result.error || 'AI service is currently unavailable.', response.status);
+      } catch (fetchErr: any) {
+        if (retries > 1) {
+          retries--;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+        throw fetchErr;
+      }
       }
 
       // HF returns an array with generated_text
