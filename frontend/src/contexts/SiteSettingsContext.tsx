@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS: SiteSettingsMap = {
   siteDescription: 'Nurfia - Premium Fashion eCommerce. Discover the latest trends in women\'s and men\'s clothing, accessories, and more.',
 };
 
-const DEFAULT_API_ORIGIN = 'https://web-nurfia.onrender.com';
+const DEFAULT_API_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'https://web-nurfia.onrender.com';
 
 export const getApiAssetOrigin = () => {
   const apiBase = String(import.meta.env.VITE_API_URL || '').trim();

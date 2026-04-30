@@ -240,11 +240,11 @@ export default function AdminDashboard() {
               <AlertTriangle size={18} color="var(--color-error)" />
             </div>
             <div className="admin-db-list">
-              {stats.lowStockProducts?.slice(0, 5).map((product) => (
+              {stats.lowStockProducts?.slice(0, 10).map((product) => (
                 <div key={product.id} className="admin-db-item">
                   <div className="admin-db-item-main">
                     <span className="admin-db-item-title">{product.name}</span>
-                    <span className="admin-db-item-sub">SKU: {product.sku}</span>
+                    <span className="admin-db-item-sub sku-badge">SKU: {product.sku}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <strong style={{ display: 'block', fontSize: 14, color: 'var(--color-error)' }}>{product.stock} Units Left</strong>

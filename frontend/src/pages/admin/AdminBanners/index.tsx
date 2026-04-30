@@ -119,9 +119,14 @@ export default function AdminBanners() {
     e.preventDefault();
     const payload = {
       ...formData,
-      imageUrl: normalizeAssetInput(formData.imageUrl),
+      imageUrl: normalizeAssetInput(formData.imageUrl || ''),
       videoUrl: normalizeAssetInput(formData.videoUrl || ''),
     };
+
+    if (!payload.imageUrl && !payload.videoUrl) {
+      addToast('At least an Image or a Video is required.', 'error');
+      return;
+    }
 
     try {
       if (editingBanner) {
@@ -225,7 +230,7 @@ export default function AdminBanners() {
                 />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="banner-image-url">Image URL *</label>
+                <label htmlFor="banner-image-url">Image URL</label>
                 <div className="admin-banners-upload-row">
                   <input
                     id="banner-image-url"
@@ -233,7 +238,6 @@ export default function AdminBanners() {
                     value={formData.imageUrl}
                     onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                     placeholder="/uploads/banners/example.jpg"
-                    required
                     className="admin-banners-upload-input"
                   />
                   <label className={`admin-btn admin-btn-outline admin-banners-upload-button${isUploading ? ' is-uploading' : ''}`} htmlFor="banner-image-file">
@@ -280,6 +284,23 @@ export default function AdminBanners() {
                     />
                   </label>
                 </div>
+                {formData.videoUrl && (
+                  <div style={{ marginTop: 12, position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+                    <video
+                      src={resolveSiteAssetUrl(formData.videoUrl)}
+                      controls
+                      style={{ width: '100%', display: 'block', maxHeight: 200, objectFit: 'cover' }}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setFormData({ ...formData, videoUrl: '' })}
+                      style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(255,0,0,0.8)', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      title="Remove video"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">

@@ -184,12 +184,22 @@
 }
 
 .settings-preview img {
-  max-height: 40px;
+  max-height: 60px;
+  max-width: 100%;
   object-fit: contain;
 }
 
 .settings-preview-logo-dark {
-  background: #1a1a1a;
+  background: #111;
+  border-color: #333;
+}
+
+.preview-error {
+  font-size: 10px;
+  color: #ef4444;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .settings-preview-qr img {

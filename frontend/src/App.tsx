@@ -11,6 +11,7 @@ import { useCartStore } from './stores/cartStore';
 import { useCompareStore } from './stores/compareStore';
 import { useWishlistStore } from './stores/wishlistStore';
 import { connectSocket, disconnectSocket } from './services/socket';
+import AIChatbot from './components/AIChatbot';
 
 // Lazy load pages
 const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
@@ -102,6 +103,7 @@ function StoreLayout() {
       </main>
       <Footer />
       <CartDrawer />
+      <AIChatbot />
     </>
   );
 }

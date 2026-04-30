@@ -84,10 +84,16 @@ export default function AdminSettings() {
     try {
       const fd = new FormData();
       fd.append('image', file);
-      const { data } = await api.post('/upload', fd);
+      const { data } = await api.post('/upload', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setSettings(prev => ({...prev, [target]: data.data.url}));
       addToast('Uploaded', 'success');
-    } finally { setUploadingTarget(null); }
+    } catch {
+      addToast('Failed to upload image', 'error');
+    } finally {
+      setUploadingTarget(null);
+    }
   };
 
   if (loading) return <div className="loading-page"><div className="spinner" /></div>;
@@ -154,7 +160,20 @@ export default function AdminSettings() {
 
                     {meta.preview && settings[k] && (
                        <div className={`settings-preview settings-preview-${meta.preview}`}>
-                          <img src={resolveSiteAssetUrl(settings[k])} alt="" />
+                          <img 
+                            src={resolveSiteAssetUrl(settings[k])} 
+                            alt={meta.label} 
+                            onError={(e: any) => {
+                              e.target.style.display = 'none';
+                              const p = e.target.parentElement;
+                              if (p && !p.querySelector('.preview-error')) {
+                                const err = document.createElement('span');
+                                err.className = 'preview-error';
+                                err.innerText = 'Load failed';
+                                p.appendChild(err);
+                              }
+                            }}
+                          />
                        </div>
                     )}
                   </div>

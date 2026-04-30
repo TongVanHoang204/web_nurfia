@@ -66,8 +66,8 @@ export const bannerController = {
       if (!data.title) {
         throw new AppError('Banner title is required.', 400);
       }
-      if (!data.imageUrl) {
-        throw new AppError('Banner image is required.', 400);
+      if (!data.imageUrl && !data.videoUrl) {
+        throw new AppError('Banner requires at least an image or a video.', 400);
       }
       if (data.videoUrl === '') {
         throw new AppError('Banner video URL must be an absolute http/https URL or an upload path starting with "/uploads/".', 400);
@@ -117,8 +117,8 @@ export const bannerController = {
       if (data.title === '') {
         throw new AppError('Banner title cannot be empty.', 400);
       }
-      if (data.imageUrl === '') {
-        throw new AppError('Banner image is required.', 400);
+      if (!data.imageUrl && !data.videoUrl && (req.body.imageUrl !== undefined || req.body.videoUrl !== undefined)) {
+        throw new AppError('Banner must have at least an image or a video.', 400);
       }
       if (data.videoUrl === '') {
         throw new AppError('Banner video URL must be an absolute http/https URL or an upload path starting with "/uploads/".', 400);

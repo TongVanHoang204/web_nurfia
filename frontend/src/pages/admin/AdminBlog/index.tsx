@@ -77,7 +77,7 @@ export default function AdminBlog() {
       const res = await api.post('/upload', fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setForm({ ...form, image: res.data.data.url });
+      setForm(prev => ({ ...prev, image: res.data.data.url }));
       addToast('Image uploaded successfully', 'success');
     } catch (_err) {
       addToast('Failed to upload image', 'error');
@@ -220,7 +220,23 @@ export default function AdminBlog() {
                     <input type="file" accept="image/*" onChange={handleFileUpload} className="admin-blog-hidden-input" disabled={isUploading} />
                   </label>
                 </div>
-                {form.image && <img src={getImageUrl(form.image)} alt="Preview" className="admin-modal-image-preview admin-blog-preview-image" onError={(e: any) => e.target.style.display = 'none'} />}
+                {form.image && (
+                  <div className="admin-blog-preview-container">
+                    <img 
+                      src={getImageUrl(form.image)} 
+                      alt="Preview" 
+                      className="admin-blog-preview-image" 
+                    />
+                    <button 
+                      type="button" 
+                      className="admin-blog-preview-remove"
+                      title="Remove image"
+                      onClick={() => setForm(prev => ({ ...prev, image: '' }))}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="admin-form-group">

@@ -583,6 +583,7 @@ export const adminController = {
         sevenDayOrders,
         topProducts,
         stockWatchProducts,
+        stockWatchVariants,
         recentCustomers,
       ] = await Promise.all([
         prisma.order.count(),
@@ -640,9 +641,12 @@ export const adminController = {
           },
         }),
         prisma.product.findMany({
-          take: 25,
-          where: { isActive: true },
-          orderBy: [{ stock: 'asc' }, { updatedAt: 'asc' }],
+          take: 50,
+          where: { 
+            isActive: true,
+            variants: { none: {} } 
+          },
+          orderBy: { stock: 'asc' },
           select: {
             id: true,
             name: true,
@@ -650,6 +654,18 @@ export const adminController = {
             stock: true,
             lowStockThreshold: true,
           },
+        }),
+        prisma.productVariant.findMany({
+          take: 50,
+          where: {
+            isActive: true,
+            product: { isActive: true }
+          },
+          include: {
+            product: { select: { name: true, lowStockThreshold: true } },
+            attributes: { include: { attributeValue: true } }
+          },
+          orderBy: { stock: 'asc' }
         }),
         prisma.user.findMany({
           take: 6,
@@ -688,9 +704,32 @@ export const adminController = {
         orders: revenueByDate[bucket.key]?.orders || 0,
       }));
 
-      const lowStockProducts = stockWatchProducts
-        .filter((product) => product.stock <= product.lowStockThreshold)
-        .slice(0, 6);
+      const lowStockProductsFromProducts = (stockWatchProducts || [])
+        .filter((p: any) => p.stock <= 20)
+        .map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          sku: p.sku,
+          stock: p.stock,
+          lowStockThreshold: p.lowStockThreshold || 5,
+        }));
+
+      const lowStockProductsFromVariants = (stockWatchVariants || [])
+        .filter((v: any) => v.stock <= 20)
+        .map((v: any) => {
+          const attrInfo = v.attributes?.map((a: any) => a.attributeValue?.value).filter(Boolean).join(' / ');
+          return {
+            id: v.id,
+            name: attrInfo ? `${v.product?.name || 'Unknown'} (${attrInfo})` : (v.product?.name || 'Unknown'),
+            sku: v.sku,
+            stock: v.stock,
+            lowStockThreshold: v.product?.lowStockThreshold || 5,
+          };
+        });
+
+      const lowStockProducts = [...lowStockProductsFromProducts, ...lowStockProductsFromVariants]
+        .sort((a, b) => a.stock - b.stock)
+        .slice(0, 15);
 
       res.json({
         success: true,

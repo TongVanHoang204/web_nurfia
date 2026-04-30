@@ -76,10 +76,13 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
 
   // If there's a link, wrap in a Link for SPA navigation
   if (notification.link) {
-    // Sanitize link: Convert old /admin/orders/123 to /admin/orders?orderId=123 so the popup can open
     const adminOrderMatch = notification.link.match(/^\/admin\/orders\/(\d+)$/);
+    const userOrderMatch = notification.link.match(/^\/order(?:s)?\/(\d+)$/);
+    
     const sanitizedLink = adminOrderMatch 
       ? `/admin/orders?orderId=${adminOrderMatch[1]}` 
+      : userOrderMatch
+      ? `/order-confirmation/${userOrderMatch[1]}`
       : notification.link;
 
     return (

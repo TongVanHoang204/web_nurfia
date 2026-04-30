@@ -129,10 +129,44 @@
   display: none;
 }
 
-.admin-blog-preview-image {
-  margin-top: 10px;
-  max-height: 120px;
+.admin-blog-preview-container {
+  position: relative;
+  display: inline-block;
+  margin-top: 12px;
+  border-radius: 4px;
+  overflow: hidden;
   border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.admin-blog-preview-image {
+  display: block;
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.admin-blog-preview-remove {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.admin-blog-preview-remove:hover {
+  background: #dc2626;
+  transform: scale(1.1);
 }
 
 /* Publish */

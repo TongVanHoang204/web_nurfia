@@ -31,6 +31,11 @@ const getNotificationTarget = (notification: Notification) => {
     return `/admin/orders?orderId=${adminOrderMatch[1]}`;
   }
 
+  const userOrderMatch = link.match(/^\/order(?:s)?\/(\d+)$/);
+  if (userOrderMatch) {
+    return `/order-confirmation/${userOrderMatch[1]}`;
+  }
+
   return link.startsWith('/') ? link : `/${link}`;
 };
 
