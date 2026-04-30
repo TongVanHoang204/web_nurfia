@@ -25,28 +25,43 @@ export const aiController = {
       Keep your answers concise and professional.
       IMPORTANT: Always respond in English only.`;
 
-      // Construct payload for Hugging Face Inference API
-      const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: `<s>[INST] ${systemPrompt} \n\n User history: ${JSON.stringify(history || [])} \n\n User message: ${message} [/INST]`,
-          parameters: {
-            max_new_tokens: 500,
-            temperature: 0.7,
-            return_full_text: false,
-          }
-        }),
-      });
+      let result: any;
+      let retries = 3;
+      let waitTime = 5000; // 5 seconds
 
-      const result = await response.json() as any;
+      while (retries > 0) {
+        const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inputs: `<s>[INST] ${systemPrompt} \n\n User history: ${JSON.stringify(history || [])} \n\n User message: ${message} [/INST]`,
+            parameters: {
+              max_new_tokens: 500,
+              temperature: 0.7,
+              return_full_text: false,
+            }
+          }),
+        });
 
-      if (!response.ok) {
+        result = await response.json();
+
+        if (response.ok) {
+          break;
+        }
+
+        // Check if model is loading (Common in HF Free Tier)
+        if (response.status === 503 && result.error?.includes('loading')) {
+          console.log(`[AI] Model is loading, retrying in ${waitTime/1000}s... (${retries} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          retries--;
+          continue;
+        }
+
         console.error('[AI Error]', result);
-        throw new AppError('AI service is currently unavailable. Please try again later.', 503);
+        throw new AppError(result.error || 'AI service is currently unavailable.', response.status);
       }
 
       // HF returns an array with generated_text
