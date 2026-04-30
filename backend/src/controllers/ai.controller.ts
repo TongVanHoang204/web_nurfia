@@ -42,7 +42,7 @@ export const aiController = {
         }),
       });
 
-      const result = await response.json();
+      const result = await response.json() as any;
 
       if (!response.ok) {
         console.error('[AI Error]', result);
@@ -50,7 +50,7 @@ export const aiController = {
       }
 
       // HF returns an array with generated_text
-      const aiResponse = Array.isArray(result) ? result[0].generated_text : result.generated_text;
+      const aiResponse = Array.isArray(result) ? result[0]?.generated_text : result?.generated_text;
 
       res.json({
         success: true,
