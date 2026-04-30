@@ -33,6 +33,7 @@ model User {
   reviews       ProductReview[]
   activityLogs  ActivityLog[]
   inventoryTxs  InventoryTransaction[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -511,4 +512,22 @@ model ContactMessage {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("contact_messages")
+}
+
+// ─── Notifications ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      String   @db.VarChar(50)
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  link      String?  @db.VarChar(255)
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
 }

@@ -9,6 +9,7 @@ import {
   isStoredBankTransferUploadPath,
   markProtectedUploadPath,
 } from '../utils/bankTransferProof.js';
+import { notificationService } from '../services/notification.service.js';
 
 const PAYMENT_METHODS = ['COD', 'BANK_TRANSFER', 'MOMO'] as const;
 const CUSTOMER_CANCELLABLE_STATUSES = new Set(['PENDING', 'CONFIRMED']);
@@ -463,6 +464,31 @@ export const orderController = {
 
         return newOrder;
       });
+
+      // Notify customer: order placed
+      await notificationService.createNotification(
+        req.userId!,
+        'ORDER',
+        'Order placed successfully',
+        `Your order #${order.orderNumber} has been placed and is awaiting confirmation.`,
+        `/orders/${order.id}`
+      ).catch((err: unknown) => console.error('[Notification] Failed to notify customer on order creation:', err));
+
+      // Notify all admin/staff about new order
+      prisma.user.findMany({
+        where: { role: { in: ['ADMIN', 'STAFF', 'MANAGER'] }, isActive: true },
+        select: { id: true },
+      }).then((admins) => {
+        for (const admin of admins) {
+          notificationService.createNotification(
+            admin.id,
+            'ORDER',
+            'New order received',
+            `Order #${order.orderNumber} has been placed and needs processing.`,
+            `/admin/orders/${order.id}`
+          ).catch((err: unknown) => console.error('[Notification] Failed to notify admin on order creation:', err));
+        }
+      }).catch((err: unknown) => console.error('[Notification] Failed to fetch admins:', err));
 
       res.status(201).json({
         success: true,

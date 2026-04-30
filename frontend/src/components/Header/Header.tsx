@@ -8,6 +8,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
 import { resolveSiteAssetUrl, useSiteSettings } from '../../contexts/SiteSettingsContext';
 import { useState, useEffect, useRef } from 'react';
+import NotificationBell from '../Notifications/NotificationBell';
 
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
@@ -183,6 +184,7 @@ export default function Header() {
             <button className="action-btn" onClick={toggleSearch} aria-label="Search">
               <Search size={18} />
             </button>
+            <NotificationBell />
             <Link to={isAuthenticated ? '/account' : '/login'} className="action-btn" aria-label="Account">
               <User size={18} />
             </Link>

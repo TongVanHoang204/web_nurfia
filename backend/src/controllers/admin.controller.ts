@@ -7,6 +7,7 @@ import { logActivity } from '../services/activity.service.js';
 import { emitCustomerStatusChanged, subscribeCustomerStatusChanged } from '../services/customer-stream.service.js';
 import { sanitizeRichText } from '../utils/html.js';
 import { getProtectedBankTransferProofUrl } from '../utils/bankTransferProof.js';
+import { notificationService } from '../services/notification.service.js';
 
 const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'] as const;
 const PAYMENT_STATUSES = ['UNPAID', 'PAID', 'REFUNDED'] as const;
@@ -1461,6 +1462,37 @@ export const adminController = {
           currentStatus: order.status,
           paymentStatus: order.paymentStatus,
         }, req.ip);
+      }
+
+      // Notify customer on status change
+      const STATUS_MESSAGES: Record<string, { title: string; message: string }> = {
+        CONFIRMED: {
+          title: 'Order confirmed',
+          message: `Your order #${currentOrder.orderNumber} has been confirmed and is being prepared.`,
+        },
+        SHIPPING: {
+          title: 'Order shipped',
+          message: `Your order #${currentOrder.orderNumber} is on its way to you.`,
+        },
+        DELIVERED: {
+          title: 'Order delivered',
+          message: `Your order #${currentOrder.orderNumber} has been delivered. Thank you for shopping with us!`,
+        },
+        CANCELLED: {
+          title: 'Order cancelled',
+          message: `Your order #${currentOrder.orderNumber} has been cancelled by an administrator.`,
+        },
+      };
+
+      const notifContent = STATUS_MESSAGES[status];
+      if (notifContent) {
+        await notificationService.createNotification(
+          currentOrder.userId,
+          'ORDER',
+          notifContent.title,
+          notifContent.message,
+          `/orders/${order.id}`
+        ).catch((err: unknown) => console.error('[Notification] Failed to notify customer on status update:', err));
       }
 
       res.json({ success: true, data: order });

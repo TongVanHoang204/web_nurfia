@@ -13,6 +13,7 @@ type ServerToClientEvents = {
     isActive: boolean;
     updatedAt?: string;
   }) => void;
+  'new_notification': (payload: any) => void;
 };
 
 let socket: Socket<ServerToClientEvents> | null = null;
