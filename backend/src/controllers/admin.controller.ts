@@ -484,13 +484,31 @@ const validateShippingMethodPayload = (body: any) => {
 };
 
 const validateBlogPostPayload = async (body: any, postId?: number) => {
+  const normalizeAssetUrl = (value: unknown) => {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+
+    if (raw.startsWith('/uploads/')) return raw;
+    if (raw.startsWith('uploads/')) return `/${raw}`;
+    if (raw.startsWith('/assets/')) return raw;
+
+    try {
+      const url = new URL(raw);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+      if (url.pathname.startsWith('/uploads/')) return `${url.pathname}${url.search}`;
+      return url.toString();
+    } catch {
+      return null;
+    }
+  };
+
   const title = String(body.title || '').trim();
   const slugInput = String(body.slug || title).trim();
   const slug = slugify(slugInput, { lower: true, strict: true });
   const author = String(body.author || '').trim();
   const excerpt = normalizeOptionalString(body.excerpt);
   const content = sanitizeRichText(normalizeOptionalString(body.content) ?? null);
-  const image = normalizeOptionalString(body.image);
+  const image = normalizeAssetUrl(body.image);
   const category = normalizeOptionalString(body.category);
   const isPublished = body.isPublished ?? true;
 
@@ -498,6 +516,9 @@ const validateBlogPostPayload = async (body: any, postId?: number) => {
   if (!slug) throw new AppError('Blog slug is required.', 400);
   if (!author) throw new AppError('Blog author is required.', 400);
   if (!content) throw new AppError('Blog content is required.', 400);
+  if (String(body.image || '').trim() && !image) {
+    throw new AppError('Blog image must be an absolute http/https URL or an upload path starting with "/uploads/".', 400);
+  }
 
   const existing = await prisma.blogPost.findFirst({
     where: {
@@ -1491,7 +1512,7 @@ export const adminController = {
           'ORDER',
           notifContent.title,
           notifContent.message,
-          `/orders/${order.id}`
+          `/order-confirmation/${order.id}`
         ).catch((err: unknown) => console.error('[Notification] Failed to notify customer on status update:', err));
       }
 

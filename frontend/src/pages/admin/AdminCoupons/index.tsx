@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Check, Copy, Edit2, Filter, Plus, Search, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -57,7 +57,7 @@ const createDefaultForm = (): CouponForm => ({
 });
 
 const formatCurrency = (value: number | string | null | undefined) => {
-  if (value === null || value === undefined || value === '') return 'â€”';
+  if (value === null || value === undefined || value === '') return '—';
   return `$${Number(value).toFixed(2)}`;
 };
 
@@ -446,6 +446,7 @@ export default function AdminCoupons() {
             )}
 
             <form onSubmit={handleSubmit} className="admin-form coupons-modal-form">
+              <div className="admin-modal-body">
               <div className="admin-modal-grid">
                 <div className="admin-form-group">
                   <label htmlFor="code">Coupon Code *</label>
@@ -517,6 +518,7 @@ export default function AdminCoupons() {
                 </div>
               </div>
 
+              </div>
               <div className="admin-modal-actions">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="admin-btn admin-btn-outline">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="admin-btn admin-btn-primary">
@@ -568,7 +570,7 @@ export default function AdminCoupons() {
 
                         <div className="coupons-code-col">
                           <h3>{coupon.code}</h3>
-                          <p>{coupon.type === 'PERCENTAGE' ? 'Percentage' : 'Fixed Amount'} â€¢ {coupon.type === 'PERCENTAGE' ? `${Number(coupon.value)}%` : formatCurrency(coupon.value)}</p>
+                          <p>{coupon.type === 'PERCENTAGE' ? 'Percentage' : 'Fixed Amount'} &middot; {coupon.type === 'PERCENTAGE' ? `${Number(coupon.value)}%` : formatCurrency(coupon.value)}</p>
                         </div>
 
                         <div className="coupons-conditions-col">

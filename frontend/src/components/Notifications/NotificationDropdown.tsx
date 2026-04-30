@@ -1,4 +1,5 @@
 import { CheckCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { Notification } from '../../stores/notificationStore';
 import { NotificationItem } from './NotificationItem';
 import { NotificationEmpty } from './NotificationEmpty';
@@ -9,6 +10,7 @@ interface NotificationDropdownProps {
   page: number;
   totalPages: number;
   isLoading: boolean;
+  viewAllLink?: string;
   onRead: (id: number) => void;
   onMarkAllRead: () => void;
   onLoadMore: () => void;
@@ -24,6 +26,7 @@ export function NotificationDropdown({
   page,
   totalPages,
   isLoading,
+  viewAllLink = '/notifications',
   onRead,
   onMarkAllRead,
   onLoadMore,
@@ -64,6 +67,9 @@ export function NotificationDropdown({
       {/* Load more footer */}
       {notifications.length > 0 && (
         <div className="notif-footer">
+          <Link to={viewAllLink} className="notif-view-all-link">
+            View all notifications
+          </Link>
           <button
             className="notif-load-more-btn"
             onClick={onLoadMore}

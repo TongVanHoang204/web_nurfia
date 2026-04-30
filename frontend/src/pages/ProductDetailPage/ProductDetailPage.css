@@ -85,6 +85,8 @@
 .pd-short-desc {
   font-size: 15px; color: var(--color-text); line-height: 1.6;
   margin-bottom: 24px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .pd-price {
@@ -229,7 +231,14 @@
 .pd-tab-header button:hover {
   color: var(--color-black); border-bottom-color: var(--color-black);
 }
-.pd-tab-content { max-width: 800px; font-size: 14px; line-height: 1.8; color: var(--color-text-light); }
+.pd-tab-content { 
+  max-width: 100%; 
+  font-size: 14px; 
+  line-height: 1.8; 
+  color: var(--color-text-light); 
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
 .pd-info-table { width: 100%; border-collapse: collapse; }
 .pd-info-table td {
   padding: 12px 16px; border-bottom: 1px solid var(--color-border); font-size: 14px;
@@ -355,9 +364,44 @@
 .pd-related { margin-top: 60px; }
 .pd-related-title { font-family: var(--font-body); font-size: 24px; font-weight: 500; margin-bottom: 32px; }
 
+/* Visibility Utilities */
+@media (min-width: 1025px) {
+  .desktop-only { display: block !important; }
+  .mobile-only { display: none !important; }
+}
+
+.pd-mobile-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.pd-mobile-section {
+  padding: 24px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pd-mobile-section:last-child {
+  border-bottom: none;
+}
+
+.pd-mobile-section .section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--color-black);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 @media (max-width: 1024px) {
-  .pd-main { grid-template-columns: 1fr; gap: 32px; padding: 0; }
-  .pd-gallery-grid { display: none; }
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+  
+  .pd-main { grid-template-columns: 1fr; gap: 32px; padding: 0 16px; }
+  .pd-gallery-main { display: none; }
+  .pd-gallery-thumbnails { display: flex; margin-top: 10px; justify-content: center; }
+  .pd-gallery-thumb { width: 60px; height: 60px; min-width: 60px; }
   .pd-gallery-mobile { display: block; margin-bottom: 0px; width: 100%; border-radius: 8px; }
   .pd-mobile-scroller { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; gap: 0; }
   .pd-mobile-slide { flex: 0 0 100%; scroll-snap-align: start; }
@@ -369,15 +413,15 @@
   .pd-name { font-size: 26px; margin-bottom: 8px; line-height: 1.3; }
   .pd-price { font-size: 24px; margin-bottom: 20px; }
   .pd-actions { flex-direction: row; flex-wrap: wrap; gap: 12px; }
-  .pd-qty { flex: 1; min-width: 120px; }
-  .pd-atc { flex: 2; min-width: 160px; height: 52px; font-size: 15px; }
-  .pd-buy-now { flex: 1; min-width: 120px; height: 52px; font-size: 14px; }
+  .pd-qty { flex: 0 0 auto; width: 120px; }
+  .pd-atc { flex: 1; height: 52px; font-size: 15px; }
+  .pd-buy-now { flex: 1; width: 100%; height: 52px; font-size: 14px; }
   .pd-shipping-box { flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; border-radius: 8px; background: var(--color-light-bg); }
   .pd-shipping-box .shipping-divider { display: none; }
   .pd-secondary-actions { flex-wrap: wrap; gap: 16px; justify-content: space-around; margin-bottom: 24px; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: 12px 0; }
   .pd-guarantee-box { padding: 16px; gap: 12px; }
   .guarantee-row { display: flex; flex-direction: row; gap: 12px; align-items: flex-start; }
-  .pd-tabs { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; border-bottom: 1px solid var(--color-border); margin-bottom: 30px; }
+  .pd-tabs { display: none; }
   .pd-tab-header button { padding: 10px 16px; font-size: 15px; margin-right: 0; border: none; }
   .pd-tab-content { padding: 16px 0; font-size: 14px; }
 }
@@ -387,9 +431,9 @@
   .pd-name { font-size: 22px; }
   .pd-price { font-size: 22px; }
   .pd-option { margin-bottom: 16px; }
-  .pd-actions { flex-direction: column; }
-  .pd-qty { width: 100%; }
-  .pd-atc { width: 100%; }
+  .pd-actions { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+  .pd-qty { width: 110px; }
+  .pd-atc { flex: 1; }
   .pd-buy-now { width: 100%; }
 }
 

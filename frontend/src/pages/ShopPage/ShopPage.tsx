@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid3X3, LayoutGrid, ChevronRight } from 'lucide-react';
+import { Grid3X3, LayoutGrid, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
 import api from '../../api/client';
 import ProductCard from "../../components/ProductCard/ProductCard";
 import FilterSidebar from "../../components/FilterSidebar/FilterSidebar";
@@ -13,8 +13,9 @@ export default function ShopPage() {
   const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [sort, setSort] = useState(searchParams.get('sort') || 'default');
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [itemsPerPage] = useState(12);
   const [gridCols, setGridCols] = useState(3); // Default to 3 columns per screenshot
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
   const page = parseInt(searchParams.get('page') || '1');
 
@@ -60,16 +61,38 @@ export default function ShopPage() {
       {/* Breadcrumb could go here if needed, but per screenshot we jump straight to layout */}
       <div className="shop-layout">
         
-        {/* Sidebar Filters */}
-        <FilterSidebar />
+        {/* Sidebar Filters - Desktop & Mobile Drawer */}
+        <div className={`shop-sidebar-container ${isMobileFilterOpen ? 'mobile-open' : ''}`}>
+           <div className="mobile-filter-header">
+              <h3>Filters</h3>
+              <button onClick={() => setIsMobileFilterOpen(false)}><X size={20} /></button>
+           </div>
+           <FilterSidebar />
+        </div>
+        
+        {/* Backdrop for mobile drawer */}
+        {isMobileFilterOpen && (
+          <div className="drawer-backdrop" onClick={() => setIsMobileFilterOpen(false)}></div>
+        )}
+
         <main className="shop-main">
           <ActiveFilters />
           {/* Toolbar */}
           <div className="shop-toolbar">
-            <p className="result-count">
-              Showing {Math.min((page - 1) * itemsPerPage + 1, pagination.total)}-
-              {Math.min(page * itemsPerPage, pagination.total)} of {pagination.total} results
-            </p>
+            <div className="toolbar-left">
+               <button 
+                  className="mobile-filter-trigger" 
+                  onClick={() => setIsMobileFilterOpen(true)}
+               >
+                 <SlidersHorizontal size={18} />
+                 <span>Filter</span>
+               </button>
+               <p className="result-count">
+                 Showing {Math.min((page - 1) * itemsPerPage + 1, pagination.total)}-
+                 {Math.min(page * itemsPerPage, pagination.total)} of {pagination.total} results
+               </p>
+            </div>
+
             <div className="toolbar-controls">
               <div className="grid-toggle">
                 <button aria-label="3 Columns Grid" title="3 Columns Grid" className={gridCols === 3 ? 'active' : ''} onClick={() => setGridCols(3)}><Grid3X3 size={16} /></button>
@@ -83,14 +106,6 @@ export default function ShopPage() {
                   <option value="price_asc">Sort by price: low to high</option>
                   <option value="price_desc">Sort by price: high to low</option>
                   <option value="rating">Sort by average rating</option>
-                </select>
-              </div>
-              <div className="items-per-page">
-                <label className="visually-hidden" htmlFor="items-per-page">Items per page</label>
-                <select id="items-per-page" title="Items per page" aria-label="Items per page" value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); handlePage(1); }}>
-                  <option value="12">12 Items</option>
-                  <option value="24">24 Items</option>
-                  <option value="36">36 Items</option>
                 </select>
               </div>
             </div>

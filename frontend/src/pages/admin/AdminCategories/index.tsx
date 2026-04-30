@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, Edit2, Plus, Search, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
@@ -524,8 +524,8 @@ export default function AdminCategories() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content category-modal-content">
             <div className="admin-modal-header">
-              <h3>{isEditing ? 'Edit Category' : 'Add Category'}</h3>
-              <button aria-label="Close" title="Close modal" type="button" onClick={closeModal} className="admin-btn-icon">
+              <h3 className="admin-modal-title">{isEditing ? 'Edit Category' : 'Add Category'}</h3>
+              <button aria-label="Close" title="Close modal" type="button" onClick={closeModal} className="admin-modal-close">
                 <X size={20} />
               </button>
             </div>

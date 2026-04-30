@@ -1,5 +1,6 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Eye, Filter, Search, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Eye, Search, X, Check, Package, MapPin, User, FileText, ImageIcon, DollarSign } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
@@ -52,13 +53,14 @@ type Pagination = {
   totalPages: number;
 };
 
-const SHIPPING_OPTIONS = ['', 'PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
-const PAYMENT_OPTIONS = ['', 'UNPAID', 'PAID', 'REFUNDED'];
+const SHIPPING_OPTIONS = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
+const PAYMENT_OPTIONS = ['UNPAID', 'PAID', 'REFUNDED'];
+
 const SHIPPING_TIMELINE = [
-  { key: 'PENDING', label: 'Pending' },
+  { key: 'PENDING', label: 'Processing' },
   { key: 'CONFIRMED', label: 'Confirmed' },
-  { key: 'SHIPPING', label: 'Shipping' },
-  { key: 'DELIVERED', label: 'Delivered' },
+  { key: 'SHIPPING', label: 'In Transit' },
+  { key: 'DELIVERED', label: 'Completed' },
 ] as const;
 
 const formatCurrency = (value: number | string | null | undefined) => {
@@ -66,21 +68,11 @@ const formatCurrency = (value: number | string | null | undefined) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   }).format(amount);
 };
 
-const formatDate = (value: string) => {
-  return new Date(value).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
-const normalizeText = (value: string) => value.trim().toLowerCase();
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -91,10 +83,12 @@ export default function AdminOrders() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const { addToast } = useUIStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const orderIdParam = searchParams.get('orderId');
 
   const fetchOrders = (page = 1) => {
     setIsLoading(true);
-    const params: any = { page, limit: 15 };
+    const params: any = { page, limit: 10 };
     if (statusFilter) params.status = statusFilter;
     if (paymentStatusFilter) params.paymentStatus = paymentStatusFilter;
     api.get('/admin/orders', { params })
@@ -108,38 +102,34 @@ export default function AdminOrders() {
 
   useEffect(() => { fetchOrders(); }, [statusFilter, paymentStatusFilter]);
 
-  const visibleOrders = useMemo(() => {
-    const query = normalizeText(searchTerm);
-    if (!query) return orders;
+  useEffect(() => {
+    if (orderIdParam && orders.length > 0) {
+      const targetOrder = orders.find(o => String(o.id) === orderIdParam);
+      if (targetOrder) {
+        setSelectedOrder(targetOrder);
+        setSearchParams(new URLSearchParams());
+      }
+    }
+  }, [orderIdParam, orders, setSearchParams]);
 
-    return orders.filter((order) => {
-      const haystack = [
-        order.orderNumber,
-        order.shippingName,
-        order.shippingEmail,
-        order.shippingPhone,
-        order.user?.fullName || '',
-        order.user?.email || '',
-      ].join(' ').toLowerCase();
+  const closeModal = () => {
+    setSelectedOrder(null);
+  };
 
-      return haystack.includes(query);
-    });
+  const filteredOrders = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    if (!q) return orders;
+    return orders.filter(o => 
+      o.orderNumber.toLowerCase().includes(q) || 
+      o.shippingName.toLowerCase().includes(q) ||
+      o.shippingEmail.toLowerCase().includes(q)
+    );
   }, [orders, searchTerm]);
-
-  const summary = useMemo(() => {
-    const revenue = visibleOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
-    return {
-      count: visibleOrders.length,
-      pending: visibleOrders.filter((order) => order.status === 'PENDING').length,
-      unpaid: visibleOrders.filter((order) => (order.paymentStatus || 'UNPAID') === 'UNPAID').length,
-      revenue,
-    };
-  }, [visibleOrders]);
 
   const updateStatus = async (id: number, status: string) => {
     try {
       await api.put(`/admin/orders/${id}/status`, { status });
-      addToast(`Order status updated to ${status}`, 'success');
+      addToast(`Status updated to ${status}`, 'success');
       fetchOrders(pagination.page);
     } catch { addToast('Failed to update status', 'error'); }
   };
@@ -147,354 +137,253 @@ export default function AdminOrders() {
   const updatePaymentStatus = async (id: number, paymentStatus: string) => {
     try {
       await api.put(`/admin/orders/${id}/payment-status`, { paymentStatus });
-      addToast(`Payment status updated to ${paymentStatus}`, 'success');
+      addToast(`Payment updated to ${paymentStatus}`, 'success');
       fetchOrders(pagination.page);
-    } catch { addToast('Failed to update payment status', 'error'); }
+    } catch { addToast('Failed to update payment', 'error'); }
   };
-
-  const getMethodBadgeClass = (method: string) => {
-    switch (method) {
-      case 'MOMO': return 'status-shipping';
-      case 'BANK_TRANSFER': return 'status-confirmed';
-      default: return 'status-pending'; // COD
-    }
-  };
-
-  const getPaymentLabel = (method: string) => {
-    switch (method) {
-      case 'MOMO': return 'Momo';
-      case 'BANK_TRANSFER': return 'Bank Transfer';
-      default: return 'COD';
-    }
-  };
-
-  const getPaymentStatusBadgeClass = (paymentStatus: string) => {
-    switch (paymentStatus) {
-      case 'PAID': return 'status-delivered';
-      case 'REFUNDED': return 'status-cancelled';
-      default: return 'status-pending';
-    }
-  };
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('');
-    setPaymentStatusFilter('');
-  };
-
-  const applyQuickAction = (action: 'all' | 'pending' | 'shipping' | 'delivered' | 'unpaid' | 'paid') => {
-    switch (action) {
-      case 'pending':
-        setStatusFilter('PENDING');
-        setPaymentStatusFilter('');
-        break;
-      case 'shipping':
-        setStatusFilter('SHIPPING');
-        setPaymentStatusFilter('');
-        break;
-      case 'delivered':
-        setStatusFilter('DELIVERED');
-        setPaymentStatusFilter('');
-        break;
-      case 'unpaid':
-        setStatusFilter('');
-        setPaymentStatusFilter('UNPAID');
-        break;
-      case 'paid':
-        setStatusFilter('');
-        setPaymentStatusFilter('PAID');
-        break;
-      default:
-        setStatusFilter('');
-        setPaymentStatusFilter('');
-        break;
-    }
-  };
-
-  const getTimelineStepState = (orderStatus: string, stepKey: string) => {
-    if (orderStatus === 'CANCELLED') return 'cancelled';
-    const currentIndex = SHIPPING_TIMELINE.findIndex((step) => step.key === orderStatus);
-    const stepIndex = SHIPPING_TIMELINE.findIndex((step) => step.key === stepKey);
-
-    if (currentIndex < 0) return stepIndex === 0 ? 'current' : 'upcoming';
-    if (stepIndex < currentIndex) return 'completed';
-    if (stepIndex === currentIndex) return 'current';
-    return 'upcoming';
-  };
-
-  const selectedTimelineIndex = selectedOrder
-    ? SHIPPING_TIMELINE.findIndex((step) => step.key === selectedOrder.status)
-    : -1;
 
   return (
-    <div className="orders-admin-page">
-      <div className="admin-page-header">
+    <div className="admin-orders-page">
+      <header className="admin-orders-header">
         <div>
-          <h1 className="admin-page-title">Orders</h1>
-          <p className="orders-admin-subtitle">Improved overview for tracking shipping, payment, and customer details.</p>
+          <h1>Orders</h1>
+          <p>Fulfill orders, track shipping, and manage customer transactions.</p>
+        </div>
+        <div className="admin-orders-badges">
+          <StatBadge label="Total Orders" value={pagination.total} />
+          <StatBadge label="Pending" value={orders.filter(o => o.status === 'PENDING').length} />
+          <StatBadge label="Today's Revenue" value={formatCurrency(orders.reduce((s, o) => s + Number(o.totalAmount), 0))} />
+        </div>
+      </header>
+
+      <div className="admin-orders-toolbar">
+        <div className="admin-orders-search">
+          <Search size={18} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by Order #, Customer, or Email"
+            title="Search orders"
+          />
         </div>
 
-        <div className="orders-admin-badges">
-          <span>Total: {pagination.total}</span>
-          <span>Visible: {summary.count}</span>
-          <span>Pending: {summary.pending}</span>
-          <span>Unpaid: {summary.unpaid}</span>
-          <span>Revenue: {formatCurrency(summary.revenue)}</span>
+        <div className="admin-orders-filters">
+          <select 
+            className="admin-order-filter-select"
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            title="Filter by status"
+          >
+            <option value="">All Shipping</option>
+            {SHIPPING_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
+
+          <select 
+            className="admin-order-filter-select"
+            value={paymentStatusFilter} 
+            onChange={(e) => setPaymentStatusFilter(e.target.value)}
+            title="Filter by payment"
+          >
+            <option value="">All Payments</option>
+            {PAYMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
+
+          <button className="btn btn-outline btn-sm" onClick={() => { setSearchTerm(''); setStatusFilter(''); setPaymentStatusFilter(''); }}>
+            Reset
+          </button>
         </div>
       </div>
 
-      <div className="admin-card orders-toolbar-card">
-        <div className="orders-toolbar-left">
-          <div className="orders-search-wrap">
-            <Search size={15} />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search order #, customer, email, phone"
-              title="Search orders"
-            />
+      <div className="admin-orders-list">
+        {isLoading ? (
+          <div className="loading-page"><div className="spinner" /></div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="admin-empty-notifications" style={{ border: '1px solid var(--color-border)' }}>
+             <h3>No orders found</h3>
+             <p>Try adjusting your search or filters.</p>
           </div>
-
-          <div className="orders-select-wrap">
-            <Filter size={15} />
-            <select title="Shipping Status Filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              {SHIPPING_OPTIONS.map((status) => (
-                <option key={status || 'all-shipping'} value={status}>{status || 'All Shipping Status'}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="orders-select-wrap">
-            <Filter size={15} />
-            <select title="Payment Status Filter" value={paymentStatusFilter} onChange={(e) => setPaymentStatusFilter(e.target.value)}>
-              {PAYMENT_OPTIONS.map((status) => (
-                <option key={status || 'all-payment'} value={status}>{status || 'All Payment Status'}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={clearFilters}>Reset</button>
-      </div>
-
-      <div className="admin-card orders-list-card">
-        <div className="orders-sticky-actions" role="toolbar" aria-label="Order quick actions">
-          <div className="orders-sticky-actions-left">
-            <button className={`orders-quick-btn ${!statusFilter && !paymentStatusFilter ? 'is-active' : ''}`} onClick={() => applyQuickAction('all')}>All</button>
-            <button className={`orders-quick-btn ${statusFilter === 'PENDING' ? 'is-active' : ''}`} onClick={() => applyQuickAction('pending')}>Pending</button>
-            <button className={`orders-quick-btn ${statusFilter === 'SHIPPING' ? 'is-active' : ''}`} onClick={() => applyQuickAction('shipping')}>Shipping</button>
-            <button className={`orders-quick-btn ${statusFilter === 'DELIVERED' ? 'is-active' : ''}`} onClick={() => applyQuickAction('delivered')}>Delivered</button>
-            <button className={`orders-quick-btn ${paymentStatusFilter === 'UNPAID' ? 'is-active' : ''}`} onClick={() => applyQuickAction('unpaid')}>Unpaid</button>
-            <button className={`orders-quick-btn ${paymentStatusFilter === 'PAID' ? 'is-active' : ''}`} onClick={() => applyQuickAction('paid')}>Paid</button>
-          </div>
-          <div className="orders-sticky-actions-right">
-            <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => fetchOrders(pagination.page)}>Refresh</button>
-            <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={clearFilters}>Clear</button>
-          </div>
-        </div>
-
-        {isLoading ? <div className="loading-page"><div className="spinner" /></div> : visibleOrders.length === 0 ? (
-          <p className="admin-empty-state">No orders found</p>
         ) : (
-          <div className="orders-list">
-            {visibleOrders.map((order) => (
-              <article key={order.id} className="orders-row-card">
-                <div className="orders-row-main">
-                  <div>
-                    <p className="orders-row-number">#{order.orderNumber}</p>
-                    <p className="orders-row-sub">{order.items?.length || 0} item(s)</p>
-                  </div>
+          filteredOrders.map(order => (
+            <article key={order.id} className="admin-order-card">
+              <div className="admin-order-card-id">
+                <span>ORDER ID</span>
+                <strong>#{order.orderNumber}</strong>
+              </div>
 
-                  <div className="orders-row-customer">
-                    <p>{order.user?.fullName || order.shippingName}</p>
-                    <small>{order.user?.email || order.shippingEmail}</small>
-                  </div>
+              <div className="admin-order-card-customer">
+                <strong>{order.shippingName}</strong>
+                <span>{order.shippingEmail}</span>
+                <small style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</small>
+              </div>
 
-                  <div>
-                    <p className="orders-row-sub">Total</p>
-                    <strong className="orders-row-total">{formatCurrency(order.totalAmount)}</strong>
-                  </div>
+              <div className="admin-order-card-financials">
+                <span>TOTAL AMOUNT</span>
+                <strong>{formatCurrency(order.totalAmount)}</strong>
+              </div>
 
-                  <div className="orders-row-created">
-                    <CalendarDays size={13} />
-                    <span>{formatDate(order.createdAt)}</span>
-                  </div>
-                </div>
-
-                <div className="orders-row-controls">
-                  <span className={`status-badge ${getMethodBadgeClass(order.paymentMethod)}`}>{getPaymentLabel(order.paymentMethod)}</span>
-
-                  <div className="orders-select-group">
-                    <label htmlFor={`payment-${order.id}`}>Payment</label>
-                    <select
-                      id={`payment-${order.id}`}
-                      className="admin-select-field"
-                      title="Payment Status"
-                      value={order.paymentStatus || 'UNPAID'}
-                      onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
-                    >
-                      <option value="UNPAID">Unpaid</option>
-                      <option value="PAID">Paid</option>
-                      <option value="REFUNDED">Refunded</option>
-                    </select>
-                  </div>
-
-                  <div className="orders-select-group">
-                    <label htmlFor={`status-${order.id}`}>Shipping</label>
-                    <select
-                      id={`status-${order.id}`}
-                      className="admin-select-field"
-                      title="Order Status"
-                      value={order.status || 'PENDING'}
-                      onChange={(e) => updateStatus(order.id, e.target.value)}
-                    >
-                      <option value="PENDING">Pending</option>
-                      <option value="CONFIRMED">Confirmed</option>
-                      <option value="SHIPPING">Shipping</option>
-                      <option value="DELIVERED">Delivered</option>
-                      <option value="CANCELLED">Cancelled</option>
-                    </select>
-                  </div>
-
-                  <button
-                    className="admin-btn admin-btn-outline admin-btn-sm"
-                    onClick={() => setSelectedOrder(order)}
-                    title="View Details"
-                    aria-label="View Details"
+              <div className="admin-order-card-controls">
+                <div className="admin-order-select-group">
+                  <label>Shipping</label>
+                  <select 
+                    className="admin-order-mini-select"
+                    value={order.status}
+                    onChange={(e) => updateStatus(order.id, e.target.value)}
+                    title="Change status"
                   >
-                    <Eye size={14} /> Details
-                  </button>
+                    {SHIPPING_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
                 </div>
-              </article>
-            ))}
-          </div>
-        )}
 
-        {pagination.totalPages > 1 && (
-          <div className="admin-pagination">
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
-              <button key={p} className={`admin-btn admin-btn-sm ${p === pagination.page ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => fetchOrders(p)}>{p}</button>
-            ))}
-          </div>
+                <div className="admin-order-select-group">
+                  <label>Payment</label>
+                  <select 
+                    className="admin-order-mini-select"
+                    value={order.paymentStatus}
+                    onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
+                    title="Change payment status"
+                  >
+                    {PAYMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+
+                <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setSelectedOrder(order)}>
+                  <Eye size={14} /> Details
+                </button>
+              </div>
+            </article>
+          ))
         )}
       </div>
 
-      {/* Order Details Modal */}
+      {pagination.totalPages > 1 && (
+        <div className="admin-notifications-footer">
+          <button 
+            className="btn btn-outline" 
+            disabled={pagination.page === 1}
+            onClick={() => fetchOrders(pagination.page - 1)}
+          >
+            Previous
+          </button>
+          <span style={{ margin: '0 20px', fontSize: 13, fontWeight: 600 }}>Page {pagination.page} of {pagination.totalPages}</span>
+          <button 
+            className="btn btn-outline"
+            disabled={pagination.page === pagination.totalPages}
+            onClick={() => fetchOrders(pagination.page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Details Modal */}
       {selectedOrder && (
-        <div className="admin-modal-overlay">
-          <div className="admin-modal-content orders-details-modal">
+        <div className="admin-modal-overlay" onClick={closeModal}>
+          <div className="admin-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 800 }}>
             <div className="admin-modal-header">
-              <div className="orders-details-head">
-                <h2 className="admin-modal-title">Order #{selectedOrder.orderNumber}</h2>
-                <div className="orders-details-badges">
-                  <span className={`status-badge status-${selectedOrder.status.toLowerCase()}`}>{selectedOrder.status}</span>
-                  <span className={`status-badge ${getPaymentStatusBadgeClass(selectedOrder.paymentStatus || 'UNPAID')}`}>{selectedOrder.paymentStatus || 'UNPAID'}</span>
-                  <span className={`status-badge ${getMethodBadgeClass(selectedOrder.paymentMethod)}`}>{getPaymentLabel(selectedOrder.paymentMethod)}</span>
-                </div>
-              </div>
-              <button onClick={() => setSelectedOrder(null)} className="admin-modal-close" aria-label="Close" title="Close"><X size={20} /></button>
+              <h2 className="admin-modal-title">Order Details</h2>
+              <button type="button" className="admin-modal-close" onClick={closeModal}><X size={20} /></button>
             </div>
-
-            <div className="orders-details-body">
-              <section className="orders-details-left">
-                <div className="orders-status-timeline-wrap">
-                  <h3 className="orders-details-title">Shipping Timeline</h3>
-                  <div className={`orders-status-timeline ${selectedOrder.status === 'CANCELLED' ? 'is-cancelled' : ''}`}>
-                    {SHIPPING_TIMELINE.map((step, index) => {
-                      const stepState = getTimelineStepState(selectedOrder.status, step.key);
-                      const lineCompleted = selectedOrder.status !== 'CANCELLED' && selectedTimelineIndex > index;
-
-                      return (
-                        <div key={step.key} className={`orders-status-step is-${stepState}`}>
-                          <div className="orders-status-step-top">
-                            <span className="orders-status-step-node" />
-                            {index < SHIPPING_TIMELINE.length - 1 ? (
-                              <span className={`orders-status-step-line ${lineCompleted ? 'is-completed' : ''}`} />
-                            ) : null}
-                          </div>
-                          <span className="orders-status-step-label">{step.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {selectedOrder.status === 'CANCELLED' ? (
-                    <p className="orders-status-cancelled-note">This order was cancelled before completion.</p>
-                  ) : null}
-                </div>
-
-                <h3 className="orders-details-title">Items ({selectedOrder.items?.length || 0})</h3>
-                <div className="orders-details-items">
-                  {selectedOrder.items?.map((item) => {
-                    const imageUrl = item.product?.images?.[0]?.url;
+            
+            <div className="admin-modal-body admin-order-modal-body">
+              <div className="admin-order-details-left">
+                <h3 className="admin-order-section-title"><Package size={20} /> Shipping Progress</h3>
+                <div className="admin-order-timeline">
+                  {SHIPPING_TIMELINE.map((step, idx) => {
+                    const isCompleted = SHIPPING_TIMELINE.findIndex(s => s.key === selectedOrder.status) >= idx;
+                    const isCurrent = selectedOrder.status === step.key;
                     return (
-                      <article key={item.id} className="orders-details-item">
-                        <div className="orders-details-item-image-wrap">
-                          {imageUrl ? (
-                            <img src={resolveSiteAssetUrl(imageUrl)} alt={item.productName} className="orders-details-item-image" />
-                          ) : (
-                            <span className="orders-details-no-image">No Image</span>
-                          )}
+                      <div key={step.key} className={`admin-order-step ${isCompleted ? 'is-completed' : ''} ${isCurrent ? 'is-current' : ''}`}>
+                        <div className="admin-order-step-dot">
+                          {isCompleted ? <Check size={14} /> : idx + 1}
                         </div>
-
-                        <div className="orders-details-item-info">
-                          <p className="orders-details-item-name">{item.productName}</p>
-                          <p className="orders-details-item-meta">{formatCurrency(item.price)} x {item.quantity}</p>
-                        </div>
-
-                        <strong className="orders-details-item-subtotal">{formatCurrency(Number(item.price) * item.quantity)}</strong>
-                      </article>
+                        <span className="admin-order-step-label">{step.label}</span>
+                      </div>
                     );
                   })}
                 </div>
 
-                <div className="orders-details-summary">
-                  <div className="orders-details-summary-row"><span>Subtotal</span><strong>{formatCurrency(selectedOrder.subtotal)}</strong></div>
-                  <div className="orders-details-summary-row"><span>Shipping</span><strong>{formatCurrency(selectedOrder.shippingCost)}</strong></div>
-                  {Number(selectedOrder.discountAmount) > 0 ? (
-                    <div className="orders-details-summary-row is-discount"><span>Discount</span><strong>-{formatCurrency(selectedOrder.discountAmount)}</strong></div>
-                  ) : null}
-                  <div className="orders-details-summary-total"><span>Total</span><strong>{formatCurrency(selectedOrder.totalAmount)}</strong></div>
+                <h3 className="admin-order-section-title"><FileText size={20} /> Purchased Items</h3>
+                <div className="admin-order-items-list">
+                  {selectedOrder.items?.map(item => (
+                    <div key={item.id} className="admin-order-item-row">
+                      <img 
+                        src={resolveSiteAssetUrl(item.product?.images?.[0]?.url || '')} 
+                        alt={item.productName} 
+                        className="admin-order-item-img" 
+                      />
+                      <div className="admin-order-item-info">
+                        <strong>{item.productName}</strong>
+                        <span>Qty: {item.quantity} × {formatCurrency(item.price)}</span>
+                      </div>
+                      <strong className="admin-db-item-price">{formatCurrency(Number(item.price) * item.quantity)}</strong>
+                    </div>
+                  ))}
                 </div>
 
-              </section>
-
-              <aside className="orders-details-right">
-                <div className="orders-details-info-card">
-                  <h3 className="orders-details-title">Customer Info</h3>
-                  <p className="orders-details-value">{selectedOrder.user?.fullName || selectedOrder.user?.username || 'Guest'}</p>
-                  <p className="orders-details-sub">{selectedOrder.user?.email || '-'}</p>
-                  <p className="orders-details-sub">{selectedOrder.user?.phone || '-'}</p>
-                </div>
-
-                <div className="orders-details-info-card">
-                  <h3 className="orders-details-title">Shipping Details</h3>
-                  <p className="orders-details-value">{selectedOrder.shippingName}</p>
-                  <p className="orders-details-sub">{selectedOrder.shippingPhone}</p>
-                  <p className="orders-details-sub">{selectedOrder.shippingEmail}</p>
-                  <p className="orders-details-address">
-                    {selectedOrder.shippingStreet}
-                    <br />
-                    {selectedOrder.shippingWard ? `${selectedOrder.shippingWard}, ` : ''}{selectedOrder.shippingDistrict}
-                    <br />
-                    {selectedOrder.shippingProvince}
-                  </p>
-                </div>
-
-                {selectedOrder.note ? (
-                  <div className="orders-details-info-card">
-                    <h3 className="orders-details-title">Order Note</h3>
-                    <p className="orders-details-note">{selectedOrder.note}</p>
+                <div style={{ marginTop: 32, padding: 24, borderTop: '2px solid var(--color-black)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <span style={{ fontSize: 14 }}>Subtotal</span>
+                    <strong style={{ fontSize: 16 }}>{formatCurrency(selectedOrder.subtotal)}</strong>
                   </div>
-                ) : null}
-
-                {selectedOrder.bankTransferImage ? (
-                  <div className="orders-details-info-card">
-                    <h3 className="orders-details-title">Payment Proof</h3>
-                    <img src={resolveSiteAssetUrl(selectedOrder.bankTransferImage)} alt="Payment proof" className="orders-details-proof" />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <span style={{ fontSize: 14 }}>Shipping</span>
+                    <strong style={{ fontSize: 16 }}>{formatCurrency(selectedOrder.shippingCost)}</strong>
                   </div>
-                ) : null}
-              </aside>
+                  {Number(selectedOrder.discountAmount) > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, color: 'var(--color-accent)' }}>
+                      <span style={{ fontSize: 14 }}>Discount</span>
+                      <strong style={{ fontSize: 16 }}>-{formatCurrency(selectedOrder.discountAmount)}</strong>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
+                    <span style={{ fontSize: 18, fontFamily: 'var(--font-heading)' }}>Grand Total</span>
+                    <strong style={{ fontSize: 24, fontFamily: 'var(--font-heading)', color: 'var(--color-black)' }}>{formatCurrency(selectedOrder.totalAmount)}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-order-details-right">
+                <div className="admin-order-info-card">
+                  <h4><User size={12} style={{ marginRight: 6 }} /> Customer Contact</h4>
+                  <p><strong>{selectedOrder.shippingName}</strong></p>
+                  <p>{selectedOrder.shippingEmail}</p>
+                  <p>{selectedOrder.shippingPhone}</p>
+                </div>
+
+                <div className="admin-order-info-card">
+                  <h4><MapPin size={12} style={{ marginRight: 6 }} /> Shipping Address</h4>
+                  <p>{selectedOrder.shippingStreet}</p>
+                  <p>{selectedOrder.shippingWard ? `${selectedOrder.shippingWard}, ` : ''}{selectedOrder.shippingDistrict}</p>
+                  <p>{selectedOrder.shippingProvince}</p>
+                </div>
+
+                <div className="admin-order-info-card">
+                  <h4><DollarSign size={12} style={{ marginRight: 6 }} /> Payment Method</h4>
+                  <p><strong>{selectedOrder.paymentMethod}</strong></p>
+                  <p>Status: <span className="admin-status-badge">{selectedOrder.paymentStatus}</span></p>
+                </div>
+
+                {selectedOrder.note && (
+                  <div className="admin-order-info-card">
+                    <h4><FileText size={12} style={{ marginRight: 6 }} /> Order Note</h4>
+                    <p style={{ fontStyle: 'italic' }}>"{selectedOrder.note}"</p>
+                  </div>
+                )}
+
+                {selectedOrder.bankTransferImage && (
+                  <div className="admin-order-info-card">
+                    <h4><ImageIcon size={12} style={{ marginRight: 6 }} /> Payment Proof</h4>
+                    <a href={resolveSiteAssetUrl(selectedOrder.bankTransferImage)} target="_blank" rel="noreferrer">
+                      <img 
+                        src={resolveSiteAssetUrl(selectedOrder.bankTransferImage)} 
+                        alt="Proof" 
+                        style={{ width: '100%', border: '1px solid var(--color-border)', cursor: 'pointer' }} 
+                      />
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -503,3 +392,11 @@ export default function AdminOrders() {
   );
 }
 
+function StatBadge({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="admin-order-badge-stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}

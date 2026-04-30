@@ -1,8 +1,9 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Check, Eye, Filter, Search, Star, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
+import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
 import './AdminReviews.css';
 
 type ReviewUser = {
@@ -15,6 +16,7 @@ type ReviewProduct = {
   id: number;
   name: string;
   slug: string;
+  images?: Array<{ url: string; alt?: string | null }>;
 };
 
 type AdminReview = {
@@ -363,6 +365,7 @@ export default function AdminReviews() {
               {reviews.map((review) => {
                 const customerName = review.user?.fullName || review.user?.username || 'Guest';
                 const productName = review.product?.name || 'Unknown product';
+                const productImage = resolveSiteAssetUrl(review.product?.images?.[0]?.url || '');
                 const isSelected = selectedIds.includes(review.id);
 
                 return (
@@ -378,8 +381,17 @@ export default function AdminReviews() {
                       </label>
 
                       <div className="reviews-product-col">
-                        <p>{productName}</p>
-                        <small>By {customerName}</small>
+                        <div className="reviews-product-cell">
+                          {productImage ? (
+                            <img src={productImage} alt={review.product?.images?.[0]?.alt || productName} />
+                          ) : (
+                            <div className="reviews-product-placeholder" />
+                          )}
+                          <div>
+                            <p>{productName}</p>
+                            <small>By {customerName}</small>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="reviews-rating-col">
@@ -483,9 +495,19 @@ export default function AdminReviews() {
               </button>
             </div>
 
-            <div className="admin-modal-form reviews-detail-content">
+            <div className="admin-modal-body reviews-detail-content">
               <div className="reviews-detail-head">
-                <h4>{selectedReview.product?.name || 'Unknown product'}</h4>
+                <div className="reviews-detail-product">
+                  {resolveSiteAssetUrl(selectedReview.product?.images?.[0]?.url || '') ? (
+                    <img
+                      src={resolveSiteAssetUrl(selectedReview.product?.images?.[0]?.url || '')}
+                      alt={selectedReview.product?.images?.[0]?.alt || selectedReview.product?.name || 'Product'}
+                    />
+                  ) : (
+                    <div className="reviews-product-placeholder" />
+                  )}
+                  <h4>{selectedReview.product?.name || 'Unknown product'}</h4>
+                </div>
                 <span className={`reviews-status-pill ${selectedReview.isApproved ? 'is-approved' : 'is-hidden'}`}>
                   {selectedReview.isApproved ? 'Approved' : 'Hidden'}
                 </span>

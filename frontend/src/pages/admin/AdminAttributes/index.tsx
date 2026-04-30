@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Edit2, Plus, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit2, Plus, Trash2, X, ChevronDown, ChevronUp, Sliders, Hash } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
-import '../AdminBrands/AdminBrands.css';
+import './AdminAttributes.css';
 
 type AttributeValue = {
   id: number;
@@ -221,211 +221,204 @@ export default function AdminAttributes() {
   const totalValues = attributes.reduce((s, a) => s + (a.values?.length ?? 0), 0);
 
   return (
-    <div className="admin-page-container">
-      {/* Hero Section */}
-      <section className="ap-card brands-hero-card">
-        <div className="brands-hero-copy">
-          <p className="brands-hero-overline">Catalog Setup</p>
-          <h1 className="brands-hero-title">Product Attributes</h1>
-          <p className="brands-admin-subtitle">Manage global product attributes and values (e.g., Size, Color).</p>
+    <div className="admin-attributes-page">
+      <header className="admin-attributes-header">
+        <div>
+          <h1>Product Attributes</h1>
+          <p>Global catalog properties like Size, Color, and Materials.</p>
         </div>
-        <div className="brands-hero-actions">
-          <button className="admin-btn admin-btn-primary" onClick={openCreateAttr}>
-            <Plus size={16} /> Add Attribute
-          </button>
-        </div>
-      </section>
+        <button className="btn btn-primary" onClick={openCreateAttr}>
+          <Plus size={16} style={{ marginRight: 8 }} /> Create Attribute
+        </button>
+      </header>
 
-      {/* Stats */}
-      <section className="brands-metrics-grid">
-        <div className="ap-card brands-metric-card">
-          <span className="brands-metric-label">Total Attributes</span>
-          <strong className="brands-metric-value">{attributes.length}</strong>
+      <div className="admin-attributes-stats">
+        <div className="admin-attr-stat-card">
+          <span>Registered Types</span>
+          <strong>{attributes.length}</strong>
         </div>
-        <div className="ap-card brands-metric-card">
-          <span className="brands-metric-label">Total Values</span>
-          <strong className="brands-metric-value">{totalValues}</strong>
+        <div className="admin-attr-stat-card">
+          <span>Configured Terms</span>
+          <strong>{totalValues}</strong>
         </div>
-      </section>
+      </div>
 
-      {/* Table */}
-      <div className="ap-card brands-table-card">
+      <div className="admin-attributes-content">
         {isLoading ? (
            <div className="loading-page"><div className="spinner" /></div>
         ) : filteredAttributes.length === 0 ? (
-           <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>No attributes have been created yet.</div>
+           <div style={{ padding: '80px 40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+             <Sliders size={48} strokeWidth={1} style={{ marginBottom: 16, opacity: 0.5 }} />
+             <p>No attributes found in the catalog.</p>
+           </div>
         ) : (
-          <div className="ap-table-wrap">
-            <table className="ap-table">
-              <thead>
-                <tr>
-                  <th className="ap-th-check"></th>
-                  <th>ATTRIBUTE</th>
-                  <th>SLUG</th>
-                  <th>VALUES</th>
-                  <th className="text-right">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAttributes.map(attr => {
-                  const isExpanded = expandedAttrIds.has(attr.id);
-                  return (
-                    <React.Fragment key={attr.id}>
-                      <tr style={{ background: isExpanded ? '#f8fafc' : 'transparent' }}>
-                        <td style={{ textAlign: 'center' }}>
-                          <button 
-                            type="button" 
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#6b7280' }}
-                            onClick={() => toggleExpand(attr.id)}
-                          >
-                            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          <table className="admin-attr-table">
+            <thead>
+              <tr>
+                <th style={{ width: 60 }}></th>
+                <th>Attribute Name</th>
+                <th>Slug ID</th>
+                <th>Sample Values</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAttributes.map(attr => {
+                const isExpanded = expandedAttrIds.has(attr.id);
+                return (
+                  <React.Fragment key={attr.id}>
+                    <tr className={`admin-attr-row ${isExpanded ? 'is-expanded' : ''}`}>
+                      <td style={{ textAlign: 'center' }}>
+                        <button 
+                          className="admin-attr-expand-btn"
+                          onClick={() => toggleExpand(attr.id)}
+                          title={isExpanded ? "Collapse" : "Expand Terms"}
+                        >
+                          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </button>
+                      </td>
+                      <td>
+                        <span className="admin-attr-name">{attr.name}</span>
+                      </td>
+                      <td>
+                        <code className="admin-attr-slug">{attr.slug}</code>
+                      </td>
+                      <td>
+                        <div className="admin-attr-values-preview">
+                          {attr.values?.slice(0, 4).map(val => (
+                            <span key={val.id} className="admin-attr-value-pill">
+                              {val.colorHex && <div className="admin-attr-color-dot" style={{ background: val.colorHex }} />}
+                              {val.value}
+                            </span>
+                          ))}
+                          {attr.values && attr.values.length > 4 && (
+                            <span style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                              +{attr.values.length - 4} MORE
+                            </span>
+                          )}
+                          {(!attr.values || attr.values.length === 0) && (
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: 12, fontStyle: 'italic' }}>None defined</span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: 12 }}>
+                          <button className="admin-attr-expand-btn" title="Add Term" onClick={() => openCreateVal(attr)}>
+                            <Plus size={18} />
                           </button>
-                        </td>
-                        <td>
-                          <strong>{attr.name}</strong>
-                        </td>
-                        <td>
-                          <span className="ap-text-muted">{attr.slug}</span>
-                        </td>
-                        <td>
-                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                             {attr.values?.slice(0, 5).map(val => (
-                               <span key={val.id} style={{ 
-                                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                                  background: '#e5e7eb', color: '#374151', 
-                                  padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 500 
-                               }}>
-                                 {val.colorHex && (
-                                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: val.colorHex, border: '1px solid rgba(0,0,0,0.1)' }} />
-                                 )}
-                                 {val.value}
-                               </span>
-                             ))}
-                             {attr.values && attr.values.length > 5 && (
-                               <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>
-                                 +{attr.values.length - 5} more
-                               </span>
-                             )}
-                             {(!attr.values || attr.values.length === 0) && (
-                               <span style={{ color: '#9ca3af', fontSize: 12, fontStyle: 'italic' }}>No values yet</span>
+                          <button className="admin-attr-expand-btn" title="Edit" onClick={() => openEditAttr(attr)}>
+                            <Edit2 size={16} />
+                          </button>
+                          <button className="admin-attr-expand-btn" title="Delete" onClick={() => handleDeleteAttr(attr)} style={{ color: 'var(--color-error)' }}>
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={5} className="admin-attr-expanded-pane">
+                           <div className="admin-attr-terms-card">
+                             <div className="admin-attr-terms-header">
+                               <h4>Configure "{attr.name}" Terms</h4>
+                               <button className="btn btn-outline btn-sm" onClick={() => openCreateVal(attr)}>
+                                  <Plus size={14} style={{ marginRight: 6 }}/> Add New Term
+                               </button>
+                             </div>
+                             
+                             {attr.values && attr.values.length > 0 ? (
+                                <table className="admin-terms-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Term Label</th>
+                                      <th>Hex Code</th>
+                                      <th>Sort</th>
+                                      <th>Status</th>
+                                      <th style={{ textAlign: 'right' }}>Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {attr.values.map(val => (
+                                      <tr key={val.id}>
+                                        <td>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            {val.colorHex && <div className="admin-attr-color-dot" style={{ width: 14, height: 14, background: val.colorHex }} />}
+                                            <span className="admin-term-label">{val.value}</span>
+                                          </div>
+                                        </td>
+                                        <td><span className="admin-term-hex">{val.colorHex || '—'}</span></td>
+                                        <td>{val.sortOrder}</td>
+                                        <td>
+                                          {(val._count?.variantAttributes ?? 0) > 0 ? (
+                                            <span className="admin-term-inuse">
+                                              Used in {val._count!.variantAttributes} products
+                                            </span>
+                                          ) : (
+                                            <span className="admin-term-unused">Unused</span>
+                                          )}
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                          <div style={{ display: 'inline-flex', gap: 12 }}>
+                                            <button className="admin-attr-expand-btn" onClick={() => openEditVal(val, attr)}><Edit2 size={14} /></button>
+                                            <button className="admin-attr-expand-btn" onClick={() => handleDeleteVal(val)} style={{ color: 'var(--color-error)' }}><Trash2 size={14} /></button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                             ) : (
+                               <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)', border: '1px dashed var(--color-border)' }}>
+                                 No terms available for this attribute.
+                               </div>
                              )}
                            </div>
                         </td>
-                        <td className="text-right">
-                          <div className="ap-btn-group brands-actions">
-                            <button className="ap-action-btn" title="Add Value" onClick={() => openCreateVal(attr)}>
-                              <Plus size={14} />
-                            </button>
-                            <button className="ap-action-btn" title="Edit Attribute" onClick={() => openEditAttr(attr)}>
-                              <Edit2 size={14} />
-                            </button>
-                            <button className="ap-action-btn ap-action-btn-danger" title="Delete Attribute" onClick={() => handleDeleteAttr(attr)}>
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
                       </tr>
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan={5} style={{ padding: '0 24px 24px 64px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                             <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: 16 }}>
-                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                                 <h4 style={{ fontSize: 13, fontWeight: 600, color: '#475569', margin: 0 }}>Configure Terms for "{attr.name}"</h4>
-                                 <button className="admin-btn admin-btn-outline" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => openCreateVal(attr)}>
-                                    <Plus size={12} style={{ marginRight: 4 }}/> Add Term
-                                 </button>
-                               </div>
-                               
-                               {attr.values && attr.values.length > 0 ? (
-                                  <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
-                                    <thead>
-                                      <tr style={{ background: '#f1f5f9', color: '#64748b' }}>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, borderTopLeftRadius: 4, borderBottomLeftRadius: 4 }}>TERM</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600 }}>COLOR HEX</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600 }}>ORDER</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600 }}>IN USE</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600, borderTopRightRadius: 4, borderBottomRightRadius: 4 }}>ACTIONS</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {attr.values.map(val => (
-                                        <tr key={val.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                          <td style={{ padding: '8px 12px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                              {val.colorHex && <span style={{ width: 14, height: 14, background: val.colorHex, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.1)' }} />}
-                                              <strong>{val.value}</strong>
-                                            </div>
-                                          </td>
-                                          <td style={{ padding: '8px 12px', color: '#64748b', fontFamily: 'monospace' }}>{val.colorHex || '—'}</td>
-                                          <td style={{ padding: '8px 12px', color: '#64748b' }}>{val.sortOrder}</td>
-                                          <td style={{ padding: '8px 12px' }}>
-                                            {(val._count?.variantAttributes ?? 0) > 0 ? (
-                                              <span style={{ fontSize: 11, background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: 12, fontWeight: 600 }}>
-                                                {val._count!.variantAttributes} variant(s)
-                                              </span>
-                                            ) : (
-                                              <span style={{ fontSize: 11, color: '#94a3b8' }}>unused</span>
-                                            )}
-                                          </td>
-                                          <td style={{ padding: '8px 12px', textAlign: 'right' }}>
-                                            <div className="ap-btn-group" style={{ display: 'inline-flex' }}>
-                                              <button type="button" className="ap-action-btn" title="Edit" onClick={() => openEditVal(val, attr)}><Edit2 size={13} /></button>
-                                              <button type="button" className="ap-action-btn ap-action-btn-danger" title="Delete" onClick={() => handleDeleteVal(val)}><Trash2 size={13} /></button>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                               ) : (
-                                 <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: 13, background: '#f8fafc', borderRadius: 6 }}>
-                                   No terms have been added yet.
-                                 </div>
-                               )}
-                             </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 
       {/* ── Attribute Modal ──────────────────────────────────────────────── */}
       {attrModalOpen && (
         <div className="admin-modal-overlay" onClick={() => setAttrModalOpen(false)}>
-          <div className="admin-modal-content" style={{ maxWidth: 440, width: '100%' }} onClick={e => e.stopPropagation()}>
+          <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">{editingAttr ? 'Edit Attribute' : 'Add Attribute'}</h2>
-              <button className="admin-modal-close" onClick={() => setAttrModalOpen(false)} title="Close" aria-label="Close"><X size={18} /></button>
+              <h2 className="admin-modal-title">{editingAttr ? 'Edit Attribute' : 'Create Attribute'}</h2>
+              <button type="button" className="admin-modal-close" onClick={() => setAttrModalOpen(false)}><X size={20} /></button>
             </div>
             <form className="admin-form" onSubmit={handleSaveAttr}>
-              {attrFormError && <div style={{ fontSize: 12, color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '8px 12px', marginBottom: 12 }}>{attrFormError}</div>}
-              <div className="admin-form-group">
-                <label>Attribute Name *</label>
-                <input
-                  type="text"
-                  value={attrForm.name}
-                  onChange={e => {
-                    const n = e.target.value;
-                    setAttrForm(prev => ({ ...prev, name: n, slug: editingAttr ? prev.slug : toSlug(n) }));
-                  }}
-                  placeholder="e.g. Color, Size, Material"
-                  required
-                  autoFocus
-                />
-              </div>
-              <div className="admin-form-group">
-                <label>Slug *</label>
-                <input type="text" value={attrForm.slug} onChange={e => setAttrForm(prev => ({ ...prev, slug: toSlug(e.target.value) }))} placeholder="e.g. color" required />
+              <div className="admin-modal-body">
+                {attrFormError && <div className="admin-form-error">{attrFormError}</div>}
+                <div className="admin-form-row">
+                  <label>Display Name</label>
+                  <input
+                    type="text"
+                    value={attrForm.name}
+                    onChange={e => {
+                      const n = e.target.value;
+                      setAttrForm(prev => ({ ...prev, name: n, slug: editingAttr ? prev.slug : toSlug(n) }));
+                    }}
+                    placeholder="e.g. Fabric Material"
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div className="admin-form-row">
+                  <label>Technical Slug</label>
+                  <input type="text" value={attrForm.slug} onChange={e => setAttrForm(prev => ({ ...prev, slug: toSlug(e.target.value) }))} placeholder="e.g. fabric-material" required />
+                </div>
               </div>
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={() => setAttrModalOpen(false)} disabled={attrSubmitting}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary" disabled={attrSubmitting}>{attrSubmitting ? 'Saving...' : editingAttr ? 'Save Changes' : 'Create Attribute'}</button>
+                <button type="button" className="btn btn-outline" onClick={() => setAttrModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={attrSubmitting}>
+                  {attrSubmitting ? 'Saving...' : editingAttr ? 'Save Changes' : 'Create Attribute'}
+                </button>
               </div>
             </form>
           </div>
@@ -435,37 +428,56 @@ export default function AdminAttributes() {
       {/* ── Value Modal ──────────────────────────────────────────────────── */}
       {valModalOpen && parentAttr && (
         <div className="admin-modal-overlay" onClick={() => setValModalOpen(false)}>
-          <div className="admin-modal-content" style={{ maxWidth: 440, width: '100%' }} onClick={e => e.stopPropagation()}>
+          <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">
-                {editingVal ? 'Edit Term' : 'Add Term'} — <span style={{ color: '#6b7280', fontWeight: 400 }}>{parentAttr.name}</span>
-              </h2>
-              <button className="admin-modal-close" onClick={() => setValModalOpen(false)} title="Close" aria-label="Close"><X size={18} /></button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <h2 className="admin-modal-title">{editingVal ? 'Edit Term' : 'Add Term'}</h2>
+                <span style={{ fontSize: 12, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Attribute: {parentAttr.name}</span>
+              </div>
+              <button type="button" className="admin-modal-close" onClick={() => setValModalOpen(false)}><X size={20} /></button>
             </div>
             <form className="admin-form" onSubmit={handleSaveVal}>
-              {valFormError && <div style={{ fontSize: 12, color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '8px 12px', marginBottom: 12 }}>{valFormError}</div>}
-              
-              <div className="admin-form-group">
-                <label>Value Term *</label>
-                <input type="text" value={valForm.value} onChange={e => setValForm(prev => ({ ...prev, value: e.target.value }))} placeholder="e.g. Red, XL, Cotton" required autoFocus />
-              </div>
+              <div className="admin-modal-body">
+                {valFormError && <div className="admin-form-error">{valFormError}</div>}
+                
+                <div className="admin-form-row">
+                  <label>Term Label</label>
+                  <input type="text" value={valForm.value} onChange={e => setValForm(prev => ({ ...prev, value: e.target.value }))} placeholder="e.g. Silk, XL, #000000" required autoFocus />
+                </div>
 
-              <div className="admin-form-group">
-                <label>Color Hex <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span></label>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <input type="text" value={valForm.colorHex} onChange={e => setValForm(prev => ({ ...prev, colorHex: e.target.value }))} placeholder="#000000" style={{ flex: 1 }} maxLength={7} />
-                  <input type="color" value={valForm.colorHex || '#000000'} onChange={e => setValForm(prev => ({ ...prev, colorHex: e.target.value }))} style={{ width: 40, height: 36, padding: 2, cursor: 'pointer', border: '1px solid #e5e7eb', borderRadius: 4 }} />
+                <div className="admin-form-row">
+                  <label>Visual Color (Hex)</label>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <Hash size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                      <input 
+                        type="text" 
+                        value={valForm.colorHex?.replace('#', '')} 
+                        onChange={e => setValForm(prev => ({ ...prev, colorHex: '#' + e.target.value.replace('#', '') }))} 
+                        placeholder="FFFFFF" 
+                        style={{ paddingLeft: 32 }}
+                        maxLength={7} 
+                      />
+                    </div>
+                    <input 
+                      type="color" 
+                      value={valForm.colorHex || '#ffffff'} 
+                      onChange={e => setValForm(prev => ({ ...prev, colorHex: e.target.value }))} 
+                      style={{ width: 50, height: 46, padding: 4, cursor: 'pointer', border: '1px solid var(--color-border)', background: '#fff' }} 
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-form-row">
+                  <label>Display Priority (Sort Order)</label>
+                  <input type="number" min="0" value={valForm.sortOrder} onChange={e => setValForm(prev => ({ ...prev, sortOrder: Number(e.target.value) || 0 }))} />
                 </div>
               </div>
-
-              <div className="admin-form-group">
-                <label>Sort Order</label>
-                <input type="number" min="0" value={valForm.sortOrder} onChange={e => setValForm(prev => ({ ...prev, sortOrder: Number(e.target.value) || 0 }))} />
-              </div>
-
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={() => setValModalOpen(false)} disabled={valSubmitting}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary" disabled={valSubmitting}>{valSubmitting ? 'Saving...' : editingVal ? 'Save Changes' : 'Add Term'}</button>
+                <button type="button" className="btn btn-outline" onClick={() => setValModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={valSubmitting}>
+                  {valSubmitting ? 'Saving...' : editingVal ? 'Save Changes' : 'Add Term'}
+                </button>
               </div>
             </form>
           </div>

@@ -1,0 +1,255 @@
+.notifications-page {
+  min-height: 70vh;
+  padding: 42px 0 64px;
+  background: #f7f8fb;
+}
+
+.notifications-container {
+  max-width: 960px;
+}
+
+.notifications-page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.notifications-page-header h1 {
+  margin: 0;
+  font-size: 30px;
+  color: #111827;
+}
+
+.notifications-page-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.notifications-primary-action,
+.notifications-page-footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid #111827;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notifications-primary-action:disabled,
+.notifications-page-footer button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.notifications-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.notifications-search {
+  flex: 1;
+  min-width: 240px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #9ca3af;
+}
+
+.notifications-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #111827;
+  background: transparent;
+  font-size: 14px;
+}
+
+.notifications-filter-group {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #6b7280;
+}
+
+.notifications-filter-group button {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #4b5563;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notifications-filter-group button.is-active {
+  background: #111827;
+  color: #fff;
+}
+
+.notifications-list-panel {
+  border: 1px solid #e8edf5;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.notifications-page-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.notifications-page-item {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 0;
+  border-bottom: 1px solid #edf0f5;
+  background: #fff;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.notifications-page-item:last-child {
+  border-bottom: 0;
+}
+
+.notifications-page-item:hover {
+  background: #f9fafb;
+}
+
+.notifications-page-item.is-unread {
+  background: #eff6ff;
+}
+
+.notifications-page-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifications-page-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.notifications-page-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.notifications-page-item-head strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.notifications-page-item-head span {
+  border-radius: 999px;
+  background: #2563eb;
+  color: #fff;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.notifications-page-copy p {
+  margin: 5px 0 6px;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notifications-page-copy small {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.notifications-page-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.notifications-page-footer span {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.notifications-empty-panel,
+.notifications-page-loader {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 30px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.notifications-empty-panel h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+}
+
+.notifications-empty-panel p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .notifications-page {
+    padding: 28px 0 48px;
+  }
+
+  .notifications-page-header,
+  .notifications-toolbar,
+  .notifications-page-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .notifications-filter-group {
+    overflow-x: auto;
+  }
+}

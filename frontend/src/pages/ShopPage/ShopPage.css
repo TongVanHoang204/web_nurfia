@@ -186,6 +186,53 @@
   flex: 1;
 }
 
+/* Shop Sidebar Container */
+.shop-sidebar-container {
+  width: 280px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.mobile-filter-header {
+  display: none;
+  padding: 20px;
+  border-bottom: 1px solid var(--color-border);
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+}
+
+.mobile-filter-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mobile-filter-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--color-text);
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .shop-main {
   flex: 1;
   min-width: 0;
@@ -197,6 +244,31 @@
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.mobile-filter-trigger {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-filter-trigger:hover {
+  background: #f8f9fa;
+  border-color: var(--color-primary);
 }
 
 .result-count {
@@ -234,7 +306,7 @@
   color: var(--color-primary, #000);
 }
 
-.sort-select, .items-per-page {
+.sort-select {
   border: 1px solid var(--color-border);
   border-radius: 2px;
   padding: 6px 12px;
@@ -242,7 +314,7 @@
   background: transparent;
 }
 
-.sort-select select, .items-per-page select {
+.sort-select select {
   border: none;
   background: transparent;
   outline: none;
@@ -252,7 +324,7 @@
 
 .product-grid {
   display: grid;
-  gap: 30px;
+  gap: 20px;
 }
 
 .product-grid.grid-3 { grid-template-columns: repeat(3, 1fr); }
@@ -300,36 +372,62 @@
 
 /* Responsive Design */
 @media (max-width: 991px) {
-  .shop-layout {
-    flex-direction: column;
+  .shop-sidebar-container {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background: #fff;
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  }
+
+  .shop-sidebar-container.mobile-open {
+    left: 0;
+  }
+
+  .mobile-filter-header {
+    display: flex;
+  }
+
+  .mobile-filter-trigger {
+    display: flex;
   }
 
   .shop-sidebar {
     width: 100%;
-    margin-bottom: 20px;
+    padding: 20px;
+  }
+
+  .shop-layout {
+    flex-direction: column;
   }
 
   .shop-toolbar {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 15px;
+  }
+
+  .toolbar-left {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .toolbar-controls {
     width: 100%;
-    flex-wrap: wrap;
     justify-content: space-between;
   }
 
-  .sort-select,
-  .items-per-page {
+  .sort-select {
     flex: 1;
-    min-width: 170px;
   }
 
   .product-grid.grid-3,
   .product-grid.grid-4 {
     grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
   }
 
   .recent-grid.grid-4 {
@@ -340,31 +438,31 @@
 @media (max-width: 575px) {
   .product-grid.grid-3,
   .product-grid.grid-4 {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
   .shop-page {
-    padding: 30px 15px;
-  }
-  .recent-grid.grid-4 {
-    grid-template-columns: 1fr;
+    padding: 20px 10px;
   }
 
-  .shop-toolbar {
+  .recent-grid.grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .toolbar-left {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
-  }
-
-  .toolbar-controls {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
     gap: 10px;
   }
 
+  .result-count {
+    font-size: 12px;
+  }
+
   .grid-toggle {
-    justify-content: flex-start;
+    display: none; /* Hide grid toggle on very small screens, force 2 columns */
   }
 }
 

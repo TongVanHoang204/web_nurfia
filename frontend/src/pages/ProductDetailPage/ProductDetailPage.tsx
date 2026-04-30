@@ -10,6 +10,7 @@ import { useCompareStore } from '../../stores/compareStore';
 import { useUIStore } from '../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import { sanitizeRichHtml } from '../../utils/sanitizeHtml';
+import PageLoader from '../../components/PageLoader/PageLoader';
 import './ProductDetailPage.css';
 
 export default function ProductDetailPage() {
@@ -152,8 +153,8 @@ export default function ProductDetailPage() {
     setQuantity((previous) => Math.min(Math.max(1, previous), maxSelectableQuantity));
   }, [product, selectedColor, selectedSize]);
 
-  if (isLoading) return <div className="loading-page"><div className="spinner" /></div>;
-  if (!product) return <div className="loading-page"><h2>Product not found</h2></div>;
+  if (isLoading) return <PageLoader />;
+  if (!product) return <PageLoader />; // Or maybe a 404 page
 
   // Helper function to safely match attributes
   const matchAttr = (a: any, target: 'color' | 'size') => {
@@ -215,9 +216,17 @@ export default function ProductDetailPage() {
     });
   }
 
-  const currentPrice = selectedVariant ? (selectedVariant.salePrice ?? selectedVariant.price) : (product.salePrice ?? product.price);
-  const originalPrice = selectedVariant ? selectedVariant.price : product.price;
-  const hasDiscount = Number(currentPrice) < Number(originalPrice);
+  const originalPrice = (selectedVariant && Number(selectedVariant.price) > 0) 
+    ? Number(selectedVariant.price) 
+    : Number(product.price);
+
+  const currentPrice = (selectedVariant && Number(selectedVariant.salePrice) > 0)
+    ? Number(selectedVariant.salePrice)
+    : (selectedVariant && Number(selectedVariant.price) > 0)
+      ? Number(selectedVariant.price)
+      : (Number(product.salePrice) > 0 ? Number(product.salePrice) : Number(product.price));
+
+  const hasDiscount = currentPrice < originalPrice;
   const inStock = selectedVariant ? selectedVariant.stock > 0 : product.stock > 0;
   const stockCount = selectedVariant ? selectedVariant.stock : product.stock;
   const normalizedStockCount = Math.max(0, Number(stockCount) || 0);
@@ -332,28 +341,18 @@ export default function ProductDetailPage() {
                 <Maximize2 size={20} color="#333" />
               </button>
             </div>
-            {product.images.length > 1 && (
-            <div className="pd-gallery-thumbnails">
-              {product.images.map((img: any, i: number) => (
-                <div 
-                  key={i} 
-                  className={`pd-gallery-thumb ${i === activeImageIndex ? 'active' : ''}`}
-                  onMouseEnter={() => setActiveImageIndex(i)}
-                >
-                  <img
-                    src={resolveSiteAssetUrl(img.url)}
-                    alt={img.alt || product.name}
-                    onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/100x100/f5f5f5/999?text=img`; }}
-                  />
-                </div>
-              ))}
-            </div>
-            )}
             {/* Mobile Image Scroller (hidden on desktop) */}
             <div className="pd-gallery-mobile">
-              <div className="pd-mobile-scroller">
+              <div 
+                className="pd-mobile-scroller"
+                onScroll={(e) => {
+                  const target = e.currentTarget;
+                  const index = Math.round(target.scrollLeft / target.offsetWidth);
+                  if (index !== activeImageIndex) setActiveImageIndex(index);
+                }}
+              >
                 {product.images.map((img: any, i: number) => (
-                  <div key={i} className="pd-mobile-slide">
+                  <div key={i} className="pd-mobile-slide" id={`mobile-slide-${i}`}>
                     <img
                       src={resolveSiteAssetUrl(img.url)}
                       alt={img.alt || product.name}
@@ -363,6 +362,35 @@ export default function ProductDetailPage() {
                 ))}
               </div>
             </div>
+            
+            {/* Thumbnails below for both Desktop and Mobile (styled differently in CSS) */}
+            {product.images.length > 1 && (
+              <div className="pd-gallery-thumbnails">
+                {product.images.map((img: any, i: number) => (
+                  <div 
+                    key={i} 
+                    className={`pd-gallery-thumb ${i === activeImageIndex ? 'active' : ''}`}
+                    onMouseEnter={() => setActiveImageIndex(i)}
+                    onClick={() => {
+                      setActiveImageIndex(i);
+                      const scroller = document.querySelector('.pd-mobile-scroller');
+                      if (scroller) {
+                        scroller.scrollTo({
+                          left: i * (scroller as HTMLElement).offsetWidth,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }}
+                  >
+                    <img
+                      src={resolveSiteAssetUrl(img.url)}
+                      alt={img.alt || product.name}
+                      onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/100x100/f5f5f5/999?text=img`; }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Info */}
@@ -540,124 +568,56 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="pd-tabs">
-          <div className="pd-tab-header">
+        {/* Tabs - Desktop / Stacked - Mobile */}
+        <div className="pd-tabs-container">
+          {/* Desktop Tabs Header */}
+          <div className="pd-tab-header desktop-only">
             <button className={activeTab === 'description' ? 'active' : ''} onClick={() => setActiveTab('description')}>Description</button>
-              <button className={activeTab === 'info' ? 'active' : ''} onClick={() => setActiveTab('info')}>Additional information</button>
-              <button className={activeTab === 'reviews' ? 'active' : ''} onClick={() => setActiveTab('reviews')}>Reviews ({product.reviews?.length || 0})</button>
-            </div>
-            <div className="pd-tab-content">
-              {activeTab === 'description' && (
-                <div className="pd-description" dangerouslySetInnerHTML={{ __html: sanitizedDescription }} />
-              )}
-              {activeTab === 'info' && (
-                <table className="pd-info-table">
-                  <tbody>
-                    {colors.length > 0 && <tr><td>color</td><td>{colors.map(c => c.name).join(', ')}</td></tr>}
-                    {sizes.length > 0 && <tr><td>size</td><td>{(sizes as string[]).join(', ')}</td></tr>}
-                  </tbody>
-                </table>
-              )}
-              {activeTab === 'reviews' && (
-                <div className="pd-reviews-wrapper">
-                  <h3 className="pd-reviews-count-title">{product.reviews?.length || 0} reviews for {product.name}</h3>
-                  <div className="pd-reviews-summary">
-                    <div className="pd-reviews-avg">
-                      <div className="avg-score">{Number(product.avgRating).toFixed(2)}</div>
-                      <div className="avg-stars">
-                        <div className="stars">
-                          {[1,2,3,4,5].map(s => <Star key={s} size={14} fill={s <= Number(product.avgRating) ? '#ffc107' : '#ddd'} color={s <= Number(product.avgRating) ? '#ffc107' : '#ddd'} />)}
-                        </div>
-                        <span>Average of {product.reviews?.length || 0} reviews</span>
-                      </div>
-                    </div>
-                    <div className="pd-reviews-bars">
-                      {[5,4,3,2,1].map(stars => {
-                        const count = product.reviews?.filter((r: any) => r.rating === stars).length || 0;
-                        const total = product.reviews?.length || 1;
-                        const pct = (count / total) * 100;
-                        return (
-                          <div key={stars} className="review-bar-row">
-                            <span className="star-label"><Star size={12} fill="#ffc107" color="#ffc107" /> {stars}</span>
-                            <div className="bar-bg"><div className="bar-fill" style={{ width: `${pct}%` }}></div></div>
-                            <span className="count-label">{count}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  <div className="pd-reviews-list">
-                    {product.reviews?.length === 0 && <p className="no-reviews">No reviews yet.</p>}
-                    {product.reviews?.map((r: any) => (
-                      <div key={r.id} className="review-item">
-                        <div className="reviewer-avatar">
-                          <img src={`https://ui-avatars.com/api/?name=${r.user.fullName || r.user.username}&background=random`} alt="avatar" />
-                        </div>
-                        <div className="review-content">
-                          <div className="stars">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star key={s} size={12} fill={s <= r.rating ? '#ffc107' : 'none'} color={s <= r.rating ? '#ffc107' : '#ddd'} />
-                            ))}
-                          </div>
-                          <div className="review-meta">
-                            <strong>{r.user.fullName || r.user.username}</strong> – {new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                          </div>
-                          <p className="review-text">{r.comment}</p>
-                        </div>
-                      </div>
-                    ))}
+            <button className={activeTab === 'info' ? 'active' : ''} onClick={() => setActiveTab('info')}>Additional information</button>
+            <button className={activeTab === 'reviews' ? 'active' : ''} onClick={() => setActiveTab('reviews')}>Reviews ({product.reviews?.length || 0})</button>
+          </div>
 
-                    {canReview && (
-                      <div className="review-form-container">
-                        <h4 className="review-form-title">Add a review</h4>
-                        <form onSubmit={handleReviewSubmit} className="review-form">
-                          <div className="review-form-rating">
-                            <span className="review-form-label">Your rating *</span>
-                            <div className="review-star-container">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <button 
-                                  type="button" 
-                                  className="review-star-button"
-                                  title={`Rate ${star} stars`}
-                                  key={star} 
-                                  onClick={() => setReviewForm({ ...reviewForm, rating: star })}
-                                >
-                                  <Star size={18} fill={star <= reviewForm.rating ? '#ffc107' : 'none'} color={star <= reviewForm.rating ? '#ffc107' : '#ddd'} />
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div className="review-input-group">
-                            <label htmlFor="comment" className="review-form-label">Your review *</label>
-                            <textarea 
-                              id="comment"
-                              className="review-textarea"
-                              value={reviewForm.comment}
-                              onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                              required
-                              rows={5}
-                              placeholder="What do you think about this product?"
-                            ></textarea>
-                          </div>
-                          
-                          <button 
-                            type="submit" 
-                            disabled={isSubmittingReview}
-                            className={`btn btn-primary review-submit-btn ${isSubmittingReview ? 'disabled' : ''}`}
-                          >
-                            {isSubmittingReview ? 'SUBMITTING...' : 'SUBMIT'}
-                          </button>
-                        </form>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+          {/* Tab Content - Desktop */}
+          <div className="pd-tab-content desktop-only">
+            {activeTab === 'description' && (
+              <div className="pd-description" dangerouslySetInnerHTML={{ __html: sanitizedDescription }} />
+            )}
+            {activeTab === 'info' && (
+              <table className="pd-info-table">
+                <tbody>
+                  {colors.length > 0 && <tr><td>color</td><td>{colors.map(c => c.name).join(', ')}</td></tr>}
+                  {sizes.length > 0 && <tr><td>size</td><td>{(sizes as string[]).join(', ')}</td></tr>}
+                </tbody>
+              </table>
+            )}
+            {activeTab === 'reviews' && (
+              <div className="pd-reviews-wrapper">
+                <ReviewSection product={product} canReview={canReview} isSubmittingReview={isSubmittingReview} reviewForm={reviewForm} setReviewForm={setReviewForm} handleReviewSubmit={handleReviewSubmit} />
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Stacked Sections */}
+          <div className="pd-mobile-sections mobile-only">
+            <div className="pd-mobile-section">
+              <h3 className="section-title">Description</h3>
+              <div className="pd-description" dangerouslySetInnerHTML={{ __html: sanitizedDescription }} />
+            </div>
+            <div className="pd-mobile-section">
+              <h3 className="section-title">Additional information</h3>
+              <table className="pd-info-table">
+                <tbody>
+                  {colors.length > 0 && <tr><td>color</td><td>{colors.map(c => c.name).join(', ')}</td></tr>}
+                  {sizes.length > 0 && <tr><td>size</td><td>{(sizes as string[]).join(', ')}</td></tr>}
+                </tbody>
+              </table>
+            </div>
+            <div className="pd-mobile-section">
+              <h3 className="section-title">Reviews ({product.reviews?.length || 0})</h3>
+              <ReviewSection product={product} canReview={canReview} isSubmittingReview={isSubmittingReview} reviewForm={reviewForm} setReviewForm={setReviewForm} handleReviewSubmit={handleReviewSubmit} />
             </div>
           </div>
+        </div>
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="pd-related">
@@ -705,6 +665,106 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, setReviewForm, handleReviewSubmit }: any) {
+  return (
+    <div className="pd-reviews-wrapper">
+      <h3 className="pd-reviews-count-title">{product.reviews?.length || 0} reviews for {product.name}</h3>
+      <div className="pd-reviews-summary">
+        <div className="pd-reviews-avg">
+          <div className="avg-score">{Number(product.avgRating).toFixed(2)}</div>
+          <div className="avg-stars">
+            <div className="stars">
+              {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill={s <= Number(product.avgRating) ? '#ffc107' : '#ddd'} color={s <= Number(product.avgRating) ? '#ffc107' : '#ddd'} />)}
+            </div>
+            <span>Average of {product.reviews?.length || 0} reviews</span>
+          </div>
+        </div>
+        <div className="pd-reviews-bars">
+          {[5, 4, 3, 2, 1].map(stars => {
+            const count = product.reviews?.filter((r: any) => r.rating === stars).length || 0;
+            const total = product.reviews?.length || 1;
+            const pct = (count / total) * 100;
+            return (
+              <div key={stars} className="review-bar-row">
+                <span className="star-label"><Star size={12} fill="#ffc107" color="#ffc107" /> {stars}</span>
+                <div className="bar-bg"><div className="bar-fill" style={{ width: `${pct}%` }}></div></div>
+                <span className="count-label">{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="pd-reviews-list">
+        {product.reviews?.length === 0 && <p className="no-reviews">No reviews yet.</p>}
+        {product.reviews?.map((r: any) => (
+          <div key={r.id} className="review-item">
+            <div className="reviewer-avatar">
+              <img src={`https://ui-avatars.com/api/?name=${r.user.fullName || r.user.username}&background=random`} alt="avatar" />
+            </div>
+            <div className="review-content">
+              <div className="stars">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} size={12} fill={s <= r.rating ? '#ffc107' : 'none'} color={s <= r.rating ? '#ffc107' : '#ddd'} />
+                ))}
+              </div>
+              <div className="review-meta">
+                <strong>{r.user.fullName || r.user.username}</strong> – {new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+              <p className="review-text">{r.comment}</p>
+            </div>
+          </div>
+        ))}
+
+        {canReview && (
+          <div className="review-form-container">
+            <h4 className="review-form-title">Add a review</h4>
+            <form onSubmit={handleReviewSubmit} className="review-form">
+              <div className="review-form-rating">
+                <span className="review-form-label">Your rating *</span>
+                <div className="review-star-container">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      type="button"
+                      className="review-star-button"
+                      title={`Rate ${star} stars`}
+                      key={star}
+                      onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                    >
+                      <Star size={18} fill={star <= reviewForm.rating ? '#ffc107' : 'none'} color={star <= reviewForm.rating ? '#ffc107' : '#ddd'} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="review-input-group">
+                <label htmlFor="comment" className="review-form-label">Your review *</label>
+                <textarea
+                  id="comment"
+                  className="review-textarea"
+                  value={reviewForm.comment}
+                  onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                  required
+                  rows={5}
+                  placeholder="What do you think about this product?"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmittingReview}
+                className={`btn btn-primary review-submit-btn ${isSubmittingReview ? 'disabled' : ''}`}
+              >
+                {isSubmittingReview ? 'SUBMITTING...' : 'SUBMIT'}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

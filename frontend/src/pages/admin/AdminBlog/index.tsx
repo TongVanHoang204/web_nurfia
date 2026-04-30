@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, CheckCircle, XCircle, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
@@ -11,6 +11,15 @@ const getRichTextPlainValue = (value: string) => value
   .replace(/&nbsp;/gi, ' ')
   .replace(/\s+/g, ' ')
   .trim();
+
+const normalizeAssetInput = (value: string) => {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) return trimmed;
+  if (trimmed.startsWith('uploads/')) return `/${trimmed}`;
+  return trimmed;
+};
 
 export default function AdminBlog() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -85,12 +94,17 @@ export default function AdminBlog() {
       return;
     }
 
+    const payload = {
+      ...form,
+      image: normalizeAssetInput(form.image),
+    };
+
     try {
       if (editingPost) {
-        await api.put(`/admin/blog/${editingPost.id}`, form);
+        await api.put(`/admin/blog/${editingPost.id}`, payload);
         addToast('Blog post updated successfully', 'success');
       } else {
-        await api.post('/admin/blog', form);
+        await api.post('/admin/blog', payload);
         addToast('Blog post created successfully', 'success');
       }
       closeModal();
@@ -113,10 +127,13 @@ export default function AdminBlog() {
   };
 
   return (
-    <div>
+    <div className="admin-blog-page">
       <div className="admin-page-header">
-        <h1 className="admin-page-title">Blog Posts</h1>
-        <button className="btn btn-primary admin-blog-add-btn" onClick={() => openModal()}><Plus size={16} className="admin-blog-add-icon" /> Add New Post</button>
+        <div>
+          <h1 className="admin-page-title">Blog Posts</h1>
+          <p className="admin-blog-subtitle">Create, edit, and manage your blog articles and content.</p>
+        </div>
+        <button className="admin-btn admin-btn-primary admin-blog-add-btn" onClick={() => openModal()}><Plus size={16} className="admin-blog-add-icon" /> Add New Post</button>
       </div>
 
       <div className="admin-card">
@@ -128,11 +145,11 @@ export default function AdminBlog() {
               <thead>
                 <tr>
                   <th className="admin-blog-th-image">Image</th>
-                  <th>Title & Slug</th>
-                  <th>Category</th>
-                  <th>Status</th>
-                  <th>Published Date</th>
-                  <th className="text-right">Actions</th>
+                  <th className="admin-blog-th-title">Title & Slug</th>
+                  <th className="admin-blog-th-category">Category</th>
+                  <th className="admin-blog-th-status">Status</th>
+                  <th className="admin-blog-th-date">Published Date</th>
+                  <th className="text-right admin-blog-th-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -169,7 +186,7 @@ export default function AdminBlog() {
           <div className="admin-modal-content admin-blog-modal-large">
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">{editingPost ? 'Edit Post' : 'Add New Post'}</h2>
-              <button className="admin-modal-close" onClick={closeModal}>&times;</button>
+              <button type="button" className="admin-modal-close" onClick={closeModal}><X size={20} /></button>
             </div>
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-row">
@@ -248,4 +265,3 @@ export default function AdminBlog() {
     </div>
   );
 }
-

@@ -2,7 +2,7 @@
 
 A professional, full-stack eCommerce platform clone built with modern web technologies, featuring a responsive design and comprehensive management system.
 
-## 🚀 Features
+## Features
 
 ### Frontend (User Experience)
 - **Responsive Design**: Mobile-first approach for seamless shopping across all devices.
@@ -67,7 +67,7 @@ A professional, full-stack eCommerce platform clone built with modern web techno
    - Navigate to `frontend/`
    - Create a `.env` file for API endpoints (if required)
 
-## 🏃 Running the Application
+## Running the Application
 
 You can run both the frontend and backend concurrently from the root directory:
 

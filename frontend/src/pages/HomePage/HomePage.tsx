@@ -10,6 +10,7 @@ import api from '../../api/client';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import { getImageUrl } from '../../utils/url';
+import PageLoader from '../../components/PageLoader/PageLoader';
 import './HomePage.css';
 
 interface Product {
@@ -55,26 +56,35 @@ export default function HomePage() {
   const [newProducts, setNewProducts] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [womenProducts, setWomenProducts] = useState<Product[]>([]);
+  const [menProducts, setMenProducts] = useState<Product[]>([]);
+  const [dressesProducts, setDressesProducts] = useState<Product[]>([]);
+  const [tshirtsProducts, setTshirtsProducts] = useState<Product[]>([]);
   const [homeBlogs, setHomeBlogs] = useState<BlogPost[]>([]);
-  const [activeTab1, setActiveTab1] = useState<'featured' | 'new' | 'bestsellers' | 'women'>('women');
-  const [activeTab2, setActiveTab2] = useState<'featured' | 'new' | 'bestsellers' | 'women'>('new');
+  const [activeTab1, setActiveTab1] = useState<'women' | 'dresses' | 'men' | 'tshirts'>('women');
+  const [activeTab2, setActiveTab2] = useState<'featured' | 'new' | 'bestsellers'>('new');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [bannersRes, featuredRes, newRes, bestRes, womenRes] = await Promise.all([
+        const [bannersRes, featuredRes, newRes, bestRes, womenRes, menRes, dressesRes, tshirtsRes] = await Promise.all([
           api.get('/banners?position=homepage'),
           api.get('/products/featured'),
           api.get('/products/new'),
           api.get('/products/bestsellers'),
-          api.get('/products', { params: { category: 'women' } }),
+          api.get('/products', { params: { category: 'women', limit: 8 } }),
+          api.get('/products', { params: { category: 'men', limit: 8 } }),
+          api.get('/products', { params: { category: 'dresses', limit: 8 } }),
+          api.get('/products', { params: { category: 't-shirts', limit: 8 } }),
         ]);
         setBanners(bannersRes.data.data);
         setFeaturedProducts(featuredRes.data.data);
         setNewProducts(newRes.data.data);
         setBestSellers(bestRes.data.data);
         setWomenProducts(womenRes.data.data);
+        setMenProducts(menRes.data.data);
+        setDressesProducts(dressesRes.data.data);
+        setTshirtsProducts(tshirtsRes.data.data);
 
         try {
           const blogRes = await api.get('/blog', { params: { page: 1, limit: 4 } });
@@ -92,8 +102,24 @@ export default function HomePage() {
     fetchData();
   }, []);
 
-  const getProducts = (tab: 'featured' | 'new' | 'bestsellers' | 'women') =>
-    tab === 'featured' ? featuredProducts : tab === 'new' ? newProducts : tab === 'women' ? womenProducts : bestSellers;
+  const getProductsForTab1 = (tab: 'women' | 'dresses' | 'men' | 'tshirts') => {
+    switch (tab) {
+      case 'women': return womenProducts;
+      case 'dresses': return dressesProducts;
+      case 'men': return menProducts;
+      case 'tshirts': return tshirtsProducts;
+      default: return womenProducts;
+    }
+  };
+
+  const getProductsForTab2 = (tab: 'featured' | 'new' | 'bestsellers') => {
+    switch (tab) {
+      case 'featured': return featuredProducts;
+      case 'new': return newProducts;
+      case 'bestsellers': return bestSellers;
+      default: return newProducts;
+    }
+  };
 
   return (
     <div className="homepage">
@@ -176,13 +202,13 @@ export default function HomePage() {
             <h2 className="section-title section-title-left">Redefine Your Wardrobe</h2>
             <div className="product-tabs">
               <button className={`tab-btn ${activeTab1 === 'women' ? 'active' : ''}`} onClick={() => setActiveTab1('women')}>Women</button>
-              <button className={`tab-btn ${activeTab1 === 'featured' ? 'active' : ''}`} onClick={() => setActiveTab1('featured')}>Dresses</button>
-              <button className={`tab-btn ${activeTab1 === 'new' ? 'active' : ''}`} onClick={() => setActiveTab1('new')}>Men</button>
-              <button className={`tab-btn ${activeTab1 === 'bestsellers' ? 'active' : ''}`} onClick={() => setActiveTab1('bestsellers')}>T-shirts</button>
+              <button className={`tab-btn ${activeTab1 === 'dresses' ? 'active' : ''}`} onClick={() => setActiveTab1('dresses')}>Dresses</button>
+              <button className={`tab-btn ${activeTab1 === 'men' ? 'active' : ''}`} onClick={() => setActiveTab1('men')}>Men</button>
+              <button className={`tab-btn ${activeTab1 === 'tshirts' ? 'active' : ''}`} onClick={() => setActiveTab1('tshirts')}>T-shirts</button>
             </div>
           </div>
           {isLoading ? (
-            <div className="loading-page"><div className="spinner" /></div>
+            <PageLoader fullScreen={false} />
           ) : (
             <Swiper
               modules={[Navigation, Autoplay]}
@@ -197,7 +223,7 @@ export default function HomePage() {
               }}
               className="products-swiper"
             >
-              {getProducts(activeTab1).slice(0, 8).map(product => (
+              {getProductsForTab1(activeTab1).slice(0, 8).map(product => (
                 <SwiperSlide key={product.id}>
                   <ProductCard product={product} />
                 </SwiperSlide>
@@ -271,13 +297,13 @@ export default function HomePage() {
           <div className="products-section-header">
             <h2 className="section-title section-title-left">Featured Products</h2>
             <div className="product-tabs">
-              <button className={`tab-btn ${activeTab2 === 'new' ? 'active' : ''}`} onClick={() => setActiveTab2('new')}>Jackets</button>
-              <button className={`tab-btn ${activeTab2 === 'featured' ? 'active' : ''}`} onClick={() => setActiveTab2('featured')}>Men</button>
-              <button className={`tab-btn ${activeTab2 === 'bestsellers' ? 'active' : ''}`} onClick={() => setActiveTab2('bestsellers')}>Tops</button>
+              <button className={`tab-btn ${activeTab2 === 'new' ? 'active' : ''}`} onClick={() => setActiveTab2('new')}>New Arrival</button>
+              <button className={`tab-btn ${activeTab2 === 'featured' ? 'active' : ''}`} onClick={() => setActiveTab2('featured')}>Featured</button>
+              <button className={`tab-btn ${activeTab2 === 'bestsellers' ? 'active' : ''}`} onClick={() => setActiveTab2('bestsellers')}>Bestsellers</button>
             </div>
           </div>
           {isLoading ? (
-            <div className="loading-page"><div className="spinner" /></div>
+            <PageLoader fullScreen={false} />
           ) : (
             <Swiper
               modules={[Navigation, Autoplay]}
@@ -292,7 +318,7 @@ export default function HomePage() {
               }}
               className="products-swiper"
             >
-              {getProducts(activeTab2).slice(0, 8).map(product => (
+              {getProductsForTab2(activeTab2).slice(0, 8).map(product => (
                 <SwiperSlide key={product.id}>
                   <ProductCard product={product} />
                 </SwiperSlide>

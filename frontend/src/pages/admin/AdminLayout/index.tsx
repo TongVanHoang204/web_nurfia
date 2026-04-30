@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Ticket, Truck, Settings, LogOut, Menu, X, FileText, Activity, ShieldQuestion, BarChart, Layers, Image as ImageIcon, Mail, Star, Tag, Sliders } from 'lucide-react';
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Ticket, Truck, Settings, LogOut, Menu, X, FileText, Activity, ShieldQuestion, BarChart, Layers, Image as ImageIcon, Mail, Star, Tag, Sliders, Bell, Globe } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
+import NotificationBell from '../../../components/Notifications/NotificationBell';
+import PageLoader from '../../../components/PageLoader/PageLoader';
 import './AdminLayout.css';
 import '../admin.css';
 
@@ -22,6 +24,7 @@ const NAV_ITEMS = [
   { label: 'Shipping', icon: Truck, path: '/admin/shipping', permissions: ['MANAGE_SHIPPING'] },
   { label: 'Blog Posts', icon: FileText, path: '/admin/blog', permissions: ['MANAGE_BLOG'] },
   { label: 'Contacts', icon: Mail, path: '/admin/contacts', permissions: ['MANAGE_CONTACTS'] },
+  { label: 'Notifications', icon: Bell, path: '/admin/notifications', permissions: [] as string[] },
   { label: 'Activity Logs', icon: Activity, path: '/admin/activity-logs', permissions: ['VIEW_ACTIVITY_LOGS'] },
   { label: 'Settings', icon: Settings, path: '/admin/settings', permissions: ['MANAGE_SETTINGS'] },
 ];
@@ -75,7 +78,7 @@ export default function AdminLayout() {
   }, [accessibleItems, isAuthenticated, isHydrating, location.pathname, navigate, user]);
 
   if (isHydrating) {
-    return <div className="loading-page"><div className="spinner" /></div>;
+    return <PageLoader />;
   }
 
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'STAFF' && user?.role !== 'MANAGER')) return null;
@@ -113,7 +116,7 @@ export default function AdminLayout() {
 
         <div className="admin-sidebar-footer">
           <Link to="/" className="admin-nav-item" target="_blank">
-            <span>ðŸŒ</span>
+            <Globe size={18} />
             <span>View Store</span>
           </Link>
           <button className="admin-nav-item logout" onClick={handleLogout}>
@@ -138,6 +141,7 @@ export default function AdminLayout() {
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <div className="admin-topbar-right">
+            <NotificationBell />
             <div className="admin-user-profile">
               <span className="admin-user-name">{user?.fullName}</span>
               <span className="admin-user-role">

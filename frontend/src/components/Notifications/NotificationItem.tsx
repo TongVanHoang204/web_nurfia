@@ -1,6 +1,7 @@
 import {
   ShoppingBag, CreditCard, Settings, Tag, Star, Info, Bell,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getNotificationIconConfig } from './useNotificationIcon';
 import type { Notification } from '../../stores/notificationStore';
 
@@ -73,11 +74,17 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
     </div>
   );
 
-  // If there's a link, wrap in an anchor for semantic correctness
+  // If there's a link, wrap in a Link for SPA navigation
   if (notification.link) {
+    // Sanitize link: Convert old /admin/orders/123 to /admin/orders?orderId=123 so the popup can open
+    const adminOrderMatch = notification.link.match(/^\/admin\/orders\/(\d+)$/);
+    const sanitizedLink = adminOrderMatch 
+      ? `/admin/orders?orderId=${adminOrderMatch[1]}` 
+      : notification.link;
+
     return (
-      <a
-        href={notification.link}
+      <Link
+        to={sanitizedLink}
         className={`notif-item${!notification.isRead ? ' is-unread' : ''}`}
         onClick={handleClick}
         aria-label={notification.title}
@@ -98,7 +105,7 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
             {formatRelativeTime(notification.createdAt)}
           </span>
         </div>
-      </a>
+      </Link>
     );
   }
 

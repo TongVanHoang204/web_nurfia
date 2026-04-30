@@ -5,6 +5,7 @@ import Footer from './components/Footer/Footer';
 import CartDrawer from './components/CartDrawer/CartDrawer';
 import ToastContainer from './components/Toast/ToastContainer';
 import ConfirmModal from './components/ConfirmModal/ConfirmModal';
+import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import { useAuthStore } from './stores/authStore';
 import { useCartStore } from './stores/cartStore';
 import { useCompareStore } from './stores/compareStore';
@@ -25,6 +26,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage/ContactPage'));
 const ComparePage = lazy(() => import('./pages/ComparePage/ComparePage'));
 const ShopPage = lazy(() => import('./pages/ShopPage/ShopPage'));
 const PolicyPage = lazy(() => import('./pages/PolicyPage/PolicyPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage/NotificationsPage'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
@@ -46,6 +48,7 @@ const AdminBanners = lazy(() => import('./pages/admin/AdminBanners'));
 const AdminContacts = lazy(() => import('./pages/admin/AdminContacts'));
 const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
 const AdminAttributes = lazy(() => import('./pages/admin/AdminAttributes'));
+const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
 
 // Account sub-pages
 import AccountPage, { ProfileSection, OrdersSection, WishlistSection, AddressesSection } from './pages/AccountPage/AccountPage';
@@ -81,6 +84,7 @@ function StoreLayout() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/policy/:policyType" element={<PolicyPage />} />
             <Route path="/compare" element={<ComparePage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/account" element={<AccountPage />}>
               <Route index element={<ProfileSection />} />
               <Route path="orders" element={<OrdersSection />} />
@@ -147,6 +151,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Admin routes — separate layout, no header/footer */}
@@ -167,7 +172,10 @@ export default function App() {
               <Route path="coupons" element={<AdminCoupons />} />
               <Route path="shipping" element={<AdminShipping />} />
             <Route path="settings" element={<AdminSettings />} />
-            <Route path="activity-logs" element={<AdminActivityLogs />} />              <Route path="reviews" element={<AdminReviews />} />            <Route path="*" element={<Navigate to="/admin" replace />} />
+            <Route path="activity-logs" element={<AdminActivityLogs />} />
+            <Route path="reviews" element={<AdminReviews />} />
+            <Route path="notifications" element={<AdminNotifications />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
           </Route>
 
           {/* Store routes — with header/footer */}

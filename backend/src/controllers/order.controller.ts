@@ -471,7 +471,7 @@ export const orderController = {
         'ORDER',
         'Order placed successfully',
         `Your order #${order.orderNumber} has been placed and is awaiting confirmation.`,
-        `/orders/${order.id}`
+        `/order-confirmation/${order.id}`
       ).catch((err: unknown) => console.error('[Notification] Failed to notify customer on order creation:', err));
 
       // Notify all admin/staff about new order
@@ -485,7 +485,7 @@ export const orderController = {
             'ORDER',
             'New order received',
             `Order #${order.orderNumber} has been placed and needs processing.`,
-            `/admin/orders/${order.id}`
+            `/admin/orders?orderId=${order.id}`
           ).catch((err: unknown) => console.error('[Notification] Failed to notify admin on order creation:', err));
         }
       }).catch((err: unknown) => console.error('[Notification] Failed to fetch admins:', err));

@@ -162,29 +162,31 @@ export default function FilterSidebar() {
           -webkit-appearance: none;
           background: transparent;
           pointer-events: none;
-          top: -6px;
+          top: -10px;
           margin: 0;
+          height: 24px;
         }
         .dual-slider-input:focus { outline: none; }
         .dual-slider-input::-webkit-slider-thumb {
           pointer-events: auto;
           -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
+          width: 20px;
+          height: 20px;
           background: #000;
           border-radius: 50%;
           border: 2px solid #fff;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           cursor: pointer;
+          margin-top: 2px;
         }
         .dual-slider-input::-moz-range-thumb {
           pointer-events: auto;
-          width: 16px;
-          height: 16px;
+          width: 20px;
+          height: 20px;
           background: #000;
           border-radius: 50%;
           border: 2px solid #fff;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           cursor: pointer;
         }
       `}</style>

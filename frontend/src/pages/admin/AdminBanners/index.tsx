@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, MapPin, ArrowUpDown } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
@@ -139,93 +139,72 @@ export default function AdminBanners() {
   };
 
   return (
-    <div>
+    <div className="admin-banners-page">
       <div className="admin-page-header">
-        <h1 className="admin-page-title">Manage Banners</h1>
+        <div>
+          <h1 className="admin-page-title">Manage Banners</h1>
+          <p className="admin-banners-subtitle">Create and manage hero banners, promotional slides, and featured visuals across the storefront.</p>
+        </div>
         <button onClick={openAddModal} className="admin-btn admin-btn-primary">
           <Plus size={16} /> Add Banner
         </button>
       </div>
-      
-      <div className="admin-table-container">
-        {isLoading ? (
-          <div className="admin-loading">Loading banners...</div>
-        ) : (
-          <div className="admin-banners-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Image</th>
-                  <th>Title</th>
-                  <th>Position</th>
-                  <th>Sort</th>
-                  <th>Status</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {banners.map((banner) => (
-                  <tr key={banner.id}>
-                    <td>
-                      <div className="admin-td-image">
-                        <img src={resolveSiteAssetUrl(banner.imageUrl) || banner.imageUrl} alt={banner.title} className="admin-banners-table-image" />
-                      </div>
-                    </td>
-                    <td className="font-medium">{banner.title}</td>
-                    <td><span className="admin-badge">{banner.position}</span></td>
-                    <td>{banner.sortOrder}</td>
-                    <td>
-                      <span className={"admin-badge " + (banner.isActive ? 'admin-badge-success' : 'admin-badge-error')}>
-                        {banner.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="text-right">
-                      <div className="admin-banners-actions">
-                        <button
-                          className="admin-action-btn admin-btn-edit"
-                          onClick={() => openEditModal(banner)}
-                          title="Edit Banner"
-                          aria-label="Edit Banner"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          className="admin-action-btn admin-btn-delete"
-                          onClick={() => handleDelete(banner.id)}
-                          title="Delete Banner"
-                          aria-label="Delete Banner"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {banners.length === 0 && !isLoading && (
-                  <tr>
-                    <td colSpan={6} className="text-center p-4 text-gray-500">
-                      No banners found. Start by adding one.
-                    </td>
-                  </tr>
+
+      {isLoading ? (
+        <div className="loading-page"><div className="spinner" /></div>
+      ) : banners.length === 0 ? (
+        <div className="admin-banners-empty">No banners found. Start by adding one.</div>
+      ) : (
+        <div className="admin-banners-grid">
+          {banners.map((banner) => (
+            <article key={banner.id} className="admin-banner-card">
+              <div className="admin-banner-card-image">
+                {banner.imageUrl ? (
+                  <img src={resolveSiteAssetUrl(banner.imageUrl) || banner.imageUrl} alt={banner.title} />
+                ) : (
+                  <div className="admin-banner-no-image">No image</div>
                 )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                <span className={`admin-banner-status-badge ${banner.isActive ? 'is-active' : 'is-inactive'}`}>
+                  {banner.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+
+              <div className="admin-banner-card-body">
+                <h3 className="admin-banner-card-title">{banner.title}</h3>
+                {banner.subtitle && <p className="admin-banner-card-subtitle">{banner.subtitle}</p>}
+
+                <div className="admin-banner-card-meta">
+                  <span><MapPin size={12} /> {banner.position}</span>
+                  <span><ArrowUpDown size={12} /> Order: {banner.sortOrder}</span>
+                  {banner.buttonText && <span>CTA: {banner.buttonText}</span>}
+                </div>
+
+                <div className="admin-banner-card-footer">
+                  <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openEditModal(banner)} title="Edit Banner">
+                    <Edit2 size={13} /> Edit
+                  </button>
+                  <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(banner.id)} title="Delete Banner">
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="admin-modal-overlay">
-          <div className="admin-modal-content">
+          <div className="admin-modal-content" style={{ maxWidth: 640 }}>
             <div className="admin-modal-header">
-              <h3>{editingBanner ? 'Edit Banner' : 'Add New Banner'}</h3>
-              <button type="button" onClick={closeModal} className="admin-btn-icon" aria-label="Close">
+              <h3 className="admin-modal-title">{editingBanner ? 'Edit Banner' : 'Add New Banner'}</h3>
+              <button type="button" onClick={closeModal} className="admin-modal-close" aria-label="Close">
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-group">
-                <label htmlFor="banner-title">Title <span className="text-red-500">*</span></label>
+                <label htmlFor="banner-title">Title *</label>
                 <input
                   id="banner-title"
                   type="text"
@@ -246,7 +225,7 @@ export default function AdminBanners() {
                 />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="banner-image-url">Image URL <span className="text-red-500">*</span></label>
+                <label htmlFor="banner-image-url">Image URL *</label>
                 <div className="admin-banners-upload-row">
                   <input
                     id="banner-image-url"
@@ -273,7 +252,7 @@ export default function AdminBanners() {
                   <img
                     src={getImageUrl(formData.imageUrl)}
                     alt="Preview"
-                    className="admin-modal-image-preview admin-banners-preview-image"
+                    className="admin-banners-preview-image"
                     onError={(e: any) => e.target.style.display = 'none'}
                   />
                 )}
@@ -335,10 +314,8 @@ export default function AdminBanners() {
                     placeholder="Shop Now"
                   />
                 </div>
-              </div>
-              <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="banner-position">Position <span className="text-red-500">*</span></label>
+                  <label htmlFor="banner-position">Position *</label>
                   <input
                     id="banner-position"
                     type="text"
@@ -348,21 +325,19 @@ export default function AdminBanners() {
                     required
                   />
                 </div>
-                <div className="admin-form-group admin-banners-checkbox-group">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  />
-                  <label htmlFor="isActive">Is Active</label>
-                </div>
               </div>
-              
+              <label className="admin-banners-checkbox-group" htmlFor="isActive">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                />
+                <span>Active</span>
+              </label>
+
               <div className="admin-modal-actions">
-                <button type="button" onClick={closeModal} className="admin-btn admin-btn-secondary">
-                  Cancel
-                </button>
+                <button type="button" onClick={closeModal} className="admin-btn admin-btn-outline">Cancel</button>
                 <button type="submit" className="admin-btn admin-btn-primary">
                   {editingBanner ? 'Update Banner' : 'Save Banner'}
                 </button>

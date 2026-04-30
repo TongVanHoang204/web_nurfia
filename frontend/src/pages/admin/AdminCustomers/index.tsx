@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { CalendarDays, Download, Eye, Filter, Mail, Package, Phone, Search, UserRound, Users, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -543,7 +543,7 @@ export default function AdminCustomers() {
               </button>
             </div>
 
-            <div className="admin-modal-form customers-detail-content">
+            <div className="admin-modal-body customers-detail-content">
               <div className="customers-detail-tabs">
                 <button
                   type="button"

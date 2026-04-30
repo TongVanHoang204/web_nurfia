@@ -151,7 +151,18 @@ export const reviewController = {
           orderBy,
           include: {
             user: { select: { fullName: true, username: true, email: true } },
-            product: { select: { id: true, name: true, slug: true } },
+            product: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                images: {
+                  where: { isPrimary: true },
+                  take: 1,
+                  select: { url: true, alt: true },
+                },
+              },
+            },
           },
         }),
         prisma.productReview.count({ where }),

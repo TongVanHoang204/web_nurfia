@@ -1,25 +1,131 @@
-.admin-banners-table-image {
-  height: 40px;
-  width: 74px;
+.admin-banners-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.6s var(--transition-base);
+}
+
+.admin-banners-subtitle {
+  font-size: 14px;
+  color: var(--color-text-light);
+  margin-top: 4px;
+}
+
+/* Banner Grid */
+.admin-banners-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+/* Banner Card */
+.admin-banner-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-banner-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md, 0 4px 20px rgba(0,0,0,0.06));
+}
+
+.admin-banner-card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  overflow: hidden;
+  background: var(--color-bg-alt);
+}
+
+.admin-banner-card-image img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 4px;
+  display: block;
 }
 
-.admin-banners-table-wrap {
-  overflow-x: auto;
-}
-
-.admin-banners-table-wrap .admin-table {
-  min-width: 760px;
-}
-
-.admin-banners-actions {
-  display: inline-flex;
+.admin-banner-card-image .admin-banner-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  justify-content: flex-end;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
 }
 
+.admin-banner-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(4px);
+}
+
+.admin-banner-status-badge.is-active {
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.admin-banner-status-badge.is-inactive {
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.admin-banner-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-banner-card-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  color: var(--color-black);
+  line-height: 1.3;
+}
+
+.admin-banner-card-subtitle {
+  font-size: 13px;
+  color: var(--color-text-light);
+  margin-top: -4px;
+}
+
+.admin-banner-card-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-banner-card-meta span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-banner-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Upload Row */
 .admin-banners-upload-row {
   display: flex;
   gap: 8px;
@@ -49,8 +155,8 @@
 
 .admin-banners-preview-image {
   margin-top: 10px;
-  max-height: 100px;
-  border-radius: 4px;
+  max-height: 120px;
+  border: 1px solid var(--color-border);
 }
 
 .admin-banners-checkbox-group {
@@ -67,7 +173,20 @@
   font-weight: normal;
 }
 
+/* Empty state */
+.admin-banners-empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  border: 1px dashed var(--color-border);
+}
+
 @media (max-width: 768px) {
+  .admin-banners-grid {
+    grid-template-columns: 1fr;
+  }
+
   .admin-banners-upload-row {
     flex-direction: column;
     align-items: stretch;
@@ -80,11 +199,5 @@
 
   .admin-banners-checkbox-group {
     padding-top: 0;
-  }
-}
-
-@media (max-width: 640px) {
-  .admin-banners-table-wrap .admin-table {
-    min-width: 680px;
   }
 }

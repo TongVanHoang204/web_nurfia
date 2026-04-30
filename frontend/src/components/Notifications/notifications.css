@@ -246,8 +246,20 @@
   padding: 10px 18px;
   border-top: var(--notif-border);
   background: var(--notif-header-bg);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
+
+.notif-view-all-link {
+  color: #111827;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.notif-view-all-link:hover { text-decoration: underline; }
 
 .notif-load-more-btn {
   background: none;

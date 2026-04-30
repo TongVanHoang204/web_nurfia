@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import api from '../../../api/client';
 import { Activity, CalendarDays, Download, Eye, Filter, ListRestart, RefreshCw, RotateCcw, Search, Users, X } from 'lucide-react';
@@ -920,14 +920,14 @@ export default function AdminActivityLogs() {
       {selectedLog && (
         <div className="admin-modal-overlay" onClick={() => setSelectedLog(null)}>
           <div className="admin-modal-content activity-log-modal" onClick={(event) => event.stopPropagation()}>
-            <div className="activity-log-modal-header">
-              <h3>Activity Detail</h3>
-              <button type="button" className="activity-log-modal-close" aria-label="Close activity detail modal" title="Close" onClick={() => setSelectedLog(null)}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Activity Detail</h3>
+              <button type="button" className="admin-modal-close" aria-label="Close activity detail modal" title="Close" onClick={() => setSelectedLog(null)}>
                 <X size={18} />
               </button>
             </div>
 
-            <div className="activity-log-modal-layout">
+            <div className="admin-modal-body activity-log-modal-layout">
               <div className="activity-log-modal-grid">
                 <div><span>Time</span><strong>{formatDateTime(selectedLog.createdAt)}</strong></div>
                 <div><span>User</span><strong>{selectedLog.user?.fullName || 'System Event'}</strong></div>
@@ -990,7 +990,7 @@ export default function AdminActivityLogs() {
               </div>
             </div>
 
-            <div className="activity-log-modal-actions">
+            <div className="admin-modal-actions">
               {canManageRollback && canRollbackFromSections(selectedLog, detailSectionsByLog[selectedLog.id] || []) && (
                 <button
                   type="button"

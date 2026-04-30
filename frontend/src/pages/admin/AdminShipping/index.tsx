@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Edit2, Plus, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
@@ -259,8 +259,8 @@ export default function AdminShipping() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content shipping-modal-content">
             <div className="admin-modal-header">
-              <h3>{editingMethod ? 'Edit Shipping Method' : 'Create Shipping Method'}</h3>
-              <button aria-label="Close" title="Close modal" onClick={resetForm} className="admin-btn-icon">
+              <h3 className="admin-modal-title">{editingMethod ? 'Edit Shipping Method' : 'Create Shipping Method'}</h3>
+              <button aria-label="Close" title="Close modal" onClick={resetForm} className="admin-modal-close">
                 <X size={20} />
               </button>
             </div>
