@@ -11,8 +11,8 @@ export const aiController = {
       }
 
       const apiKey = process.env.HUGGINGFACE_API_KEY;
-      // Using a more stable and faster model for free tier
-      const model = 'HuggingFaceH4/zephyr-7b-beta'; 
+      // Use configured model or stable fallback
+      const model = process.env.HUGGINGFACE_MODEL || 'HuggingFaceH4/zephyr-7b-beta'; 
 
       if (!apiKey) {
         throw new AppError('AI Service is not configured properly.', 500);
