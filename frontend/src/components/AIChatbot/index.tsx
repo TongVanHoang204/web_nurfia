@@ -47,20 +47,21 @@ const renderMessageContent = (content: string) => {
 };
 
 export default function AIChatbot() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-  
-  // Local storage history (30 days)
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem('nurfia_ai_chat_history');
+
+  const storageKey = `nurfia_ai_chat_history_${user?.id || 'guest'}`;
+
+  const loadHistory = () => {
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.timestamp && Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {
           if (parsed.messages && parsed.messages.length > 0) return parsed.messages;
         } else {
-          localStorage.removeItem('nurfia_ai_chat_history'); // Expired
+          localStorage.removeItem(storageKey); // Expired
         }
       } catch (err) {}
     }
@@ -71,7 +72,14 @@ export default function AIChatbot() {
         content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)'
       }
     ];
-  });
+  };
+
+  const [messages, setMessages] = useState<Message[]>(loadHistory);
+
+  // Load correct history on user account switch
+  useEffect(() => {
+    setMessages(loadHistory());
+  }, [user?.id]);
 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -80,12 +88,12 @@ export default function AIChatbot() {
   // Sync to local storage
   useEffect(() => {
     if (messages.length > 1) { // Don't just save the welcome message over and over
-      localStorage.setItem('nurfia_ai_chat_history', JSON.stringify({
+      localStorage.setItem(storageKey, JSON.stringify({
         timestamp: Date.now(),
         messages: messages
       }));
     }
-  }, [messages]);
+  }, [messages, storageKey]);
 
   // Shrink when there is window resize to avoid overlapping
   useEffect(() => {
