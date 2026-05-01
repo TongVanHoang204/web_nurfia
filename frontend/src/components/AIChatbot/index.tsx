@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, X, Bot, User, Loader2 } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, User, Loader2, ShoppingBag } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import api from '../../api/client';
 import './AIChatbot.css';
@@ -11,10 +12,37 @@ type Message = {
 };
 
 const QUICK_REPLIES = [
-  "Phí giao hàng ra sao?",
-  "Chính sách đổi trả?",
-  "Địa chỉ cửa hàng?"
+  "How much is shipping?",
+  "Return policy?",
+  "Where is your store?"
 ];
+
+// Helper to parse content with embedded product cards
+const renderMessageContent = (content: string) => {
+  // Regex matches [PRODUCT|id|name|price|image_url|slug]
+  const productRegex = /(\[PRODUCT\|[^\]]+\])/g;
+  const parts = content.split(productRegex);
+
+  return parts.map((part, idx) => {
+    if (part.startsWith('[PRODUCT|') && part.endsWith(']')) {
+      const data = part.substring(9, part.length - 1).split('|');
+      const [id, name, price, image, slug] = data;
+      
+      return (
+        <Link to={`/product/${slug}`} key={idx} className="ai-product-card">
+          <div className="ai-product-img">
+            {image ? <img src={image} alt={name} /> : <ShoppingBag size={24} />}
+          </div>
+          <div className="ai-product-info">
+            <h4>{name}</h4>
+            <span className="price">${Number(price).toFixed(2)}</span>
+          </div>
+        </Link>
+      );
+    }
+    return <ReactMarkdown key={idx}>{part}</ReactMarkdown>;
+  });
+};
 
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +50,7 @@ export default function AIChatbot() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Hello! I am Nurfia AI. How can I help you with your shopping today?'
+      content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)'
     }
   ]);
   const [input, setInput] = useState('');
@@ -116,7 +144,7 @@ export default function AIChatbot() {
               </div>
               <div className={`msg-bubble ${msg.role === 'assistant' ? 'markdown-body' : ''}`}>
                 {msg.role === 'assistant' ? (
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  renderMessageContent(msg.content)
                 ) : (
                   msg.content
                 )}
@@ -128,7 +156,7 @@ export default function AIChatbot() {
               <div className="msg-icon"><Bot size={14} /></div>
               <div className="msg-bubble">
                 <Loader2 size={16} className="spinner" />
-                <span>AI đang suy nghĩ...</span>
+                <span>AI is thinking...</span>
               </div>
             </div>
           )}
@@ -151,7 +179,7 @@ export default function AIChatbot() {
           <div className="ai-chatbot-input">
             <input 
               type="text" 
-              placeholder="Nhập câu hỏi của bạn..."
+              placeholder="Ask me anything in any language..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}

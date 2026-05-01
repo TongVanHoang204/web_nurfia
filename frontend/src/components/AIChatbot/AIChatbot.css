@@ -306,6 +306,60 @@
   background: var(--color-accent);
 }
 
+.ai-product-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.ai-product-card:hover {
+  border-color: var(--color-black);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.ai-product-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.ai-product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ai-product-info h4 {
+  font-size: 14px;
+  margin: 0 0 6px 0;
+  font-weight: 600;
+  color: var(--color-black);
+  line-height: 1.3;
+}
+
+.ai-product-info .price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
 .spinner {
   animation: rotate 2s linear infinite;
 }
