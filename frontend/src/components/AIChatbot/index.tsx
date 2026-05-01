@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, Bot, User, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import api from '../../api/client';
 import './AIChatbot.css';
 
@@ -8,6 +9,12 @@ type Message = {
   role: 'user' | 'assistant';
   content: string;
 };
+
+const QUICK_REPLIES = [
+  "Phí giao hàng ra sao?",
+  "Chính sách đổi trả?",
+  "Địa chỉ cửa hàng?"
+];
 
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,17 +35,18 @@ export default function AIChatbot() {
     }
   }, [messages, isTyping]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isTyping) return;
+  const handleSend = async (overrideInput?: string) => {
+    const textToSend = overrideInput || input;
+    if (!textToSend.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim()
+      content: textToSend.trim()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    if (!overrideInput) setInput('');
     setIsTyping(true);
 
     try {
@@ -106,8 +114,12 @@ export default function AIChatbot() {
               <div className="msg-icon">
                 {msg.role === 'assistant' ? <Bot size={14} /> : <User size={14} />}
               </div>
-              <div className="msg-bubble">
-                {msg.content}
+              <div className={`msg-bubble ${msg.role === 'assistant' ? 'markdown-body' : ''}`}>
+                {msg.role === 'assistant' ? (
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                ) : (
+                  msg.content
+                )}
               </div>
             </div>
           ))}
@@ -116,23 +128,38 @@ export default function AIChatbot() {
               <div className="msg-icon"><Bot size={14} /></div>
               <div className="msg-bubble">
                 <Loader2 size={16} className="spinner" />
-                <span>Thinking...</span>
+                <span>AI đang suy nghĩ...</span>
               </div>
             </div>
           )}
         </div>
 
-        <div className="ai-chatbot-input">
-          <input 
-            type="text" 
-            placeholder="Ask me anything..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          />
-          <button onClick={handleSend} disabled={!input.trim() || isTyping} title="Send message" aria-label="Send message">
-            <Send size={18} />
-          </button>
+        <div className="ai-chatbot-footer">
+          {messages.length < 3 && !isTyping && (
+            <div className="quick-replies">
+              {QUICK_REPLIES.map((reply, i) => (
+                <button 
+                  key={i} 
+                  className="quick-reply-btn"
+                  onClick={() => handleSend(reply)}
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="ai-chatbot-input">
+            <input 
+              type="text" 
+              placeholder="Nhập câu hỏi của bạn..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            />
+            <button onClick={() => handleSend()} disabled={!input.trim() || isTyping} title="Send message" aria-label="Send message">
+              <Send size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
