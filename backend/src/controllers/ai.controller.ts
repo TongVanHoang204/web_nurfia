@@ -34,7 +34,7 @@ export const aiController = {
 
       // Fetch dynamic store settings from DB
       const settings = await prisma.setting.findMany();
-      const settingsMap = settings.reduce((acc: Record<string, string>, s: any) => ({ ...acc, [s.key]: s.value }), {} as Record<string, string>);
+      const settingsMap: any = settings.reduce((acc: any, s: any) => ({ ...acc, [s.key]: s.value }), {});
 
       let secureUserName = '';
       let secureCartContext = 'Empty';
