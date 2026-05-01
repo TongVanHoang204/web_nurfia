@@ -50,16 +50,42 @@ export default function AIChatbot() {
   const { isAuthenticated } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)'
+  
+  // Local storage history (30 days)
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('nurfia_ai_chat_history');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.timestamp && Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {
+          if (parsed.messages && parsed.messages.length > 0) return parsed.messages;
+        } else {
+          localStorage.removeItem('nurfia_ai_chat_history'); // Expired
+        }
+      } catch (err) {}
     }
-  ]);
+    return [
+      {
+        id: 'welcome',
+        role: 'assistant',
+        content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)'
+      }
+    ];
+  });
+
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Sync to local storage
+  useEffect(() => {
+    if (messages.length > 1) { // Don't just save the welcome message over and over
+      localStorage.setItem('nurfia_ai_chat_history', JSON.stringify({
+        timestamp: Date.now(),
+        messages: messages
+      }));
+    }
+  }, [messages]);
 
   // Shrink when there is window resize to avoid overlapping
   useEffect(() => {
@@ -159,6 +185,9 @@ export default function AIChatbot() {
         </header>
 
         <div className="ai-chatbot-messages" ref={scrollRef}>
+          <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '1rem' }}>
+            Chat history is saved for 30 days.
+          </div>
           {messages.map((msg) => (
             <div key={msg.id} className={`ai-chat-msg ${msg.role}`}>
               <div className="msg-icon">

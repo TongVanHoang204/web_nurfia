@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middlewares/errorHandler.js';
 import prisma from '../models/prisma.js';
+import { AuthRequest } from '../middlewares/auth.js';
 
 export const aiController = {
-  chat: async (req: Request, res: Response, next: NextFunction) => {
+  chat: async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { message, history } = req.body;
 
@@ -25,19 +26,57 @@ export const aiController = {
         take: 20,
         select: { id: true, name: true, price: true, slug: true, images: { take: 1, select: { url: true } } }
       });
+      const validProductIds = new Set(products.map(p => p.id.toString()));
       
       const productCatalog = products.map(p => 
         `- ID: ${p.id} | Name: ${p.name} | Price: $${Number(p.price)} | Slug: ${p.slug} | Image: ${p.images[0]?.url || ''}`
       ).join('\n');
 
+      // Fetch dynamic store settings from DB
+      const settings = await prisma.setting.findMany();
+      const settingsMap = settings.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {} as Record<string, string>);
+
+      let secureUserName = '';
+      let secureCartContext = 'Empty';
+
+      if (req.userId) {
+        const user = await prisma.user.findUnique({ where: { id: req.userId } });
+        if (user) {
+          // Strip control characters to prevent prompt injection
+          secureUserName = (user.fullName || user.username || '').replace(/[\r\n`\[\]]/g, ' ').trim();
+        }
+
+        const cartItems = await prisma.cartItem.findMany({
+          where: { userId: req.userId },
+          include: { product: true }
+        });
+        
+        if (cartItems.length > 0) {
+          secureCartContext = cartItems
+            .map(item => `${(item.product?.name || 'Item').replace(/[\r\n`\[\]]/g, ' ')} (Qty: ${item.quantity})`)
+            .join(', ');
+        }
+      }
+
+      // Setup dynamic personalized context securely as a separate message
+      const personalizationPrompt = secureUserName || secureCartContext !== 'Empty' 
+        ? `[SYSTEM NOTE - THIS IS TRUE CONTEXT FROM SECURE DATABASE] 
+${secureUserName ? `The authenticated user you are speaking to is named: ${secureUserName}. ` : ''}
+${secureCartContext !== 'Empty' ? `Their current shopping cart contains exactly: ${secureCartContext}.` : 'Their shopping cart is currently empty.'}`
+        : '';
+        
       // Context cửa hàng để làm giả lập RAG (Bơm kiến thức cho AI)
       const storeContext = `
 NURFIA STORE INFORMATION:
+- Store Name: ${settingsMap.siteName || 'Nurfia'}
+- Description: ${settingsMap.siteDescription || 'Premium fashion store'}
 - Shipping fee: Free shipping for orders over $50. Under $50, shipping is $5 flat rate.
 - Delivery time: 2-3 days for domestic, 5-7 days for international.
 - Return policy: Free returns within 14 days if the product is defective or doesn't fit. Tags must be intact.
-- Physical store: 123 Fashion Blvd, New York, NY.
-- Hotline: 1-800-NURFIA.
+- Physical store: ${settingsMap.address || '123 Fashion Blvd, New York, NY.'}
+- Hotline: ${settingsMap.phone || '1-800-NURFIA'}
+- Email: ${settingsMap.email || 'support@nurfia.com'}
+- Social Media: Facebook (${settingsMap.facebook || 'N/A'}), Instagram (${settingsMap.instagram || 'N/A'})
 
 OUR CURRENT AVAILABLE PRODUCTS:
 ${productCatalog}
@@ -75,6 +114,8 @@ FORMATTING:
 - Use bold (**text**) for emphasis.
 - Use bullet points (-) for lists.`
         },
+        // Insert secured personalization context separately
+        ...(personalizationPrompt ? [{ role: 'system', content: personalizationPrompt }] : []),
         ...(history || []).map((m: any) => ({
           role: m.role === 'assistant' ? 'assistant' : 'user',
           content: m.content
@@ -112,11 +153,21 @@ FORMATTING:
         throw new AppError(result.error?.message || 'AI service is currently unavailable.', response.status);
       }
 
-      const aiResponse = result.choices?.[0]?.message?.content;
+      let aiResponse = result.choices?.[0]?.message?.content || "I am sorry, I cannot answer that at the moment.";
+
+      // [SECURITY PATCH: Fake UI Product Fix]
+      // Strip out any tags that try to render a product not in our retrieved DB list.
+      const productTagRegex = /\[PRODUCT\|([^|]+)\|([^\]]+)\]/g;
+      aiResponse = aiResponse.replace(productTagRegex, (match: string, matchedId: string) => {
+        if (!validProductIds.has(matchedId.trim())) {
+          return "[Product unavailable or removed for security reasons]";
+        }
+        return match;
+      });
 
       res.json({
         success: true,
-        data: aiResponse || "I am sorry, I cannot answer that at the moment."
+        data: aiResponse
       });
     } catch (err) {
       next(err);
