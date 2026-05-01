@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { Plus, Edit2, Trash2, X, Search, Zap, ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
@@ -359,7 +359,7 @@ export default function AdminProducts() {
           <h1 className="admin-page-title">Product Catalog</h1>
           <p className="admin-order-badge-stat"><span>Inventory Status:</span> <strong>{pagination.total} Items Listed</strong></p>
         </div>
-        <button className="btn btn-primary" onClick={openAddModal}><Plus size={16} style={{ marginRight: 8 }} /> Add New Product</button>
+        <button type="button" className="btn btn-primary" onClick={openAddModal}><Plus size={16} className="mr-2" /> Add New Product</button>
       </header>
 
       <div className="ap-toolbar">
@@ -374,7 +374,7 @@ export default function AdminProducts() {
           )}
           <div className="ap-filter-group">
             <span className="ap-filter-label">Status</span>
-            <select className="ap-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+            <select className="ap-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} title="Filter by Status">
               <option value="All">All Status</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
@@ -382,7 +382,7 @@ export default function AdminProducts() {
           </div>
           <div className="ap-filter-group">
             <span className="ap-filter-label">Brand</span>
-            <select className="ap-filter-select" value={brandFilter} onChange={e => setBrandFilter(e.target.value)}>
+            <select className="ap-filter-select" value={brandFilter} onChange={e => setBrandFilter(e.target.value)} title="Filter by Brand">
               <option value="All">All Brands</option>
               {brands.map((b: any) => <option key={b.id} value={b.slug}>{b.name}</option>)}
             </select>
@@ -394,20 +394,20 @@ export default function AdminProducts() {
         <table className="ap-table">
           <thead>
             <tr>
-              <th style={{ width: 40 }}><input type="checkbox" checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length} onChange={e => setSelectedIds(e.target.checked ? filteredProducts.map(p => p.id) : [])} /></th>
+              <th className="w-10"><input type="checkbox" title="Select all products" checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length} onChange={e => setSelectedIds(e.target.checked ? filteredProducts.map(p => p.id) : [])} /></th>
               <th>Product Information</th>
               <th>SKU</th>
               <th>Quick Brand</th>
               <th>Price</th>
               <th>Stock</th>
               <th>Status</th>
-              <th style={{ textAlign: 'right' }}>Actions</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? <tr><td colSpan={8} className="text-center"><div className="spinner" /></td></tr> : filteredProducts.map(p => (
               <tr key={p.id}>
-                <td><input type="checkbox" checked={selectedIds.includes(p.id)} onChange={e => setSelectedIds(e.target.checked ? [...selectedIds, p.id] : selectedIds.filter(id => id !== p.id))} /></td>
+                <td><input type="checkbox" title={`Select ${p.name}`} checked={selectedIds.includes(p.id)} onChange={e => setSelectedIds(e.target.checked ? [...selectedIds, p.id] : selectedIds.filter(id => id !== p.id))} /></td>
                 <td>
                   <div className="ap-product-cell">
                     <div className="ap-product-img-box">
@@ -421,7 +421,7 @@ export default function AdminProducts() {
                 </td>
                 <td className="ap-text-muted">{p.sku}</td>
                 <td>
-                  <select className="ap-filter-select" style={{ minWidth: 120 }} value={p.brandId || ''} onChange={e => handleQuickBrandChange(p, e.target.value)}>
+                  <select className="ap-filter-select min-w-[120px]" title="Quick Select Brand" value={p.brandId || ''} onChange={e => handleQuickBrandChange(p, e.target.value)}>
                     <option value="">Unassigned</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select>
@@ -429,10 +429,10 @@ export default function AdminProducts() {
                 <td><strong className="ap-price-bold">${Number(p.salePrice || p.price).toFixed(0)}</strong></td>
                 <td><span className={`ap-badge ${p.stock < 10 ? 'ap-badge-inactive' : 'ap-badge-active'}`}>{p.stock} Units</span></td>
                 <td><span className={`ap-badge ${p.isActive ? 'ap-badge-active' : 'ap-badge-inactive'}`}>{p.isActive ? 'Live' : 'Hidden'}</span></td>
-                <td style={{ textAlign: 'right' }}>
+                <td className="text-right">
                   <div className="ap-btn-group">
-                    <button className="ap-action-btn" onClick={() => openEditModal(p)}><Edit2 size={14} /></button>
-                    <button className="ap-action-btn ap-action-btn-danger" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
+                    <button type="button" className="ap-action-btn" title="Edit Product" aria-label="Edit Product" onClick={() => openEditModal(p)}><Edit2 size={14} /></button>
+                    <button type="button" className="ap-action-btn ap-action-btn-danger" title="Delete Product" aria-label="Delete Product" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>
@@ -452,46 +452,46 @@ export default function AdminProducts() {
 
       {isModalOpen && (
         <div className="admin-modal-overlay">
-          <div className="admin-modal-content" style={{ maxWidth: 900 }}>
+          <div className="admin-modal-content max-w-[900px]">
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">{editingProduct ? 'Update Product' : 'Create New Product'}</h2>
-              <button type="button" className="admin-modal-close" onClick={closeModal}><X size={20} /></button>
+              <button type="button" className="admin-modal-close" title="Close Modal" aria-label="Close Modal" onClick={closeModal}><X size={20} /></button>
             </div>
             
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Title</label>
-                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                  <label htmlFor="product-title">Title</label>
+                  <input id="product-title" type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} title="Product Title" />
                 </div>
                 <div className="admin-form-group">
-                  <label>SKU</label>
-                  <input type="text" required value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} />
-                </div>
-              </div>
-
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Base Price</label>
-                  <input type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
-                </div>
-                <div className="admin-form-group">
-                  <label>Sale Price</label>
-                  <input type="number" value={formData.salePrice} onChange={e => setFormData({...formData, salePrice: e.target.value})} />
+                  <label htmlFor="product-sku">SKU</label>
+                  <input id="product-sku" type="text" required value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} title="Product SKU" />
                 </div>
               </div>
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Category</label>
-                  <select value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})}>
+                  <label htmlFor="product-base-price">Base Price</label>
+                  <input id="product-base-price" type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} title="Base Price" />
+                </div>
+                <div className="admin-form-group">
+                  <label htmlFor="product-sale-price">Sale Price</label>
+                  <input id="product-sale-price" type="number" value={formData.salePrice} onChange={e => setFormData({...formData, salePrice: e.target.value})} title="Sale Price" />
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="product-category">Category</label>
+                  <select id="product-category" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} title="Product Category">
                     <option value="">Select Category</option>
                     {hierarchicalCategories.map((c: any) => <option key={c.id} value={c.id}>{c.displayName || c.name}</option>)}
                   </select>
                 </div>
                 <div className="admin-form-group">
-                  <label>Brand</label>
-                  <select value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})}>
+                  <label htmlFor="product-brand">Brand</label>
+                  <select id="product-brand" value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})} title="Product Brand">
                     <option value="">Unassigned</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select>
@@ -499,8 +499,8 @@ export default function AdminProducts() {
               </div>
 
               <div className="admin-form-group">
-                <label>Short Description</label>
-                <textarea rows={3} value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} placeholder="Brief summary of the product..." />
+                <label htmlFor="product-short-desc">Short Description</label>
+                <textarea id="product-short-desc" rows={3} value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} placeholder="Brief summary of the product..." title="Short Description" />
               </div>
 
               <div className="admin-form-group">
@@ -514,32 +514,32 @@ export default function AdminProducts() {
                   {formData.images.map((url, idx) => (
                     <div key={idx} className="ap-image-item">
                       <img src={getImageUrl(url)} alt="" />
-                      <button type="button" className="ap-image-remove" onClick={() => removeImage(url)}><X size={12} /></button>
+                      <button type="button" className="ap-image-remove" title="Remove Image" aria-label="Remove Image" onClick={() => removeImage(url)}><X size={12} /></button>
                     </div>
                   ))}
-                  <label className="ap-image-upload">
+                  <label className="ap-image-upload" title="Upload Image">
                     {isUploading ? <div className="spinner" /> : <Upload size={24} />}
-                    <input type="file" multiple accept="image/*" hidden onChange={handleImageUpload} />
+                    <input type="file" title="Upload Image Input" multiple accept="image/*" hidden onChange={handleImageUpload} />
                   </label>
                 </div>
               </div>
 
               <div className="ap-variant-toggle">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div className="flex justify-between items-center mb-4">
                   <div 
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}
+                    className="flex items-center gap-2 cursor-pointer select-none"
                     onClick={() => setIsVariantsExpanded(!isVariantsExpanded)}
                   >
-                    <h3 className="ap-product-name" style={{ margin: 0 }}>Variants & Inventory</h3>
+                    <h3 className="ap-product-name m-0">Variants & Inventory</h3>
                     {isVariantsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </div>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
-                      <input type="checkbox" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
+                  <div className="flex gap-2 items-center">
+                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                      <input type="checkbox" title="Auto SKU" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
                       Auto SKU
                     </label>
                     {variantColorValues.length > 0 && variantSizeValues.length > 0 && (
-                      <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => {
+                      <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" title="Generate All Formats" aria-label="Generate All Variants" onClick={() => {
                         const result = buildVariantsWithMissingColorSize(formData.variants, formData.autoGenerateVariantSku);
                         setFormData({...formData, variants: result.variants});
                         if (result.addedCount > 0) addToast(`Generated ${result.addedCount} missing variant(s)`, 'success');
@@ -554,25 +554,25 @@ export default function AdminProducts() {
                   <div className="ap-variant-list">
                     {formData.variants.map((v, idx) => (
                     <div key={idx} className="ap-variant-row">
-                      <div className="admin-form-group"><label>SKU</label><input type="text" value={v.sku} onChange={e => updateVariant(idx, 'sku', e.target.value)} disabled={formData.autoGenerateVariantSku} /></div>
-                      <div className="admin-form-group"><label>Stock</label><input type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} /></div>
-                      <div className="admin-form-group"><label>Price</label><input type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder="Default" /></div>
-                      <div className="admin-form-group"><label>Sale</label><input type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder="None" /></div>
+                      <div className="admin-form-group"><label htmlFor={`v-sku-${idx}`}>SKU</label><input id={`v-sku-${idx}`} type="text" value={v.sku} onChange={e => updateVariant(idx, 'sku', e.target.value)} disabled={formData.autoGenerateVariantSku} title="Variant SKU" /></div>
+                      <div className="admin-form-group"><label htmlFor={`v-stock-${idx}`}>Stock</label><input id={`v-stock-${idx}`} type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title="Variant Stock" /></div>
+                      <div className="admin-form-group"><label htmlFor={`v-price-${idx}`}>Price</label><input id={`v-price-${idx}`} type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder="Default" title="Variant Price" /></div>
+                      <div className="admin-form-group"><label htmlFor={`v-sale-${idx}`}>Sale</label><input id={`v-sale-${idx}`} type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder="None" title="Variant Sale Price" /></div>
                       <div className="admin-form-group">
-                        <label>Color</label>
-                        <select value={v.attributes[0] || ''} onChange={e => { const a = [...v.attributes]; a[0] = e.target.value; updateVariant(idx, 'attributes', a); }}>
+                        <label htmlFor={`v-color-${idx}`}>Color</label>
+                        <select id={`v-color-${idx}`} value={v.attributes[0] || ''} onChange={e => { const a = [...v.attributes]; a[0] = e.target.value; updateVariant(idx, 'attributes', a); }} title="Variant Color">
                            <option value="">Color</option>
                            {variantColorValues.map((cv: any) => <option key={cv.id} value={cv.id}>{cv.value}</option>)}
                         </select>
                       </div>
                       <div className="admin-form-group">
-                        <label>Size</label>
-                        <select value={v.attributes[1] || ''} onChange={e => { const a = [...v.attributes]; a[1] = e.target.value; updateVariant(idx, 'attributes', a); }}>
+                        <label htmlFor={`v-size-${idx}`}>Size</label>
+                        <select id={`v-size-${idx}`} value={v.attributes[1] || ''} onChange={e => { const a = [...v.attributes]; a[1] = e.target.value; updateVariant(idx, 'attributes', a); }} title="Variant Size">
                            <option value="">Size</option>
                            {variantSizeValues.map((sv: any) => <option key={sv.id} value={sv.id}>{sv.value}</option>)}
                         </select>
                       </div>
-                      <button type="button" className="ap-action-btn ap-action-btn-danger" onClick={() => removeVariant(idx)}><Trash2 size={16} /></button>
+                      <button type="button" className="ap-action-btn ap-action-btn-danger" title="Remove Variant" aria-label="Remove Variant" onClick={() => removeVariant(idx)}><Trash2 size={16} /></button>
                     </div>
                   ))}
                   <button type="button" className="btn btn-outline btn-sm" onClick={addVariant}><Plus size={14} /> Add Variant</button>

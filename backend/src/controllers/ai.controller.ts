@@ -10,15 +10,15 @@ export const aiController = {
         throw new AppError('Message is required', 400);
       }
 
-      const apiKey = process.env.NVIDIA_API_KEY;
-      const apiUrl = process.env.NVIDIA_API_URL || 'https://integrate.api.nvidia.com/v1/chat/completions';
-      const model = process.env.NVIDIA_MODEL || 'mistralai/mistral-large-2-instruct'; 
+      const apiKey = process.env.OPENROUTER_API_KEY || process.env.NVIDIA_API_KEY;
+      const apiUrl = process.env.OPENROUTER_API_URL || process.env.NVIDIA_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
+      const model = process.env.OPENROUTER_MODEL || process.env.NVIDIA_MODEL || 'google/gemini-2.5-flash-free'; 
 
       if (!apiKey) {
-        throw new AppError('AI Service (NVIDIA) is not configured properly.', 500);
+        throw new AppError('AI Service is not configured properly.', 500);
       }
 
-      // Construct messages for NVIDIA API
+      // Construct messages for AI API
       const messages = [
         {
           role: 'system',
@@ -47,7 +47,14 @@ export const aiController = {
         }),
       });
 
-      const result = await response.json() as any;
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (err) {
+        console.error('[NVIDIA AI Parse Error]', responseText);
+        throw new AppError('AI service returned an invalid response.', 500);
+      }
 
       if (!response.ok) {
         console.error('[NVIDIA AI Error]', result);

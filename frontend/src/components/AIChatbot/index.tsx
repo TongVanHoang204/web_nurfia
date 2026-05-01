@@ -62,7 +62,7 @@ export default function AIChatbot() {
       setMessages(prev => [...prev, aiMessage]);
     } catch (err) {
       setMessages(prev => [...prev, {
-        id: 'error',
+        id: `error-${Date.now()}`,
         role: 'assistant',
         content: 'Sorry, the AI system is currently busy. Please try again in a moment!'
       }]);
@@ -95,7 +95,7 @@ export default function AIChatbot() {
               <span className="online-indicator">Online Assistant</span>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="close-btn">
+          <button onClick={() => setIsOpen(false)} className="close-btn" title="Close chat" aria-label="Close chat">
             <X size={20} />
           </button>
         </header>
@@ -130,7 +130,7 @@ export default function AIChatbot() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           />
-          <button onClick={handleSend} disabled={!input.trim() || isTyping}>
+          <button onClick={handleSend} disabled={!input.trim() || isTyping} title="Send message" aria-label="Send message">
             <Send size={18} />
           </button>
         </div>
