@@ -26,15 +26,15 @@ export const aiController = {
         take: 20,
         select: { id: true, name: true, price: true, slug: true, images: { take: 1, select: { url: true } } }
       });
-      const validProductIds = new Set(products.map(p => p.id.toString()));
+      const validProductIds = new Set(products.map((p: any) => p.id.toString()));
       
-      const productCatalog = products.map(p => 
+      const productCatalog = products.map((p: any) => 
         `- ID: ${p.id} | Name: ${p.name} | Price: $${Number(p.price)} | Slug: ${p.slug} | Image: ${p.images[0]?.url || ''}`
       ).join('\n');
 
       // Fetch dynamic store settings from DB
       const settings = await prisma.setting.findMany();
-      const settingsMap = settings.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {} as Record<string, string>);
+      const settingsMap = settings.reduce((acc: Record<string, string>, s: any) => ({ ...acc, [s.key]: s.value }), {} as Record<string, string>);
 
       let secureUserName = '';
       let secureCartContext = 'Empty';
@@ -53,7 +53,7 @@ export const aiController = {
         
         if (cartItems.length > 0) {
           secureCartContext = cartItems
-            .map(item => `${(item.product?.name || 'Item').replace(/[\r\n`\[\]]/g, ' ')} (Qty: ${item.quantity})`)
+            .map((item: any) => `${(item.product?.name || 'Item').replace(/[\r\n`\[\]]/g, ' ')} (Qty: ${item.quantity})`)
             .join(', ');
         }
       }
