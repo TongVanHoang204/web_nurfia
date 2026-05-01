@@ -46,6 +46,8 @@ PRODUCT SHOWCASE RULE (CRITICAL):
 If you recommend a product from the list above, you MUST embed it in your response using this EXACT syntax (do not add spaces around the pipes):
 [PRODUCT|id|name|price|image_url|slug]
 
+DO NOT output products in Markdown tables (no |---|---|). Use ONLY the custom [PRODUCT|...] tag format.
+
 Example output:
 "I think you will love this shirt! [PRODUCT|12|Black Cotton Shirt|25.00|/uploads/shirt.jpg|black-cotton-shirt]"
 `;

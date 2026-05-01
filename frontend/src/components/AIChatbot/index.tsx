@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, X, Bot, User, Loader2, ShoppingBag } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, User, Loader2, ShoppingBag, Maximize2, Minimize2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import api from '../../api/client';
+import { useAuthStore } from '../../stores/authStore';
 import './AIChatbot.css';
 
 type Message = {
@@ -45,7 +46,9 @@ const renderMessageContent = (content: string) => {
 };
 
 export default function AIChatbot() {
+  const { isAuthenticated } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -57,11 +60,24 @@ export default function AIChatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Shrink when there is window resize to avoid overlapping
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768 && isMaximized) {
+        setIsMaximized(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMaximized]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isTyping]);
+
+  if (!isAuthenticated) return null;
 
   const handleSend = async (overrideInput?: string) => {
     const textToSend = overrideInput || input;
@@ -120,7 +136,7 @@ export default function AIChatbot() {
       </button>
 
       {/* Chat Window */}
-      <div className="ai-chatbot-window">
+      <div className={`ai-chatbot-window ${isMaximized ? 'is-maximized' : ''}`}>
         <header className="ai-chatbot-header">
           <div className="ai-chatbot-brand">
             <div className="ai-chatbot-avatar">
@@ -131,9 +147,14 @@ export default function AIChatbot() {
               <span className="online-indicator">Online Assistant</span>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="close-btn" title="Close chat" aria-label="Close chat">
-            <X size={20} />
-          </button>
+          <div className="header-actions">
+            <button onClick={() => setIsMaximized(!isMaximized)} className="close-btn" title="Toggle size" aria-label="Toggle size">
+              {isMaximized ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </button>
+            <button onClick={() => setIsOpen(false)} className="close-btn" title="Close chat" aria-label="Close chat">
+              <X size={20} />
+            </button>
+          </div>
         </header>
 
         <div className="ai-chatbot-messages" ref={scrollRef}>
