@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
-import { resolveSiteAssetUrl } from '../../utils/assetUtils';
+import { getImageUrl } from '../../utils/url';
 import './AIChatbot.css';
 
 type Message = {
@@ -28,12 +28,12 @@ const renderMessageContent = (content: string) => {
   return parts.map((part, idx) => {
     if (part.startsWith('[PRODUCT|') && part.endsWith(']')) {
       const data = part.substring(9, part.length - 1).split('|');
-      const [id, name, price, image, slug] = data;
+      const [, name, price, image, slug] = data; // Ignored 'id' parameter
       
       return (
         <Link to={`/product/${slug}`} key={idx} className="ai-product-card">
           <div className="ai-product-img">
-            {image ? <img src={resolveSiteAssetUrl(image)} alt={name} /> : <ShoppingBag size={24} />}
+            {image ? <img src={getImageUrl(image)} alt={name} /> : <ShoppingBag size={24} />}
           </div>
           <div className="ai-product-info">
             <h4>{name}</h4>
