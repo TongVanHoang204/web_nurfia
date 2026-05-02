@@ -3,12 +3,16 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { deleteStoredFiles, ensureStoredFileMatchesMimeSignature } from '../utils/uploadValidation.js';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dv62li92i',
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// If CLOUDINARY_URL isn't used, fallback to individual keys if present
+if (!process.env.CLOUDINARY_URL && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dv62li92i',
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
+
+const isCloudinaryConfigured = () => !!process.env.CLOUDINARY_URL || (!!process.env.CLOUDINARY_API_KEY && !!process.env.CLOUDINARY_API_SECRET);
 
 export const uploadController = {
   uploadSingle: async (req: Request, res: Response, next: NextFunction) => {
@@ -18,9 +22,9 @@ export const uploadController = {
         return;
       }
 
-      if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      if (!isCloudinaryConfigured()) {
         await deleteStoredFiles([req.file.path]);
-        throw new AppError('Cloudinary API Key hoac Secret chua duoc cau hinh tren Render.', 500);
+        throw new AppError('Cloudinary URL chua duoc cau hinh tren Render.', 500);
       }
 
       const isValidSignature = await ensureStoredFileMatchesMimeSignature(req.file.path, req.file.mimetype);
@@ -29,13 +33,11 @@ export const uploadController = {
         throw new AppError('Uploaded file content does not match the declared file type.', 400);
       }
 
-      // Upload direct to Cloudinary
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'nurfia_uploads',
         resource_type: 'auto'
       });
       
-      // Cleanup locally
       await deleteStoredFiles([req.file.path]);
 
       res.json({ success: true, data: { url: result.secure_url, filename: result.public_id } });
@@ -53,9 +55,9 @@ export const uploadController = {
         return;
       }
 
-      if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      if (!isCloudinaryConfigured()) {
         await deleteStoredFiles(files.map(f => f.path));
-        throw new AppError('Cloudinary API Key hoac Secret chua duoc cau hinh tren Render.', 500);
+        throw new AppError('Cloudinary URL chua duoc cau hinh tren Render.', 500);
       }
 
       const validationResults = await Promise.all(files.map(async (file) => ({
@@ -78,7 +80,6 @@ export const uploadController = {
 
       const urls = await Promise.all(uploadPromises);
       
-      // Cleanup locally
       await deleteStoredFiles(files.map(f => f.path));
 
       res.json({ success: true, data: urls });
