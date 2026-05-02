@@ -1,7 +1,14 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middlewares/errorHandler.js';
 import { deleteStoredFiles, ensureStoredFileMatchesMimeSignature } from '../utils/uploadValidation.js';
-import { uploadToFTP } from '../utils/ftp.js';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dv62li92i',
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 export const uploadController = {
   uploadSingle: async (req: Request, res: Response, next: NextFunction) => {
@@ -11,20 +18,28 @@ export const uploadController = {
         return;
       }
 
+      if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        await deleteStoredFiles([req.file.path]);
+        throw new AppError('Cloudinary API Key hoac Secret chua duoc cau hinh tren Render.', 500);
+      }
+
       const isValidSignature = await ensureStoredFileMatchesMimeSignature(req.file.path, req.file.mimetype);
       if (!isValidSignature) {
         await deleteStoredFiles([req.file.path]);
         throw new AppError('Uploaded file content does not match the declared file type.', 400);
       }
 
-      // Đẩy file lên Hosting DirectAdmin qua FTP
-      const remoteUrl = await uploadToFTP(req.file.path, req.file.filename);
-      // Cố gắng xóa file tạm sau khi tải lên thành công để tránh tốn dung lượng Render
-      await deleteStoredFiles([req.file.path]).catch(() => {});
+      // Upload direct to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'nurfia_uploads',
+        resource_type: 'auto'
+      });
+      
+      // Cleanup locally
+      await deleteStoredFiles([req.file.path]);
 
-      res.json({ success: true, data: { url: remoteUrl, filename: req.file.filename } });
-    } catch (err) {
-      // Nếu có lỗi FTP, nhớ xóa file local
+      res.json({ success: true, data: { url: result.secure_url, filename: result.public_id } });
+    } catch (err: any) {
       if (req.file) await deleteStoredFiles([req.file.path]).catch(() => {});
       next(err);
     }
@@ -38,24 +53,33 @@ export const uploadController = {
         return;
       }
 
+      if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        await deleteStoredFiles(files.map(f => f.path));
+        throw new AppError('Cloudinary API Key hoac Secret chua duoc cau hinh tren Render.', 500);
+      }
+
       const validationResults = await Promise.all(files.map(async (file) => ({
         file,
         isValid: await ensureStoredFileMatchesMimeSignature(file.path, file.mimetype),
       })));
 
       if (validationResults.some((result) => !result.isValid)) {
-        await deleteStoredFiles(files.map((file) => file.path));
+        await deleteStoredFiles(files.map(f => f.path));
         throw new AppError('One or more uploaded files do not match the declared file type.', 400);
       }
 
-      // Tải nhiều file lên Hosting qua FTP song song
-      const urls = await Promise.all(files.map(async (f: Express.Multer.File) => {
-        const remoteUrl = await uploadToFTP(f.path, f.filename);
-        return { url: remoteUrl, filename: f.filename };
-      }));
+      const uploadPromises = files.map(async (f) => {
+        const result = await cloudinary.uploader.upload(f.path, {
+          folder: 'nurfia_uploads',
+          resource_type: 'auto'
+        });
+        return { url: result.secure_url, filename: result.public_id };
+      });
 
-      // Xóa các file tạm
-      await deleteStoredFiles(files.map(f => f.path)).catch(() => {});
+      const urls = await Promise.all(uploadPromises);
+      
+      // Cleanup locally
+      await deleteStoredFiles(files.map(f => f.path));
 
       res.json({ success: true, data: urls });
     } catch (err) {
