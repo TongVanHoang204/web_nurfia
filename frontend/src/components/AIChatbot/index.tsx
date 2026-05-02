@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, X, Bot, User, Loader2, ShoppingBag, Maximize2, Minimize2 } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, User, Loader2, ShoppingBag, Maximize2, Minimize2, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import api from '../../api/client';
@@ -11,6 +11,7 @@ type Message = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  timestamp?: number;
 };
 
 const QUICK_REPLIES = [
@@ -46,6 +47,20 @@ const renderMessageContent = (content: string) => {
   });
 };
 
+// Helper to format timestamp
+const formatTime = (timestamp?: number) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+  return date.toLocaleDateString();
+};
+
 export default function AIChatbot() {
   const { isAuthenticated, user } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +84,8 @@ export default function AIChatbot() {
       {
         id: 'welcome',
         role: 'assistant',
-        content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)'
+        content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)',
+        timestamp: Date.now()
       }
     ];
   };
@@ -121,7 +137,8 @@ export default function AIChatbot() {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: textToSend.trim()
+      content: textToSend.trim(),
+      timestamp: Date.now()
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -143,7 +160,8 @@ export default function AIChatbot() {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.data
+        content: data.data,
+        timestamp: Date.now()
       };
 
       setMessages(prev => [...prev, aiMessage]);
@@ -151,10 +169,25 @@ export default function AIChatbot() {
       setMessages(prev => [...prev, {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: 'Sorry, the AI system is currently busy. Please try again in a moment!'
+        content: 'Sorry, the AI system is currently busy. Please try again in a moment!',
+        timestamp: Date.now()
       }]);
     } finally {
       setIsTyping(false);
+    }
+  };
+
+  const handleClearHistory = () => {
+    if (confirm('Are you sure you want to clear the chat history? This action cannot be undone.')) {
+      localStorage.removeItem(storageKey);
+      setMessages([
+        {
+          id: 'welcome',
+          role: 'assistant',
+          content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)',
+          timestamp: Date.now()
+        }
+      ]);
     }
   };
 
@@ -164,10 +197,11 @@ export default function AIChatbot() {
       <button 
         className="ai-chatbot-toggle" 
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Toggle AI Assistant"
+        title="AI Assistant Chat"
+        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-        {!isOpen && <span className="ai-chatbot-badge">AI</span>}
+        {!isOpen && <span className="ai-chatbot-badge" aria-hidden="true">AI</span>}
       </button>
 
       {/* Chat Window */}
@@ -183,17 +217,20 @@ export default function AIChatbot() {
             </div>
           </div>
           <div className="header-actions">
-            <button onClick={() => setIsMaximized(!isMaximized)} className="close-btn" title="Toggle size" aria-label="Toggle size">
+            <button onClick={handleClearHistory} className="close-btn" title="Clear chat history" aria-label="Clear chat history">
+              <RefreshCw size={18} />
+            </button>
+            <button onClick={() => setIsMaximized(!isMaximized)} className="close-btn" title={isMaximized ? "Minimize chat" : "Maximize chat"} aria-label={isMaximized ? "Minimize chat" : "Maximize chat"}>
               {isMaximized ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
-            <button onClick={() => setIsOpen(false)} className="close-btn" title="Close chat" aria-label="Close chat">
+            <button onClick={() => setIsOpen(false)} className="close-btn" title="Close chat" aria-label="Close AI Assistant">
               <X size={20} />
             </button>
           </div>
         </header>
 
         <div className="ai-chatbot-messages" ref={scrollRef}>
-          <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '1rem' }}>
+          <div className="ai-chat-note">
             Chat history is saved for 30 days.
           </div>
           {messages.map((msg) => (
@@ -207,6 +244,7 @@ export default function AIChatbot() {
                 ) : (
                   msg.content
                 )}
+                {msg.timestamp && <span className="msg-timestamp">{formatTime(msg.timestamp)}</span>}
               </div>
             </div>
           ))}
@@ -242,6 +280,8 @@ export default function AIChatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              aria-label="Chat message input"
+              title="Type your message and press Enter"
             />
             <button onClick={() => handleSend()} disabled={!input.trim() || isTyping} title="Send message" aria-label="Send message">
               <Send size={18} />
