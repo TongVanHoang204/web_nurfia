@@ -143,19 +143,19 @@ export default function AdminSettings() {
                   <div key={k} className={`settings-field ${isDirty ? 'is-dirty' : ''}`}>
                     <label>{meta.label}</label>
                     {meta.type === 'textarea' ? (
-                      <textarea value={settings[k]} rows={meta.rows || 3} onChange={e => setSettings({...settings, [k]: e.target.value})} />
+                      <textarea title={meta.label} placeholder={meta.placeholder || meta.label} value={settings[k]} rows={meta.rows || 3} onChange={e => setSettings({...settings, [k]: e.target.value})} />
                     ) : (
-                      <input type={meta.type} value={settings[k]} onChange={e => setSettings({...settings, [k]: e.target.value})} />
+                      <input title={meta.label} placeholder={meta.placeholder || meta.label} type={meta.type} value={settings[k]} onChange={e => setSettings({...settings, [k]: e.target.value})} />
                     )}
                     
                     <div className="settings-field-actions">
                       {meta.uploadTarget && (
                         <label className="btn btn-outline btn-sm">
                           <Upload size={12} style={{ marginRight: 6 }} /> {uploadingTarget === k ? '...' : 'Upload'}
-                          <input type="file" hidden onChange={e => handleUpload(meta.uploadTarget!, e.target.files?.[0] || null)} />
+                          <input aria-label="Upload" title="Upload" type="file" hidden onChange={e => handleUpload(meta.uploadTarget!, e.target.files?.[0] || null)} />
                         </label>
                       )}
-                      {settings[k] && <button className="btn btn-outline btn-sm" onClick={() => window.open(resolveSiteAssetUrl(settings[k]), '_blank')}><ExternalLink size={12} /></button>}
+                      {settings[k] && <button title={`Open ${meta.label}`} aria-label={`Open ${meta.label}`} className="btn btn-outline btn-sm" onClick={() => window.open(resolveSiteAssetUrl(settings[k]), '_blank')}><ExternalLink size={12} /></button>}
                     </div>
 
                     {meta.preview && settings[k] && (
@@ -187,8 +187,8 @@ export default function AdminSettings() {
       {changedKeys.length > 0 && (
         <div className="settings-unsaved-bar">
           <span>You have {changedKeys.length} unsaved changes.</span>
-          <div style={{ display: 'flex', gap: 12 }}>
-             <button className="btn btn-outline" style={{ color: '#fff', borderColor: '#444' }} onClick={() => setSettings(initialSettings)}>Discard</button>
+          <div className="settings-unsaved-actions">
+             <button className="btn btn-outline btn-discard" onClick={() => setSettings(initialSettings)}>Discard</button>
              <button className="btn btn-primary" onClick={handleSaveAll} disabled={savingAll}>Save Now</button>
           </div>
         </div>
