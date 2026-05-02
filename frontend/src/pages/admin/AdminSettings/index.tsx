@@ -159,7 +159,7 @@ export default function AdminSettings() {
                     </div>
 
                     {meta.preview && settings[k] && (
-                       <div className={`settings-preview settings-preview-${meta.preview}`}>
+                       <div key={settings[k]} className={`settings-preview settings-preview-${meta.preview}`}>
                           <img 
                             src={resolveSiteAssetUrl(settings[k])} 
                             alt={meta.label} 
