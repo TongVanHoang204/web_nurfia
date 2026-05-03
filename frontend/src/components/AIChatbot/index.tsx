@@ -91,18 +91,8 @@ export default function AIChatbot() {
 
   const [messages, setMessages] = useState<Message[]>(loadHistory);
 
-  const prevUserIdRef = useRef<number | null>(null);
-
-  // Clear old user's chat history & load correct history on account switch / login / logout
+  // Load correct history on user account switch (also on login/logout)
   useEffect(() => {
-    const prevUserId = prevUserIdRef.current;
-    const currentUserId = user?.id ?? null;
-
-    if (prevUserId !== null && prevUserId !== currentUserId) {
-      localStorage.removeItem(`nurfia_ai_chat_history_${prevUserId}`);
-    }
-    prevUserIdRef.current = currentUserId;
-
     setMessages(loadHistory());
   }, [user?.id, isAuthenticated]);
 

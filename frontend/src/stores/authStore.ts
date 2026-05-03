@@ -38,7 +38,7 @@ const getStoredUser = (): User | null => {
   }
 };
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isLoading: false,
@@ -80,11 +80,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const authNotice = String(options?.notice || '').trim();
 
     void api.post('/auth/logout').catch(() => undefined);
-
-    const currentUser = get().user;
-    if (currentUser?.id) {
-      localStorage.removeItem(`nurfia_ai_chat_history_${currentUser.id}`);
-    }
     localStorage.removeItem('nurfia_user');
     if (shouldForceLogin) {
       localStorage.setItem('nurfia_must_login', '1');
