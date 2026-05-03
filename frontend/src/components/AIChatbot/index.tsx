@@ -17,7 +17,6 @@ type Message = {
 const QUICK_REPLIES = [
   "How much is shipping?",
   "Return policy?",
-  "Where is your store?"
 ];
 
 // Helper to parse content with embedded product cards
@@ -92,10 +91,10 @@ export default function AIChatbot() {
 
   const [messages, setMessages] = useState<Message[]>(loadHistory);
 
-  // Load correct history on user account switch
+  // Load correct history on user account switch (also on login/logout)
   useEffect(() => {
     setMessages(loadHistory());
-  }, [user?.id]);
+  }, [user?.id, isAuthenticated]);
 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
