@@ -276,7 +276,7 @@ export default function AdminStaff() {
 
     setFormData((prev) => ({
       ...prev,
-      permissions: Array.from(new Set([...prev.permissions, ...preset.permissions])),
+      permissions: [...preset.permissions],
     }));
   };
 

@@ -604,6 +604,8 @@
   width: 16px;
   height: 16px;
   padding: 0;
+  -webkit-appearance: auto;
+  appearance: auto;
   accent-color: var(--color-black, #111);
 }
 
