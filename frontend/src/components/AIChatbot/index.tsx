@@ -60,55 +60,46 @@ const formatTime = (timestamp?: number) => {
   return date.toLocaleDateString();
 };
 
+const WELCOME = {
+  id: 'welcome',
+  role: 'assistant' as const,
+  content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)',
+  timestamp: Date.now()
+};
+
 export default function AIChatbot() {
   const { isAuthenticated, user } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([WELCOME]);
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
 
-  const storageKey = `nurfia_ai_chat_history_${user?.id || 'guest'}`;
-
-  const loadHistory = () => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.timestamp && Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {
-          if (parsed.messages && parsed.messages.length > 0) return parsed.messages;
-        } else {
-          localStorage.removeItem(storageKey); // Expired
-        }
-      } catch (err) {}
-    }
-    return [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)',
-        timestamp: Date.now()
-      }
-    ];
-  };
-
-  const [messages, setMessages] = useState<Message[]>(loadHistory);
-
-  // Load correct history on user account switch (also on login/logout)
+  // Load history from backend when user changes
   useEffect(() => {
-    setMessages(loadHistory());
-  }, [user?.id, isAuthenticated]);
+    if (!user?.id) return;
+    setIsHistoryLoaded(false);
+    api.get('/chat/history').then(({ data }) => {
+      if (data.data?.messages?.length > 1) {
+        setMessages(data.data.messages);
+      }
+    }).catch(() => {}).finally(() => setIsHistoryLoaded(true));
+  }, [user?.id]);
 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Sync to local storage
+  // Sync to backend whenever messages change
+  const syncRef = useRef<number | undefined>(undefined);
   useEffect(() => {
-    if (messages.length > 1) { // Don't just save the welcome message over and over
-      localStorage.setItem(storageKey, JSON.stringify({
-        timestamp: Date.now(),
-        messages: messages
-      }));
-    }
-  }, [messages, storageKey]);
+    if (!user?.id || !isHistoryLoaded) return;
+    if (messages.length <= 1) return;
+    clearTimeout(syncRef.current);
+    syncRef.current = setTimeout(() => {
+      api.post('/chat/history', { data: { messages } }).catch(() => {});
+    }, 500);
+    return () => clearTimeout(syncRef.current);
+  }, [messages, user?.id, isHistoryLoaded]);
 
   // Shrink when there is window resize to avoid overlapping
   useEffect(() => {
@@ -178,15 +169,10 @@ export default function AIChatbot() {
 
   const handleClearHistory = () => {
     if (confirm('Are you sure you want to clear the chat history? This action cannot be undone.')) {
-      localStorage.removeItem(storageKey);
-      setMessages([
-        {
-          id: 'welcome',
-          role: 'assistant',
-          content: 'Hello! I am Nurfia AI. How can I help you with your shopping today? (I also speak Vietnamese, Spanish, etc.)',
-          timestamp: Date.now()
-        }
-      ]);
+      setMessages([{ ...WELCOME, timestamp: Date.now() }]);
+      if (user?.id) {
+        api.delete('/chat/history').catch(() => {});
+      }
     }
   };
 
@@ -230,7 +216,7 @@ export default function AIChatbot() {
 
         <div className="ai-chatbot-messages" ref={scrollRef}>
           <div className="ai-chat-note">
-            Chat history is saved for 30 days.
+            Chat history is synced across all your devices.
           </div>
           {messages.map((msg) => (
             <div key={msg.id} className={`ai-chat-msg ${msg.role}`}>

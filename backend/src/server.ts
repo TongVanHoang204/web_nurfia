@@ -23,6 +23,7 @@ import contactRoutes from './routes/contact.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import compareRoutes from './routes/compare.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
+import chatRoutes from './routes/chat.routes.js';
 import { aiController } from './controllers/ai.controller.js';
 import { initSocketServer } from './services/socket.service.js';
 import { getAllowedOrigins } from './utils/security.js';
@@ -108,6 +109,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/compare', compareRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
