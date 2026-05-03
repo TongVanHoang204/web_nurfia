@@ -83,7 +83,7 @@ export default function AdminLayout() {
 
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'STAFF' && user?.role !== 'MANAGER')) return null;
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  const handleLogout = () => logout();
   const handleNavClick = () => {
     if (typeof window === 'undefined') return;
     if (window.matchMedia('(max-width: 1024px)').matches) {

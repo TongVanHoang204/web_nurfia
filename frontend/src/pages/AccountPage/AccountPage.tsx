@@ -25,10 +25,7 @@ export default function AccountPage() {
     if (!isHydrating && !isAuthenticated) navigate('/login');
   }, [isAuthenticated, isHydrating, navigate]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  const handleLogout = () => logout();
 
   if (isHydrating) {
     return <div className="loading-page"><div className="spinner" /></div>;

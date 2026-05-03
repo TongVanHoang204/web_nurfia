@@ -22,7 +22,7 @@ interface AuthState {
   mustLogin: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (data: { email: string; password: string; username: string; fullName: string }) => Promise<void>;
-  logout: (options?: { redirectTo?: string; forceLogin?: boolean; notice?: string }) => void;
+  logout: (options?: { redirectTo?: string; forceLogin?: boolean; notice?: string }) => Promise<void>;
   loadUser: () => Promise<void>;
 }
 
@@ -74,12 +74,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  logout: (options) => {
+  logout: async (options) => {
     const shouldForceLogin = !!options?.forceLogin;
     const redirectTo = options?.redirectTo || '/login';
     const authNotice = String(options?.notice || '').trim();
 
-    void api.post('/auth/logout').catch(() => undefined);
+    try {
+      await api.post('/auth/logout');
+    } catch {}
+
     localStorage.removeItem('nurfia_user');
     if (shouldForceLogin) {
       localStorage.setItem('nurfia_must_login', '1');
