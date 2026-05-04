@@ -50,6 +50,10 @@ const sendMailSafely = async (
 
   if (!activeTransporter) {
     console.info(fallbackLog);
+    console.warn('╔══════════════════════════════════════════════════╗');
+    console.warn('║  SMTP NOT CONFIGURED — Using console fallback   ║');
+    console.warn('╚══════════════════════════════════════════════════╝');
+    console.warn(fallbackLog);
     return { delivered: false, error: 'SMTP is not configured.' };
   }
 
@@ -61,7 +65,10 @@ const sendMailSafely = async (
   } catch (error) {
     const message = getErrorMessage(error);
     console.error(`[mail:${label}] Delivery failed: ${message}`);
-    console.info(fallbackLog);
+    console.warn('╔══════════════════════════════════════════════════╗');
+    console.warn('║  SMTP DELIVERY FAILED — See fallback below      ║');
+    console.warn('╚══════════════════════════════════════════════════╝');
+    console.warn(fallbackLog);
     return { delivered: false, error: message };
   }
 };

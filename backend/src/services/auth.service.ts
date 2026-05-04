@@ -193,8 +193,11 @@ export const authService = {
     const mailResult = await mailService.sendChangePasswordOtp(user.email, user.fullName, otp);
 
     if (!mailResult.delivered) {
+      const smtpHint = mailResult.error?.includes('not configured')
+        ? 'Vui lòng cấu hình SMTP_USER và SMTP_PASS trong Environment Variables trên Render dashboard (Settings > Environment).'
+        : `Lỗi SMTP: ${mailResult.error}. Kiểm tra lại thông tin SMTP trong .env hoặc Render environment variables.`;
       throw new AppError(
-        `Unable to send OTP email. ${mailResult.error || 'Please verify SMTP configuration and sender domain.'}`,
+        `Unable to send OTP email. ${smtpHint}`,
         503,
       );
     }
