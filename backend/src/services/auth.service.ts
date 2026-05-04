@@ -194,8 +194,8 @@ export const authService = {
 
     if (!mailResult.delivered) {
       const smtpHint = mailResult.error?.includes('not configured')
-        ? 'Vui lòng cấu hình SMTP_USER và SMTP_PASS trong Environment Variables trên Render dashboard (Settings > Environment).'
-        : `Lỗi SMTP: ${mailResult.error}. Kiểm tra lại thông tin SMTP trong .env hoặc Render environment variables.`;
+        ? 'Please configure SMTP_USER and SMTP_PASS in Render dashboard Environment Variables (Settings > Environment).'
+        : `SMTP error: ${mailResult.error}. Check your .env file or Render environment variables.`;
       throw new AppError(
         `Unable to send OTP email. ${smtpHint}`,
         503,
