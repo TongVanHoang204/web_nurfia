@@ -21,10 +21,15 @@ const getTransporter = () => {
       host: config.smtp.host,
       port: config.smtp.port,
       secure: config.smtp.port === 465,
-      pool: true, // Reuse connections
-      connectionTimeout: 10000, // 10s timeout
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
+      pool: {
+        maxConnections: 5,
+        maxMessages: 100,
+        rateDelta: 2000,
+        rateLimit: 20, // ms between messages
+      },
+      connectionTimeout: 30000, // 30s timeout (was 10s, Render needs more time)
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
       family: 4, // Force IPv4 to avoid ENETUNREACH on Render with IPv6
       auth: {
         user: config.smtp.user,
@@ -51,31 +56,48 @@ const sendMailSafely = async (
   fallbackLog: string,
   sendAction: (activeTransporter: nodemailer.Transporter) => Promise<void>
 ): Promise<MailSendResult> => {
-  const activeTransporter = getTransporter();
+  const maxRetries = 2;
+  let lastError: unknown = null;
 
-  if (!activeTransporter) {
-    console.info(fallbackLog);
-    console.warn('╔══════════════════════════════════════════════════╗');
-    console.warn('║  SMTP NOT CONFIGURED — Using console fallback   ║');
-    console.warn('╚══════════════════════════════════════════════════╝');
-    console.warn(fallbackLog);
-    return { delivered: false, error: 'SMTP is not configured.', detail: 'Set SMTP_USER and SMTP_PASS in environment variables.' };
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const activeTransporter = getTransporter();
+
+      if (!activeTransporter) {
+        console.info(fallbackLog);
+        console.warn('╔══════════════════════════════════════════════════╗');
+        console.warn('║  SMTP NOT CONFIGURED — Using console fallback   ║');
+        console.warn('╚══════════════════════════════════════════════════╝');
+        console.warn(fallbackLog);
+        return { delivered: false, error: 'SMTP is not configured.', detail: 'Set SMTP_USER and SMTP_PASS in environment variables.' };
+      }
+
+      const info = await sendAction(activeTransporter);
+      const messageId = (info as any)?.messageId;
+      console.info(`[mail:${label}] Delivered successfully${messageId ? `: ${messageId}` : ''}`);
+      return { delivered: true };
+    } catch (error) {
+      lastError = error;
+      const message = getErrorMessage(error);
+      console.warn(`[mail:${label}] Attempt ${attempt + 1}/${maxRetries + 1} failed: ${message}`);
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 2s, 4s, etc.
+        const delayMs = Math.pow(2, attempt + 1) * 1000;
+        console.warn(`[mail:${label}] Retrying in ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
   }
 
-  try {
-    const info = await sendAction(activeTransporter);
-    const messageId = (info as any)?.messageId;
-    console.info(`[mail:${label}] Delivered successfully${messageId ? `: ${messageId}` : ''}`);
-    return { delivered: true };
-  } catch (error) {
-    const message = getErrorMessage(error);
-    console.error(`[mail:${label}] Delivery failed: ${message}`);
-    console.warn('╔══════════════════════════════════════════════════╗');
-    console.warn('║  SMTP DELIVERY FAILED — See fallback below      ║');
-    console.warn('╚══════════════════════════════════════════════════╝');
-    console.warn(fallbackLog);
-    return { delivered: false, error: message, detail: String(error) };
-  }
+  // All retries failed
+  const message = getErrorMessage(lastError);
+  console.error(`[mail:${label}] All ${maxRetries + 1} delivery attempts failed: ${message}`);
+  console.warn('╔══════════════════════════════════════════════════╗');
+  console.warn('║  SMTP DELIVERY FAILED — See fallback below      ║');
+  console.warn('╚══════════════════════════════════════════════════╝');
+  console.warn(fallbackLog);
+  return { delivered: false, error: message, detail: String(lastError) };
 };
 
 export const mailService = {
