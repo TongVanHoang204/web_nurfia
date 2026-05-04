@@ -5,7 +5,8 @@ const DURATION_PATTERN = /^(\d+)(ms|s|m|h|d)$/i;
 
 const normalizeOrigin = (value: string) => {
   try {
-    const url = new URL(value);
+    const normalized = value.includes('://') ? value : `https://${value}`;
+    const url = new URL(normalized);
     return url.origin;
   } catch {
     return null;

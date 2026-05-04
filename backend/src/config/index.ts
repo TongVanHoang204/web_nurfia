@@ -36,7 +36,9 @@ export const config = {
 
   cors: {
     origin: corsOrigin,
-    origins: corsOrigins,
+    origins: (process.env.NODE_ENV || 'development') === 'development'
+      ? [...new Set([...corsOrigins, 'http://localhost:5173', 'http://localhost:4000'])]
+      : corsOrigins,
   },
 
   app: {
