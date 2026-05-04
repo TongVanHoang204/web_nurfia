@@ -193,8 +193,17 @@ export const authService = {
     const mailResult = await mailService.sendChangePasswordOtp(user.email, user.fullName, otp);
 
     if (!mailResult.delivered) {
+      // Always log OTP visibly so developer can use it for testing
+      console.warn('');
+      console.warn('╔══════════════════════════════════════════════════════════╗');
+      console.warn('║  EMAIL FAILED — Use this OTP to test password change   ║');
+      console.warn(`║  Email: ${user.email.padEnd(48)}║`);
+      console.warn(`║  OTP:   ${otp.padEnd(48)}║`);
+      console.warn('╚══════════════════════════════════════════════════════════╝');
+      console.warn('');
+
       const smtpHint = mailResult.error?.includes('not configured')
-        ? 'Please configure SMTP_USER and SMTP_PASS in Render dashboard Environment Variables (Settings > Environment).'
+        ? 'SMTP chưa được cấu hình. Vào Render Dashboard > Settings > Environment Variables, thêm SMTP_USER và SMTP_PASS.'
         : `SMTP error: ${mailResult.error}. Check your .env file or Render environment variables.`;
       throw new AppError(
         `Unable to send OTP email. ${smtpHint}`,
@@ -206,6 +215,7 @@ export const authService = {
       message: 'OTP has been sent to your email. Enter it to confirm password change.',
       expiresInSeconds: Math.floor(CHANGE_PASSWORD_OTP_TTL_MS / 1000),
       delivered: true,
+      ...(config.env !== 'production' ? { debugOtp: otp } : {}),
     };
   },
 

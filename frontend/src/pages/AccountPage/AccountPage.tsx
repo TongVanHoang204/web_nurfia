@@ -142,13 +142,16 @@ export function ProfileSection() {
       });
       const responseData = data?.data || {};
       setOtpRequested(true);
-      setOtpNotice(responseData.message || 'OTP has been sent to your email.');
+      const baseNotice = responseData.message || 'OTP has been sent to your email.';
+      const debugOtp = responseData.debugOtp || '';
+      setOtpNotice(debugOtp ? `${baseNotice} [DEV] OTP: ${debugOtp}` : baseNotice);
       addToast(responseData.message || 'OTP sent to your email.', 'success');
     } catch (err: any) {
       setOtpRequested(false);
       setOtpCode('');
-      setOtpNotice('');
-      addToast(err.response?.data?.error || 'Failed to send OTP.', 'error');
+      const errMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to send OTP.';
+      setOtpNotice(`Error: ${errMsg}`);
+      addToast(errMsg, 'error');
     } finally {
       setIsSendingPasswordOtp(false);
     }
