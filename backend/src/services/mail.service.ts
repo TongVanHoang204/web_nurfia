@@ -22,6 +22,9 @@ const getTransporter = () => {
       port: config.smtp.port,
       secure: config.smtp.port === 465,
       pool: true, // Reuse connections
+      connectionTimeout: 10000, // 10s timeout
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       auth: {
         user: config.smtp.user,
         pass: config.smtp.pass,
@@ -56,16 +59,6 @@ const sendMailSafely = async (
     console.warn('╚══════════════════════════════════════════════════╝');
     console.warn(fallbackLog);
     return { delivered: false, error: 'SMTP is not configured.', detail: 'Set SMTP_USER and SMTP_PASS in environment variables.' };
-  }
-
-  // Verify transporter before sending
-  try {
-    await activeTransporter.verify();
-  } catch (verifyError) {
-    const vMsg = getErrorMessage(verifyError);
-    console.error(`[mail:${label}] Transporter verify failed: ${vMsg}`);
-    console.warn(fallbackLog);
-    return { delivered: false, error: `SMTP connection failed: ${vMsg}`, detail: String(verifyError) };
   }
 
   try {
