@@ -1,7 +1,34 @@
 import axios from 'axios';
 
+const getBaseURL = (): string => {
+  // Env override always wins if set
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // In browser: detect current origin
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const origin = window.location.origin;
+
+    // Local development → use local backend
+    if (origin.includes('localhost')) {
+      return 'http://localhost:4000/api';
+    }
+
+    // Deployed on same server as backend → relative path
+    if (origin.includes('onrender.com')) {
+      return '/api';
+    }
+
+    // Deployed on custom domain → point to Render API
+    return 'https://web-nurfia.onrender.com/api';
+  }
+
+  return 'http://localhost:4000/api';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+  baseURL: getBaseURL(),
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
