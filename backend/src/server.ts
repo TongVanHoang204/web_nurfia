@@ -1,5 +1,10 @@
 import express from 'express';
 import { createServer } from 'node:http';
+import dns from 'node:dns';
+
+// Fix ENETUNREACH / IPv6 resolution issues on Render for Node v17+
+dns.setDefaultResultOrder('ipv4first');
+
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
