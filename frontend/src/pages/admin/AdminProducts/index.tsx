@@ -525,17 +525,16 @@ export default function AdminProducts() {
               </div>
 
               <div className="ap-variant-toggle">
-                <div className="flex justify-between items-center mb-4">
-                  <div 
-                    className="flex items-center gap-2 cursor-pointer select-none"
+                <div className="ap-variant-toggle-header">
+                  <div className="ap-variant-toggle-title"
                     onClick={() => setIsVariantsExpanded(!isVariantsExpanded)}
                   >
-                    <h3 className="ap-product-name m-0">Variants & Inventory</h3>
+                    <h3>Variants & Inventory</h3>
                     {isVariantsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </div>
-                  <div className="flex gap-2 items-center">
-                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-                      <input type="checkbox" title="Auto SKU" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
+                  <div className="ap-variant-toggle-actions">
+                    <label className="ap-variant-auto-label">
+                      <input type="checkbox" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
                       Auto SKU
                     </label>
                     {variantColorValues.length > 0 && variantSizeValues.length > 0 && (
@@ -575,7 +574,7 @@ export default function AdminProducts() {
                       <button type="button" className="ap-action-btn ap-action-btn-danger" title="Remove Variant" aria-label="Remove Variant" onClick={() => removeVariant(idx)}><Trash2 size={16} /></button>
                     </div>
                   ))}
-                  <button type="button" className="btn btn-outline btn-sm" onClick={addVariant}><Plus size={14} /> Add Variant</button>
+                    <button type="button" className="ap-add-variant-btn" onClick={addVariant}><Plus size={14} /> Add Variant</button>
                 </div>
                 )}
               </div>

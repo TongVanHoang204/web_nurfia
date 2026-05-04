@@ -1,11 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, X, Bot, User, Loader2, ShoppingBag, Maximize2, Minimize2, RefreshCw } from 'lucide-react';
+import { MessageSquare, Send, X, User, Loader2, ShoppingBag, Maximize2, Minimize2, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import { getImageUrl } from '../../utils/url';
 import './AIChatbot.css';
+
+const GeminiIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gemini-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4285F4" />
+        <stop offset="100%" stopColor="#9B72CB" />
+      </linearGradient>
+    </defs>
+    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="url(#gemini-grad)" />
+  </svg>
+);
 
 type Message = {
   id: string;
@@ -194,7 +206,7 @@ export default function AIChatbot() {
         <header className="ai-chatbot-header">
           <div className="ai-chatbot-brand">
             <div className="ai-chatbot-avatar">
-              <Bot size={20} />
+              <GeminiIcon size={20} />
             </div>
             <div>
               <h3>Nurfia AI</h3>
@@ -221,7 +233,7 @@ export default function AIChatbot() {
           {messages.map((msg) => (
             <div key={msg.id} className={`ai-chat-msg ${msg.role}`}>
               <div className="msg-icon">
-                {msg.role === 'assistant' ? <Bot size={14} /> : <User size={14} />}
+                {msg.role === 'assistant' ? <GeminiIcon size={14} /> : <User size={14} />}
               </div>
               <div className={`msg-bubble ${msg.role === 'assistant' ? 'markdown-body' : ''}`}>
                 {msg.role === 'assistant' ? (
@@ -235,7 +247,7 @@ export default function AIChatbot() {
           ))}
           {isTyping && (
             <div className="ai-chat-msg assistant typing">
-              <div className="msg-icon"><Bot size={14} /></div>
+              <div className="msg-icon"><GeminiIcon size={14} /></div>
               <div className="msg-bubble">
                 <Loader2 size={16} className="spinner" />
                 <span>AI is thinking...</span>

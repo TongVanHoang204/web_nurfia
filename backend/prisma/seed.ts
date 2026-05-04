@@ -26,7 +26,7 @@ async function main() {
     create: {
       email: 'admin@nurfia.com',
       password: adminPassword,
-      username: 'admin',
+      username: 'hoang',
       fullName: 'Admin Nurfia',
       role: 'ADMIN',
     },
