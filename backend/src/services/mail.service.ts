@@ -25,6 +25,7 @@ const getTransporter = () => {
       connectionTimeout: 10000, // 10s timeout
       greetingTimeout: 10000,
       socketTimeout: 10000,
+      family: 4, // Force IPv4 to avoid ENETUNREACH on Render with IPv6
       auth: {
         user: config.smtp.user,
         pass: config.smtp.pass,
@@ -32,7 +33,7 @@ const getTransporter = () => {
       tls: {
         rejectUnauthorized: false, // Handle self-signed or untrusted certs
       },
-    });
+    } as any);
   }
 
   return transporter;
