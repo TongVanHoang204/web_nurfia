@@ -6,6 +6,7 @@ let transporter: nodemailer.Transporter | null = null;
 type MailSendResult = {
   delivered: boolean;
   error?: string;
+  detail?: string;
 };
 
 const hasSmtpCredentials = Boolean(config.smtp.user && config.smtp.pass);
@@ -54,7 +55,17 @@ const sendMailSafely = async (
     console.warn('║  SMTP NOT CONFIGURED — Using console fallback   ║');
     console.warn('╚══════════════════════════════════════════════════╝');
     console.warn(fallbackLog);
-    return { delivered: false, error: 'SMTP is not configured.' };
+    return { delivered: false, error: 'SMTP is not configured.', detail: 'Set SMTP_USER and SMTP_PASS in environment variables.' };
+  }
+
+  // Verify transporter before sending
+  try {
+    await activeTransporter.verify();
+  } catch (verifyError) {
+    const vMsg = getErrorMessage(verifyError);
+    console.error(`[mail:${label}] Transporter verify failed: ${vMsg}`);
+    console.warn(fallbackLog);
+    return { delivered: false, error: `SMTP connection failed: ${vMsg}`, detail: String(verifyError) };
   }
 
   try {
@@ -69,7 +80,7 @@ const sendMailSafely = async (
     console.warn('║  SMTP DELIVERY FAILED — See fallback below      ║');
     console.warn('╚══════════════════════════════════════════════════╝');
     console.warn(fallbackLog);
-    return { delivered: false, error: message };
+    return { delivered: false, error: message, detail: String(error) };
   }
 };
 

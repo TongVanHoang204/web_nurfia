@@ -199,12 +199,14 @@ export const authService = {
       console.warn('║  EMAIL FAILED — Use this OTP to test password change   ║');
       console.warn(`║  Email: ${user.email.padEnd(48)}║`);
       console.warn(`║  OTP:   ${otp.padEnd(48)}║`);
+      console.warn(`║  Error: ${(mailResult.error || 'unknown').padEnd(48)}║`);
       console.warn('╚══════════════════════════════════════════════════════════╝');
       console.warn('');
 
+      const detail = mailResult.detail || mailResult.error || 'Unknown error';
       const smtpHint = mailResult.error?.includes('not configured')
         ? 'SMTP chưa được cấu hình. Vào Render Dashboard > Settings > Environment Variables, thêm SMTP_USER và SMTP_PASS.'
-        : `SMTP error: ${mailResult.error}. Check your .env file or Render environment variables.`;
+        : `SMTP error: ${detail}`;
       throw new AppError(
         `Unable to send OTP email. ${smtpHint}`,
         503,
