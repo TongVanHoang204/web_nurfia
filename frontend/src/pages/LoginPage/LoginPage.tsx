@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [showResetNewPassword, setShowResetNewPassword] = useState(false);
   const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
   const [isSubmittingAux, setIsSubmittingAux] = useState(false);
-  const { login, register, user, isAuthenticated, isLoading } = useAuthStore();
+  const { login, register, user, isLoading } = useAuthStore();
   const { addToast } = useUIStore();
   const navigate = useNavigate();
 
