@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo, Fragment } from 'react';
 import { Plus, Edit2, Trash2, X, Search, Zap, ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
@@ -323,6 +323,22 @@ export default function AdminProducts() {
     return suffixes.length > 0 ? `${baseSku}-${suffixes.join('-')}` : baseSku;
   };
 
+  // Map common color names to hex values for the color swatch
+  const colorNameToHex: Record<string, string> = {
+    black: '#000000', white: '#ffffff', red: '#ef4444', blue: '#3b82f6',
+    green: '#22c55e', yellow: '#eab308', purple: '#a855f7', pink: '#ec4899',
+    orange: '#f97316', brown: '#92400e', gray: '#6b7280', grey: '#6b7280',
+    silver: '#c0c0c0', gold: '#d4a017', navy: '#1e3a5f', beige: '#f5f5dc',
+    cream: '#fffdd0', khaki: '#c3b091', coral: '#ff7f50', teal: '#0d9488',
+    cyan: '#06b6d4', indigo: '#6366f1', violet: '#8b5cf6', maroon: '#800000',
+    tan: '#d2b48c', ivory: '#fffff0', mint: '#98fb98', lavender: '#e6e6fa',
+  };
+
+  const getColorHex = (name: string): string => {
+    const lower = name?.toLowerCase().trim() || '';
+    return colorNameToHex[lower] || '#cccccc';
+  };
+
   // Regenerate all variant SKUs from matrix labels
   const regenerateAllSkus = () => {
     if (!formData.sku) return;
@@ -644,14 +660,18 @@ export default function AdminProducts() {
                 {isVariantsExpanded && variantColorValues.length > 0 && variantSizeValues.length > 0 && (
                   <div className="ap-variant-matrix">
                     <div className="ap-matrix-header">
-                      <h4>Select Variants ({colorAttr?.name || 'Color'} × {sizeAttr?.name || 'Size'})</h4>
+                      <div className="ap-matrix-title">
+                        <h4>{colorAttr?.name || 'Color'} <span className="ap-matrix-times">×</span> {sizeAttr?.name || 'Size'}</h4>
+                        <span className="ap-matrix-count">{existingVariantKeys.size} / {variantColorValues.length * variantSizeValues.length} selected</span>
+                      </div>
                       <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={regenerateAllSkus} title="Regenerate SKUs from matrix labels">
                         <Zap size={13} /> Regenerate SKUs
                       </button>
                     </div>
-                    <div className="ap-matrix-grid">
-                      {/* Header row with size labels */}
-                      <div className="ap-matrix-corner"></div>
+                    <div className="ap-matrix-grid" style={{ gridTemplateColumns: `140px repeat(${variantSizeValues.length}, 1fr)` }}>
+                      {/* Corner cell */}
+                      <div className="ap-matrix-corner">{colorAttr?.name || 'Color'} ↓ / {sizeAttr?.name || 'Size'} →</div>
+                      {/* Size column headers */}
                       {variantSizeValues.map((sv: any) => (
                         <div key={sv.id} className="ap-matrix-col-header">{sv.value}</div>
                       ))}
@@ -659,27 +679,33 @@ export default function AdminProducts() {
                       {variantColorValues.map((cv: any) => {
                         const colorId = normalizeAttributeId(cv?.id);
                         return (
-                          <div key={cv.id} className="ap-matrix-row">
-                            <div className="ap-matrix-row-header">{cv.value}</div>
+                          <Fragment key={cv.id}>
+                            <div className="ap-matrix-row-header">
+                              <span className="ap-color-swatch" style={{ backgroundColor: getColorHex(cv.value) }}></span>
+                              {cv.value}
+                            </div>
                             {variantSizeValues.map((sv: any) => {
                               const sizeId = normalizeAttributeId(sv?.id);
                               const key = colorId && sizeId ? `${colorId}-${sizeId}` : '';
                               const isChecked = key ? existingVariantKeys.has(key) : false;
                               return (
-                                <div key={sv.id} className="ap-matrix-cell">
+                                <div
+                                  key={`${cv.id}-${sv.id}`}
+                                  className={`ap-matrix-cell ${isChecked ? 'checked' : ''}`}
+                                  onClick={() => { if (colorId && sizeId) toggleVariantCombo(colorId, sizeId, cv.value, sv.value); }}
+                                  title={`${cv.value} - ${sv.value}`}
+                                >
                                   <input
                                     type="checkbox"
                                     checked={isChecked}
-                                    onChange={() => {
-                                      if (colorId && sizeId) toggleVariantCombo(colorId, sizeId, cv.value, sv.value);
-                                    }}
-                                    title={`${cv.value} - ${sv.value}`}
+                                    readOnly
                                     aria-label={`${cv.value} - ${sv.value}`}
                                   />
+                                  {isChecked && <span className="ap-matrix-cell-label">{sv.value}</span>}
                                 </div>
                               );
                             })}
-                          </div>
+                          </Fragment>
                         );
                       })}
                     </div>
