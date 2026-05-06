@@ -246,9 +246,85 @@ export default function AdminProducts() {
       return slug === 'size' || name === 'size' || name.includes('kich');
     });
     return {
+      colorAttr: colorAttribute || null,
+      sizeAttr: sizeAttribute || null,
       colorValues: Array.isArray(colorAttribute?.values) ? colorAttribute.values : [],
       sizeValues: Array.isArray(sizeAttribute?.values) ? sizeAttribute.values : [],
     };
+  };
+
+  const { colorAttr, sizeAttr, colorValues: variantColorValues, sizeValues: variantSizeValues } = resolveVariantAxes();
+
+  // Build set of currently existing variant combos (colorId-sizeId)
+  const existingVariantKeys = useMemo(() => {
+    const keys = new Set<string>();
+    (formData.variants || []).forEach((v: any) => {
+      const c = normalizeAttributeId(v?.attributes?.[0]);
+      const s = normalizeAttributeId(v?.attributes?.[1]);
+      if (c && s) keys.add(`${c}-${s}`);
+    });
+    return keys;
+  }, [formData.variants]);
+
+  // Toggle a color×size combo in/out of variants
+  const toggleVariantCombo = (colorId: number, sizeId: number, colorName: string, sizeName: string) => {
+    const key = `${colorId}-${sizeId}`;
+    const exists = existingVariantKeys.has(key);
+    if (exists) {
+      setFormData(prev => ({
+        ...prev,
+        variants: prev.variants.filter((v: any) => {
+          const c = normalizeAttributeId(v?.attributes?.[0]);
+          const s = normalizeAttributeId(v?.attributes?.[1]);
+          return !(c === colorId && s === sizeId);
+        }),
+      }));
+    } else {
+      const autoSku = formData.autoGenerateVariantSku && formData.sku
+        ? generateVariantSku(formData.sku, colorName, sizeName)
+        : '';
+      setFormData(prev => ({
+        ...prev,
+        variants: [...prev.variants, { sku: autoSku, stock: 0, price: '', salePrice: '', attributes: [colorId, sizeId] }],
+      }));
+    }
+  };
+
+  // Generate SKU suffix from color+size abbreviations
+  const abbreviate = (name: string): string => {
+    if (!name) return '';
+    const parts = name.trim().split(/[\s/-]+/);
+    if (parts.length === 1) return parts[0].substring(0, 3).toUpperCase();
+    return parts.map(p => p.charAt(0).toUpperCase()).join('').substring(0, 4);
+  };
+
+  const generateVariantSku = (baseSku: string, colorName: string, sizeName: string) => {
+    const colorCode = abbreviate(colorName);
+    const sizeCode = abbreviate(sizeName);
+    const suffixes = [colorCode, sizeCode].filter(Boolean);
+    return suffixes.length > 0 ? `${baseSku}-${suffixes.join('-')}` : baseSku;
+  };
+
+  // Regenerate all variant SKUs from matrix labels
+  const regenerateAllSkus = () => {
+    if (!formData.sku) return;
+    const colorMap = new Map<number, string>();
+    variantColorValues.forEach((cv: any) => {
+      const id = normalizeAttributeId(cv?.id);
+      if (id) colorMap.set(id, cv.value || String(cv.id));
+    });
+    const sizeMap = new Map<number, string>();
+    variantSizeValues.forEach((sv: any) => {
+      const id = normalizeAttributeId(sv?.id);
+      if (id) sizeMap.set(id, sv.value || String(sv.id));
+    });
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.map((v: any) => ({
+        ...v,
+        sku: generateVariantSku(prev.sku, colorMap.get(normalizeAttributeId(v?.attributes?.[0])) || '', sizeMap.get(normalizeAttributeId(v?.attributes?.[1])) || ''),
+      })),
+    }));
   };
 
   const buildVariantsWithMissingColorSize = (sourceVariants: any[], autoGenerateSku: boolean) => {
@@ -349,8 +425,6 @@ export default function AdminProducts() {
       fetchProducts(pagination.page);
     } catch { addToast('Delete failed', 'error'); }
   };
-
-  const { colorValues: variantColorValues, sizeValues: variantSizeValues } = resolveVariantAxes();
 
   return (
     <div className="admin-products-page">
@@ -549,6 +623,50 @@ export default function AdminProducts() {
                     )}
                   </div>
                 </div>
+                {isVariantsExpanded && variantColorValues.length > 0 && variantSizeValues.length > 0 && (
+                  <div className="ap-variant-matrix">
+                    <div className="ap-matrix-header">
+                      <h4>Select Variants ({colorAttr?.name || 'Color'} × {sizeAttr?.name || 'Size'})</h4>
+                      <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={regenerateAllSkus} title="Regenerate SKUs from matrix labels">
+                        <Zap size={13} /> Regenerate SKUs
+                      </button>
+                    </div>
+                    <div className="ap-matrix-grid">
+                      {/* Header row with size labels */}
+                      <div className="ap-matrix-corner"></div>
+                      {variantSizeValues.map((sv: any) => (
+                        <div key={sv.id} className="ap-matrix-col-header">{sv.value}</div>
+                      ))}
+                      {/* Color rows */}
+                      {variantColorValues.map((cv: any) => {
+                        const colorId = normalizeAttributeId(cv?.id);
+                        return (
+                          <div key={cv.id} className="ap-matrix-row">
+                            <div className="ap-matrix-row-header">{cv.value}</div>
+                            {variantSizeValues.map((sv: any) => {
+                              const sizeId = normalizeAttributeId(sv?.id);
+                              const key = colorId && sizeId ? `${colorId}-${sizeId}` : '';
+                              const isChecked = key ? existingVariantKeys.has(key) : false;
+                              return (
+                                <div key={sv.id} className="ap-matrix-cell">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {
+                                      if (colorId && sizeId) toggleVariantCombo(colorId, sizeId, cv.value, sv.value);
+                                    }}
+                                    title={`${cv.value} - ${sv.value}`}
+                                    aria-label={`${cv.value} - ${sv.value}`}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {isVariantsExpanded && (
                   <div className="ap-variant-list">
                     {formData.variants.map((v, idx) => (
@@ -557,20 +675,6 @@ export default function AdminProducts() {
                       <div className="admin-form-group"><label htmlFor={`v-stock-${idx}`}>Stock</label><input id={`v-stock-${idx}`} type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title="Variant Stock" /></div>
                       <div className="admin-form-group"><label htmlFor={`v-price-${idx}`}>Price</label><input id={`v-price-${idx}`} type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder="Default" title="Variant Price" /></div>
                       <div className="admin-form-group"><label htmlFor={`v-sale-${idx}`}>Sale</label><input id={`v-sale-${idx}`} type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder="None" title="Variant Sale Price" /></div>
-                      <div className="admin-form-group">
-                        <label htmlFor={`v-color-${idx}`}>Color</label>
-                        <select id={`v-color-${idx}`} value={v.attributes[0] || ''} onChange={e => { const a = [...v.attributes]; a[0] = e.target.value; updateVariant(idx, 'attributes', a); }} title="Variant Color">
-                           <option value="">Color</option>
-                           {variantColorValues.map((cv: any) => <option key={cv.id} value={cv.id}>{cv.value}</option>)}
-                        </select>
-                      </div>
-                      <div className="admin-form-group">
-                        <label htmlFor={`v-size-${idx}`}>Size</label>
-                        <select id={`v-size-${idx}`} value={v.attributes[1] || ''} onChange={e => { const a = [...v.attributes]; a[1] = e.target.value; updateVariant(idx, 'attributes', a); }} title="Variant Size">
-                           <option value="">Size</option>
-                           {variantSizeValues.map((sv: any) => <option key={sv.id} value={sv.id}>{sv.value}</option>)}
-                        </select>
-                      </div>
                       <button type="button" className="ap-action-btn ap-action-btn-danger" title="Remove Variant" aria-label="Remove Variant" onClick={() => removeVariant(idx)}><Trash2 size={16} /></button>
                     </div>
                   ))}

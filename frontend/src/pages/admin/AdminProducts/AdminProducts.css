@@ -481,3 +481,86 @@
 @media (max-width: 768px) {
   .ap-variant-row { grid-template-columns: 1fr; }
 }
+
+/* ── Variant Color × Size Matrix ── */
+.ap-variant-matrix {
+  background: var(--color-bg-alt, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.ap-matrix-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ap-matrix-header h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-heading, #111);
+}
+
+.ap-matrix-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--color-border, #e5e7eb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ap-matrix-corner {
+  background: #f3f4f6;
+  min-width: 80px;
+}
+
+.ap-matrix-col-header,
+.ap-matrix-row-header {
+  background: #f3f4f6;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-heading, #111);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ap-matrix-row {
+  display: contents;
+}
+
+.ap-matrix-cell {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  transition: background 0.15s;
+}
+
+.ap-matrix-cell:hover {
+  background: #f0fdf4;
+}
+
+.ap-matrix-cell input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-heading, #111);
+}
+
+@media (max-width: 768px) {
+  .ap-matrix-col-header,
+  .ap-matrix-row-header {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  .ap-matrix-corner {
+    min-width: 60px;
+  }
+}
