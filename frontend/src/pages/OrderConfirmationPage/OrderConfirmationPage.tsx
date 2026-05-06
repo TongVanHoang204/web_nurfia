@@ -51,19 +51,19 @@ export default function OrderConfirmationPage() {
     }
   }, [id]);
 
-  const getProgressWidth = () => {
-    if (!order) return '0%';
+  const getProgressRatio = () => {
+    if (!order) return 0;
 
     const currentStatus = String(order.status).toLowerCase();
     let currentStepIndex = STATUS_STEPS.indexOf(currentStatus);
     if (currentStepIndex === -1) currentStepIndex = 0;
     const isCancelled = currentStatus === 'cancelled';
 
-    if (isCancelled) return '100%';
-    if (currentStepIndex === 0) return '0%';
-    if (currentStepIndex === 1) return '33.33%';
-    if (currentStepIndex === 2) return '66.66%';
-    return '100%';
+    if (isCancelled) return 1;
+    if (currentStepIndex === 0) return 0;
+    if (currentStepIndex === 1) return 1 / 3;
+    if (currentStepIndex === 2) return 2 / 3;
+    return 1;
   };
 
   const mapStatusToTitle = (step: string) => {
@@ -179,7 +179,7 @@ export default function OrderConfirmationPage() {
       return;
     }
 
-    timelineRef.current.style.setProperty('--pw', getProgressWidth());
+    timelineRef.current.style.setProperty('--pw-progress', String(getProgressRatio()));
   }, [order]);
 
   if (isLoading) return <div className="loading-page"><div className="spinner" /></div>;
