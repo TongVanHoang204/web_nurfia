@@ -649,110 +649,147 @@ export default function AdminProducts() {
                   >
                     <h3>Variants & Inventory</h3>
                     {isVariantsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    {isVariantsExpanded && formData.variants.length > 0 && (
+                      <span className="ap-variant-count">{formData.variants.length} variant{formData.variants.length > 1 ? 's' : ''}</span>
+                    )}
                   </div>
                   <div className="ap-variant-toggle-actions">
                     <label className="ap-variant-auto-label">
                       <input type="checkbox" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
                       Auto SKU
                     </label>
-                    {variantColorValues.length > 0 && variantSizeValues.length > 0 && (
-                      <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" title="Generate All Formats" aria-label="Generate All Variants" onClick={() => {
-                        const result = buildVariantsWithMissingColorSize(formData.variants, formData.autoGenerateVariantSku);
-                        setFormData({...formData, variants: result.variants});
-                        if (result.addedCount > 0) addToast(`Generated ${result.addedCount} missing variant(s)`, 'success');
-                        else addToast('All color×size combinations already exist', 'info');
-                      }}>
-                        <Zap size={13} /> Generate All
-                      </button>
-                    )}
                   </div>
                 </div>
-                {isVariantsExpanded && variantColorValues.length > 0 && variantSizeValues.length > 0 && (
-                  <div className="ap-variant-matrix">
-                    <div className="ap-matrix-header">
-                      <div className="ap-matrix-title">
-                        <h4>{colorAttr?.name || 'Color'} <span className="ap-matrix-times">×</span> {sizeAttr?.name || 'Size'}</h4>
-                        <span className="ap-matrix-count">{existingVariantKeys.size} / {variantColorValues.length * variantSizeValues.length} selected</span>
+                {isVariantsExpanded && (
+                  <>
+                    {/* ── Color × Size Matrix ── */}
+                    <div className="ap-variant-section">
+                      <div className="ap-section-label">
+                        <span>1. Select Variants</span>
+                        {existingVariantKeys.size > 0 && (
+                          <span className="ap-matrix-count">{existingVariantKeys.size} / {variantColorValues.length * variantSizeValues.length} selected</span>
+                        )}
                       </div>
-                      <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={regenerateAllSkus} title="Regenerate SKUs from matrix labels">
-                        <Zap size={13} /> Regenerate SKUs
-                      </button>
-                    </div>
-                    <div className="ap-matrix-grid" style={{ gridTemplateColumns: `140px repeat(${variantSizeValues.length}, 1fr)` }}>
-                      {/* Corner cell */}
-                      <div className="ap-matrix-corner">{colorAttr?.name || 'Color'} ↓ / {sizeAttr?.name || 'Size'} →</div>
-                      {/* Size column headers */}
-                      {variantSizeValues.map((sv: any) => (
-                        <div key={sv.id} className="ap-matrix-col-header">{sv.value}</div>
-                      ))}
-                      {/* Color rows */}
-                      {variantColorValues.map((cv: any) => {
-                        const colorId = normalizeAttributeId(cv?.id);
-                        return (
-                          <Fragment key={cv.id}>
-                            <div className="ap-matrix-row-header">
-                              <span className="ap-color-swatch" style={{ backgroundColor: getColorHex(cv.value) }}></span>
-                              {cv.value}
+                      {variantColorValues.length > 0 && variantSizeValues.length > 0 ? (
+                        <div className="ap-variant-matrix">
+                          <div className="ap-matrix-header">
+                            <div className="ap-matrix-title">
+                              <h4>{colorAttr?.name || 'Color'} <span className="ap-matrix-times">×</span> {sizeAttr?.name || 'Size'}</h4>
                             </div>
-                            {variantSizeValues.map((sv: any) => {
-                              const sizeId = normalizeAttributeId(sv?.id);
-                              const key = colorId && sizeId ? `${colorId}-${sizeId}` : '';
-                              const isChecked = key ? existingVariantKeys.has(key) : false;
+                            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={regenerateAllSkus} title="Regenerate SKUs from matrix labels">
+                              <Zap size={13} /> Regenerate SKUs
+                            </button>
+                          </div>
+                          <div className="ap-matrix-grid" style={{ gridTemplateColumns: `140px repeat(${variantSizeValues.length}, 1fr)` }}>
+                            <div className="ap-matrix-corner">{colorAttr?.name || 'Color'} ↓ / {sizeAttr?.name || 'Size'} →</div>
+                            {variantSizeValues.map((sv: any) => (
+                              <div key={sv.id} className="ap-matrix-col-header">{sv.value}</div>
+                            ))}
+                            {variantColorValues.map((cv: any) => {
+                              const colorId = normalizeAttributeId(cv?.id);
                               return (
-                                <div
-                                  key={`${cv.id}-${sv.id}`}
-                                  className={`ap-matrix-cell ${isChecked ? 'checked' : ''}`}
-                                  onClick={() => { if (colorId && sizeId) toggleVariantCombo(colorId, sizeId, cv.value, sv.value); }}
-                                  title={`${cv.value} - ${sv.value}`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    readOnly
-                                    aria-label={`${cv.value} - ${sv.value}`}
-                                  />
-                                  {isChecked && <span className="ap-matrix-cell-label">{sv.value}</span>}
-                                </div>
+                                <Fragment key={cv.id}>
+                                  <div className="ap-matrix-row-header">
+                                    <span className="ap-color-swatch" style={{ backgroundColor: getColorHex(cv.value) }}></span>
+                                    {cv.value}
+                                  </div>
+                                  {variantSizeValues.map((sv: any) => {
+                                    const sizeId = normalizeAttributeId(sv?.id);
+                                    const key = colorId && sizeId ? `${colorId}-${sizeId}` : '';
+                                    const isChecked = key ? existingVariantKeys.has(key) : false;
+                                    return (
+                                      <div
+                                        key={`${cv.id}-${sv.id}`}
+                                        className={`ap-matrix-cell ${isChecked ? 'checked' : ''}`}
+                                        onClick={() => { if (colorId && sizeId) toggleVariantCombo(colorId, sizeId, cv.value, sv.value); }}
+                                        title={`${cv.value} - ${sv.value}`}
+                                      >
+                                        <input type="checkbox" checked={isChecked} readOnly aria-label={`${cv.value} - ${sv.value}`} />
+                                        {isChecked && <span className="ap-matrix-cell-label">{sv.value}</span>}
+                                      </div>
+                                    );
+                                  })}
+                                </Fragment>
                               );
                             })}
-                          </Fragment>
-                        );
-                      })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="ap-variant-matrix-empty">
+                          <p>No Color or Size attributes defined yet.</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-                {isVariantsExpanded && (
-                  <div className="ap-variant-list">
-                    {duplicateSkuCount > 0 && (
-                      <div className="ap-variant-warning">
-                        ⚠️ {duplicateSkuCount} duplicate SKU(s) detected. Each variant must have a unique SKU.
+
+                    {/* ── SKU Details Table ── */}
+                    <div className="ap-variant-section">
+                      <div className="ap-section-label">
+                        <span>2. SKU Details</span>
+                        {formData.variants.length > 0 && (
+                          <span className="ap-matrix-count">{formData.variants.length} variant{formData.variants.length > 1 ? 's' : ''}</span>
+                        )}
                       </div>
-                    )}
-                    {formData.variants.map((v, idx) => {
-                      const isSkuDuplicate = duplicateSkuIndices.has(idx);
-                      return (
-                    <div key={idx} className="ap-variant-row">
-                      <div className="admin-form-group">
-                        <label htmlFor={`v-sku-${idx}`}>SKU</label>
-                        <input
-                          id={`v-sku-${idx}`}
-                          type="text"
-                          value={v.sku}
-                          onChange={e => updateVariant(idx, 'sku', e.target.value)}
-                          disabled={formData.autoGenerateVariantSku}
-                          title="Variant SKU"
-                          className={isSkuDuplicate ? 'ap-input-error' : ''}
-                        />
-                      </div>
-                      <div className="admin-form-group"><label htmlFor={`v-stock-${idx}`}>Stock</label><input id={`v-stock-${idx}`} type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title="Variant Stock" /></div>
-                      <div className="admin-form-group"><label htmlFor={`v-price-${idx}`}>Price</label><input id={`v-price-${idx}`} type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder="Default" title="Variant Price" /></div>
-                      <div className="admin-form-group"><label htmlFor={`v-sale-${idx}`}>Sale</label><input id={`v-sale-${idx}`} type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder="None" title="Variant Sale Price" /></div>
-                      <button type="button" className="ap-action-btn ap-action-btn-danger" title="Remove Variant" aria-label="Remove Variant" onClick={() => removeVariant(idx)}><Trash2 size={16} /></button>
+                      {duplicateSkuCount > 0 && (
+                        <div className="ap-variant-warning">
+                          ⚠️ {duplicateSkuCount} duplicate SKU(s) detected. Each variant must have a unique SKU.
+                        </div>
+                      )}
+
+                      {formData.variants.length === 0 ? (
+                        <div className="ap-variant-matrix-empty">
+                          <p>No variants yet. Use the matrix above to create variant combinations.</p>
+                        </div>
+                      ) : (
+                        <div className="ap-sku-table-wrap">
+                          <table className="ap-sku-table">
+                            <thead>
+                              <tr>
+                                <th>Color</th>
+                                <th>Size</th>
+                                <th>SKU</th>
+                                <th>Stock</th>
+                                <th>Price</th>
+                                <th>Sale Price</th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {formData.variants.map((v: any, idx: number) => {
+                                const isSkuDuplicate = duplicateSkuIndices.has(idx);
+                                const colorName = variantColorValues.find((cv: any) => normalizeAttributeId(cv.id) === normalizeAttributeId(v.attributes?.[0]))?.value || '—';
+                                const sizeName = variantSizeValues.find((sv: any) => normalizeAttributeId(sv.id) === normalizeAttributeId(v.attributes?.[1]))?.value || '—';
+                                return (
+                                  <tr key={idx} className={isSkuDuplicate ? 'ap-sku-row-duplicate' : ''}>
+                                    <td>
+                                      <span className="ap-color-swatch" style={{ backgroundColor: getColorHex(colorName) }}></span>
+                                      {colorName}
+                                    </td>
+                                    <td className="ap-sku-size">{sizeName}</td>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        value={v.sku}
+                                        onChange={e => updateVariant(idx, 'sku', e.target.value)}
+                                        disabled={formData.autoGenerateVariantSku}
+                                        title="SKU"
+                                        className={isSkuDuplicate ? 'ap-input-error' : 'ap-sku-input'}
+                                      />
+                                    </td>
+                                    <td><input type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title="Stock" className="ap-sku-input-num" /></td>
+                                    <td><input type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder="Base" title="Price" className="ap-sku-input-num" /></td>
+                                    <td><input type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder="None" title="Sale Price" className="ap-sku-input-num" /></td>
+                                    <td>
+                                      <button type="button" className="ap-action-btn ap-action-btn-danger" title="Remove" aria-label="Remove Variant" onClick={() => removeVariant(idx)}><Trash2 size={14} /></button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
-                    );
-                    })}
-                    <button type="button" className="ap-add-variant-btn" onClick={addVariant}><Plus size={14} /> Add Variant</button>
-                </div>
+                  </>
                 )}
               </div>
 
