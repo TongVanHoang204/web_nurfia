@@ -202,15 +202,13 @@ export const authService = {
       console.warn(`║  Error: ${(mailResult.error || 'unknown').padEnd(48)}║`);
       console.warn('╚══════════════════════════════════════════════════════════╝');
       console.warn('');
-
-      const detail = mailResult.detail || mailResult.error || 'Unknown error';
-      const smtpHint = mailResult.error?.includes('not configured')
-        ? 'SMTP chưa được cấu hình. Vào Render Dashboard > Settings > Environment Variables, thêm SMTP_USER và SMTP_PASS.'
-        : `SMTP error: ${detail}`;
-      throw new AppError(
-        `Unable to send OTP email. ${smtpHint}`,
-        503,
-      );
+      // Don't throw — return success so the frontend can proceed.
+      // The OTP is visible in Render logs for manual testing.
+      return {
+        message: 'OTP generated but email delivery failed. Check server logs for the OTP code.',
+        expiresInSeconds: Math.floor(CHANGE_PASSWORD_OTP_TTL_MS / 1000),
+        ...(config.env !== 'production' ? { debugOtp: otp } : {}),
+      };
     }
 
     return {

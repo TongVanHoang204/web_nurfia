@@ -1,7 +1,10 @@
 import nodemailer from 'nodemailer';
+import { promises as dnsPromises } from 'node:dns';
 import config from '../config/index.js';
 
 let transporter: nodemailer.Transporter | null = null;
+// Cache resolved IPv4 address to avoid repeated DNS lookups
+let resolvedSmtpHost: string | null = null;
 
 type MailSendResult = {
   delivered: boolean;
@@ -11,14 +14,26 @@ type MailSendResult = {
 
 const hasSmtpCredentials = Boolean(config.smtp.user && config.smtp.pass);
 
-const getTransporter = () => {
+const getTransporter = async (): Promise<nodemailer.Transporter | null> => {
   if (!hasSmtpCredentials) {
     return null;
   }
 
+  // Resolve SMTP host to IPv4 at most once (Render doesn't support IPv6)
+  if (!resolvedSmtpHost) {
+    try {
+      const addresses = await dnsPromises.resolve4(config.smtp.host);
+      resolvedSmtpHost = addresses[0] || config.smtp.host;
+      console.info(`[mail] SMTP host ${config.smtp.host} resolved to IPv4: ${resolvedSmtpHost}`);
+    } catch {
+      resolvedSmtpHost = config.smtp.host;
+      console.warn(`[mail] DNS resolution failed for ${config.smtp.host}, falling back to hostname`);
+    }
+  }
+
   if (!transporter) {
     transporter = nodemailer.createTransport({
-      host: config.smtp.host,
+      host: resolvedSmtpHost,
       port: config.smtp.port,
       secure: config.smtp.port === 465,
       pool: {
@@ -30,7 +45,6 @@ const getTransporter = () => {
       connectionTimeout: 30000, // 30s timeout (was 10s, Render needs more time)
       greetingTimeout: 30000,
       socketTimeout: 30000,
-      family: 4, // Force IPv4 to avoid ENETUNREACH on Render with IPv6
       auth: {
         user: config.smtp.user,
         pass: config.smtp.pass,
@@ -61,7 +75,7 @@ const sendMailSafely = async (
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const activeTransporter = getTransporter();
+      const activeTransporter = await getTransporter();
 
       if (!activeTransporter) {
         console.info(fallbackLog);
