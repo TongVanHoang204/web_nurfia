@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [showResetNewPassword, setShowResetNewPassword] = useState(false);
   const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
   const [isSubmittingAux, setIsSubmittingAux] = useState(false);
-  const { login, register, user, isLoading } = useAuthStore();
+  const { login, register, isLoading } = useAuthStore();
   const { addToast } = useUIStore();
   const navigate = useNavigate();
 
@@ -61,13 +61,6 @@ export default function LoginPage() {
     setShowRegisterConfirmPassword(false);
     setShowResetNewPassword(false);
     setShowResetConfirmPassword(false);
-
-    // When switching to forgot, auto-fill email from auth or from the username field if it looks like an email
-    if (nextMode === 'forgot') {
-      if (user?.email) {
-        update('email', user.email);
-      }
-    }
 
     if (searchParams.has('resetToken') && nextMode !== 'reset') {
       const nextParams = new URLSearchParams(searchParams);
@@ -332,15 +325,7 @@ export default function LoginPage() {
               {mode === 'forgot' && (
                 <div className="form-group">
                   <label className="form-label" htmlFor="forgot-email">Email Address</label>
-                  <input
-                    id="forgot-email"
-                    className="form-input"
-                    type="email"
-                    value={form.email}
-                    readOnly
-                    required
-                    title="Your registered email address"
-                  />
+                  <input id="forgot-email" className="form-input" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required />
                 </div>
               )}
 
