@@ -104,6 +104,17 @@ export default function CheckoutPage() {
     }).catch((err) => console.error('Failed to load addresses', err));
   }, [isAuthenticated, isCustomerRole, isHydrating, user, items.length, navigate, addToast]);
 
+  // Auto-fill shipping name, phone, email from user profile if available
+  useEffect(() => {
+    if (!user) return;
+    setForm((prev) => ({
+      ...prev,
+      shippingName: prev.shippingName || user.fullName || '',
+      shippingPhone: prev.shippingPhone || user.phone || '',
+      shippingEmail: prev.shippingEmail || user.email || '',
+    }));
+  }, [user]);
+
   useEffect(() => {
     fetchShippingOptions();
   }, [subtotal, form.shippingProvince, form.shippingDistrict, form.shippingWard]);
