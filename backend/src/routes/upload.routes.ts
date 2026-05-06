@@ -50,7 +50,44 @@ const multipleUploadLimiter = createApiRateLimiter(15 * 60 * 1000, 20, 'Too many
 const router = Router();
 router.use(authenticate);
 
+/**
+ * @swagger
+ * /api/upload:
+ *   post:
+ *     tags: [Upload]
+ *     summary: Upload a single image file
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image: { type: string, format: binary }
+ *     responses:
+ *       200: { description: File uploaded }
+ */
 router.post('/', singleUploadLimiter, upload.single('image'), uploadController.uploadSingle);
+
+/**
+ * @swagger
+ * /api/upload/multiple:
+ *   post:
+ *     tags: [Upload]
+ *     summary: Upload multiple images
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               images: { type: array, items: { type: string, format: binary } }
+ *     responses:
+ *       200: { description: Files uploaded }
+ */
 router.post('/multiple', multipleUploadLimiter, upload.array('images', 10), uploadController.uploadMultiple);
 
 export default router;

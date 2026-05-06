@@ -17,6 +17,25 @@ const options: swaggerJsdoc.Options = {
         description: config.env === 'production' ? 'Production Server' : 'Development Server',
       },
     ],
+    tags: [
+      { name: 'Auth', description: 'Authentication & profile' },
+      { name: 'Products', description: 'Product listing & search' },
+      { name: 'Categories', description: 'Category management' },
+      { name: 'Cart', description: 'Shopping cart' },
+      { name: 'Orders', description: 'Order management' },
+      { name: 'Wishlist', description: 'Wishlist management' },
+      { name: 'Compare', description: 'Product comparison' },
+      { name: 'Addresses', description: 'Saved addresses' },
+      { name: 'Payment', description: 'Payment processing' },
+      { name: 'Banners', description: 'Banner management' },
+      { name: 'Blog', description: 'Blog posts' },
+      { name: 'Contact', description: 'Contact & newsletter' },
+      { name: 'Settings', description: 'Site settings' },
+      { name: 'Notifications', description: 'User notifications' },
+      { name: 'Chat', description: 'AI chat history' },
+      { name: 'Upload', description: 'File upload' },
+      { name: 'Admin', description: 'Admin panel endpoints' },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -36,8 +55,10 @@ const options: swaggerJsdoc.Options = {
   apis: [
     './src/routes/*.ts',
     './src/controllers/*.ts',
+    './src/server.ts',
     './dist/routes/*.js',
     './dist/controllers/*.js',
+    './dist/server.js',
   ],
 };
 

@@ -101,6 +101,25 @@ app.use('/uploads', async (req, res, next) => {
 app.use('/uploads', express.static(path.join(process.cwd(), config.upload.dir)));
 
 // API Routes
+/**
+ * @swagger
+ * /api/ai/chat:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Send a message to AI chatbot
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [message]
+ *             properties:
+ *               message: { type: string }
+ *               history: { type: array, items: { type: object } }
+ *     responses:
+ *       200: { description: AI response }
+ */
 app.post('/api/ai/chat', aiController.chat);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -121,6 +140,15 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
 
 // Health check
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     tags: [Settings]
+ *     summary: Health check endpoint
+ *     responses:
+ *       200: { description: Server is healthy }
+ */
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });

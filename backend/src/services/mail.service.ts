@@ -1,7 +1,5 @@
 import nodemailer from 'nodemailer';
 import { promises as dnsPromises } from 'node:dns';
-import fs from 'fs/promises';
-import path from 'path';
 import config from '../config/index.js';
 
 let transporter: nodemailer.Transporter | null = null;
@@ -113,23 +111,6 @@ const sendMailSafely = async (
   console.warn('║  SMTP DELIVERY FAILED — See fallback below      ║');
   console.warn('╚══════════════════════════════════════════════════╝');
   console.warn(fallbackLog);
-  // Persist failed delivery for later retry/inspection
-  try {
-    const failedDir = process.cwd();
-    const outPath = path.join(failedDir, 'failed-emails.jsonl');
-    const record = JSON.stringify({
-      timestamp: new Date().toISOString(),
-      label,
-      fallbackLog,
-      error: message,
-      detail: String(lastError),
-    });
-    await fs.appendFile(outPath, record + '\n', { encoding: 'utf8' });
-    console.info(`[mail:${label}] Persisted failed delivery to ${outPath}`);
-  } catch (fsErr) {
-    console.error(`[mail:${label}] Failed to persist failed delivery: ${fsErr}`);
-  }
-
   return { delivered: false, error: message, detail: String(lastError) };
 };
 
