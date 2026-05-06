@@ -70,7 +70,8 @@ export default function AdminProducts() {
     isFeatured: false, isActive: true, images: [] as string[], variants: [] as any[], autoGenerateVariantSku: true
   });
 
-  const [isVariantsExpanded, setIsVariantsExpanded] = useState(true);
+  const [isMatrixExpanded, setIsMatrixExpanded] = useState(true);
+  const [isSkuExpanded, setIsSkuExpanded] = useState(true);
 
   const hasVariantStocks = Array.isArray(formData.variants) && formData.variants.length > 0;
   const totalStockFromVariants = hasVariantStocks
@@ -668,34 +669,21 @@ export default function AdminProducts() {
                 </div>
               </div>
 
-              <div className="ap-variant-toggle">
-                <div className="ap-variant-toggle-header">
-                  <div className="ap-variant-toggle-title"
-                    onClick={() => setIsVariantsExpanded(!isVariantsExpanded)}
-                  >
-                    <h3>Variants & Inventory</h3>
-                    {isVariantsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                    {isVariantsExpanded && formData.variants.length > 0 && (
-                      <span className="ap-variant-count">{formData.variants.length} variant{formData.variants.length > 1 ? 's' : ''}</span>
-                    )}
+              <div className="ap-variant-section-group">
+                {/* ── Section 1: Color × Size Matrix ── */}
+                <div className="ap-variant-collapse">
+                  <div className="ap-variant-collapse-header" onClick={() => setIsMatrixExpanded(!isMatrixExpanded)}>
+                    <div className="ap-variant-collapse-title">
+                      <span className="ap-section-num">1</span>
+                      <h3>Select Variants</h3>
+                      {existingVariantKeys.size > 0 && (
+                        <span className="ap-variant-count">{existingVariantKeys.size} / {variantColorValues.length * variantSizeValues.length}</span>
+                      )}
+                    </div>
+                    {isMatrixExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
-                  <div className="ap-variant-toggle-actions">
-                    <label className="ap-variant-auto-label">
-                      <input type="checkbox" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
-                      Auto SKU
-                    </label>
-                  </div>
-                </div>
-                {isVariantsExpanded && (
-                  <>
-                    {/* ── Color × Size Matrix ── */}
-                    <div className="ap-variant-section">
-                      <div className="ap-section-label">
-                        <span>1. Select Variants</span>
-                        {existingVariantKeys.size > 0 && (
-                          <span className="ap-matrix-count">{existingVariantKeys.size} / {variantColorValues.length * variantSizeValues.length} selected</span>
-                        )}
-                      </div>
+                  {isMatrixExpanded && (
+                    <div className="ap-variant-collapse-body">
                       {variantColorValues.length > 0 && variantSizeValues.length > 0 ? (
                         <div className="ap-variant-matrix">
                           <div className="ap-matrix-header">
@@ -746,15 +734,29 @@ export default function AdminProducts() {
                         </div>
                       )}
                     </div>
+                  )}
+                </div>
 
-                    {/* ── SKU Details Table ── */}
-                    <div className="ap-variant-section">
-                      <div className="ap-section-label">
-                        <span>2. SKU Details</span>
-                        {formData.variants.length > 0 && (
-                          <span className="ap-matrix-count">{formData.variants.length} variant{formData.variants.length > 1 ? 's' : ''}</span>
-                        )}
-                      </div>
+                {/* ── Section 2: SKU Details Table ── */}
+                <div className="ap-variant-collapse">
+                  <div className="ap-variant-collapse-header" onClick={() => setIsSkuExpanded(!isSkuExpanded)}>
+                    <div className="ap-variant-collapse-title">
+                      <span className="ap-section-num">2</span>
+                      <h3>SKU Details</h3>
+                      {formData.variants.length > 0 && (
+                        <span className="ap-variant-count">{formData.variants.length}</span>
+                      )}
+                    </div>
+                    <div className="ap-variant-collapse-actions" onClick={e => e.stopPropagation()}>
+                      <label className="ap-variant-auto-label">
+                        <input type="checkbox" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
+                        Auto SKU
+                      </label>
+                    </div>
+                    {isSkuExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
+                  {isSkuExpanded && (
+                    <div className="ap-variant-collapse-body">
                       {duplicateSkuCount > 0 && (
                         <div className="ap-variant-warning">
                           ⚠️ {duplicateSkuCount} duplicate SKU(s) detected. Each variant must have a unique SKU.
@@ -763,7 +765,7 @@ export default function AdminProducts() {
 
                       {formData.variants.length === 0 ? (
                         <div className="ap-variant-matrix-empty">
-                          <p>No variants yet. Use the matrix above to create variant combinations.</p>
+                          <p>No variants yet. Select combinations from the matrix above.</p>
                         </div>
                       ) : (
                         <div className="ap-sku-table-wrap">
@@ -815,8 +817,8 @@ export default function AdminProducts() {
                         </div>
                       )}
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
 
               <div className="admin-modal-actions">

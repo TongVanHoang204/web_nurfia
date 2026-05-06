@@ -659,41 +659,80 @@
   .ap-matrix-corner { min-width: 60px; }
 }
 
-/* ── Variant section layout ── */
-.ap-variant-section {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border, #e5e7eb);
+/* ── Variant section group ── */
+.ap-variant-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.ap-variant-section:first-of-type {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
+.ap-variant-collapse {
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
 }
 
-.ap-section-label {
+.ap-variant-collapse-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.15s;
+}
+
+.ap-variant-collapse-header:hover {
+  background: var(--color-bg-alt, #f9fafb);
+}
+
+.ap-variant-collapse-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  flex: 1;
 }
 
-.ap-section-label span:first-child {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-light, #888);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.ap-variant-count {
+.ap-section-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-heading, #111);
+  color: #fff;
   font-size: 11px;
-  color: var(--color-text-light, #888);
-  background: #f3f4f6;
-  border-radius: 999px;
-  padding: 1px 8px;
-  margin-left: 8px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ap-variant-collapse-title h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-heading, #111);
+}
+
+.ap-variant-collapse-body {
+  padding: 0 16px 16px;
+}
+
+.ap-variant-collapse-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Remove old toggle styles */
+.ap-variant-toggle,
+.ap-variant-toggle-header,
+.ap-variant-toggle-title,
+.ap-variant-toggle-actions {
+  display: none;
 }
 
 .ap-variant-matrix-empty {
