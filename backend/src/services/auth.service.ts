@@ -203,14 +203,14 @@ export const authService = {
       console.warn('╚══════════════════════════════════════════════════════════╝');
       console.warn('');
 
-      // We bypass the hard 503 error on Render to allow users to still use the system 
-      // when running on Render Free Tier where SMTP is blocked by firewall
-      return {
-        message: 'OTP could not be sent (SMTP blocked). For testing, use the OTP shown in logs or this debug value.',
-        expiresInSeconds: Math.floor(CHANGE_PASSWORD_OTP_TTL_MS / 1000),
-        delivered: false,
-        debugOtp: otp, // Temporarily expose for Render free tier so user isn't stuck
-      };
+      const detail = mailResult.detail || mailResult.error || 'Unknown error';
+      const smtpHint = mailResult.error?.includes('not configured')
+        ? 'SMTP chưa được cấu hình. Vào Render Dashboard > Settings > Environment Variables, thêm SMTP_USER và SMTP_PASS.'
+        : `SMTP error: ${detail}`;
+      throw new AppError(
+        `Unable to send OTP email. ${smtpHint}`,
+        503,
+      );
     }
 
     return {

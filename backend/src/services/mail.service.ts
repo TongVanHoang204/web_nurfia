@@ -196,4 +196,40 @@ export const mailService = {
       });
     });
   },
+
+  async sendOrderConfirmation(email: string, fullName: string, orderNumber: string, totalAmount: number) {
+    return sendMailSafely(
+      'order-confirmation',
+      `[order-confirmation] ${email}: ${orderNumber}`,
+      async (activeTransporter) => {
+        await activeTransporter.sendMail({
+          from: config.smtp.from,
+          to: email,
+          subject: 'Nurfia - Order Confirmation',
+          text: [
+            `Hello ${fullName || 'there'},`,
+            '',
+            `Thank you for your order! Your order #${orderNumber} has been placed successfully.`,
+            `Total Amount: $${totalAmount.toFixed(2)}`,
+            '',
+            'We will notify you again once your order is processed and shipped.',
+            '',
+            'Thank you for shopping with us!',
+            'The Nurfia Team',
+          ].join('\n'),
+          html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+              <p>Hello ${fullName || 'there'},</p>
+              <p>Thank you for your order! Your order <strong>#${orderNumber}</strong> has been placed successfully.</p>
+              <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
+              <p>We will notify you again once your order is processed and shipped.</p>
+              <br/>
+              <p>Thank you for shopping with us!</p>
+              <p><strong>The Nurfia Team</strong></p>
+            </div>
+          `,
+        });
+      }
+    );
+  },
 };

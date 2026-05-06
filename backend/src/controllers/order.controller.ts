@@ -10,6 +10,7 @@ import {
   markProtectedUploadPath,
 } from '../utils/bankTransferProof.js';
 import { notificationService } from '../services/notification.service.js';
+import { mailService } from '../services/mail.service.js';
 
 const PAYMENT_METHODS = ['COD', 'BANK_TRANSFER', 'MOMO'] as const;
 const CUSTOMER_CANCELLABLE_STATUSES = new Set(['PENDING', 'CONFIRMED']);
@@ -489,6 +490,16 @@ export const orderController = {
           ).catch((err: unknown) => console.error('[Notification] Failed to notify admin on order creation:', err));
         }
       }).catch((err: unknown) => console.error('[Notification] Failed to fetch admins:', err));
+
+      // Attempt to send email to the customer
+      if (shippingData.shippingEmail) {
+        mailService.sendOrderConfirmation(
+          shippingData.shippingEmail,
+          shippingData.shippingName,
+          order.orderNumber,
+          Number(order.totalAmount)
+        ).catch((err: unknown) => console.error('[Mail] Failed to send order confirmation email:', err));
+      }
 
       res.status(201).json({
         success: true,
