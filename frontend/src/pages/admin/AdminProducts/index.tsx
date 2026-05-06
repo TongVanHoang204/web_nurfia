@@ -266,7 +266,25 @@ export default function AdminProducts() {
     return keys;
   }, [formData.variants]);
 
-  // Toggle a color×size combo in/out of variants
+  // Find duplicate SKUs within variants
+  const duplicateSkuIndices = useMemo(() => {
+    const indices = new Set<number>();
+    const seen = new Map<string, number>();
+    (formData.variants || []).forEach((v: any, idx: number) => {
+      const sku = String(v.sku || '').trim();
+      if (!sku) return;
+      const lower = sku.toLowerCase();
+      if (seen.has(lower)) {
+        indices.add(seen.get(lower)!);
+        indices.add(idx);
+      } else {
+        seen.set(lower, idx);
+      }
+    });
+    return indices;
+  }, [formData.variants]);
+
+  const duplicateSkuCount = duplicateSkuIndices.size > 0 ? duplicateSkuIndices.size : 0;
   const toggleVariantCombo = (colorId: number, sizeId: number, colorName: string, sizeName: string) => {
     const key = `${colorId}-${sizeId}`;
     const exists = existingVariantKeys.has(key);
@@ -669,15 +687,35 @@ export default function AdminProducts() {
                 )}
                 {isVariantsExpanded && (
                   <div className="ap-variant-list">
-                    {formData.variants.map((v, idx) => (
+                    {duplicateSkuCount > 0 && (
+                      <div className="ap-variant-warning">
+                        ⚠️ {duplicateSkuCount} duplicate SKU(s) detected. Each variant must have a unique SKU.
+                      </div>
+                    )}
+                    {formData.variants.map((v, idx) => {
+                      const isSkuDuplicate = duplicateSkuIndices.has(idx);
+                      return (
                     <div key={idx} className="ap-variant-row">
-                      <div className="admin-form-group"><label htmlFor={`v-sku-${idx}`}>SKU</label><input id={`v-sku-${idx}`} type="text" value={v.sku} onChange={e => updateVariant(idx, 'sku', e.target.value)} disabled={formData.autoGenerateVariantSku} title="Variant SKU" /></div>
+                      <div className="admin-form-group">
+                        <label htmlFor={`v-sku-${idx}`}>SKU</label>
+                        <input
+                          id={`v-sku-${idx}`}
+                          type="text"
+                          value={v.sku}
+                          onChange={e => updateVariant(idx, 'sku', e.target.value)}
+                          disabled={formData.autoGenerateVariantSku}
+                          title="Variant SKU"
+                          className={isSkuDuplicate ? 'ap-input-error' : ''}
+                          style={isSkuDuplicate ? { borderColor: '#ef4444', background: '#fef2f2' } : {}}
+                        />
+                      </div>
                       <div className="admin-form-group"><label htmlFor={`v-stock-${idx}`}>Stock</label><input id={`v-stock-${idx}`} type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title="Variant Stock" /></div>
                       <div className="admin-form-group"><label htmlFor={`v-price-${idx}`}>Price</label><input id={`v-price-${idx}`} type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder="Default" title="Variant Price" /></div>
                       <div className="admin-form-group"><label htmlFor={`v-sale-${idx}`}>Sale</label><input id={`v-sale-${idx}`} type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder="None" title="Variant Sale Price" /></div>
                       <button type="button" className="ap-action-btn ap-action-btn-danger" title="Remove Variant" aria-label="Remove Variant" onClick={() => removeVariant(idx)}><Trash2 size={16} /></button>
                     </div>
-                  ))}
+                    );
+                    })}
                     <button type="button" className="ap-add-variant-btn" onClick={addVariant}><Plus size={14} /> Add Variant</button>
                 </div>
                 )}

@@ -482,7 +482,22 @@
   .ap-variant-row { grid-template-columns: 1fr; }
 }
 
-/* ── Variant Color × Size Matrix ── */
+/* ── Variant SKU duplicate warning ── */
+.ap-variant-warning {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ap-input-error {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+}
 .ap-variant-matrix {
   background: var(--color-bg-alt, #f9fafb);
   border: 1px solid var(--color-border, #e5e7eb);
