@@ -491,9 +491,9 @@ export const orderController = {
         }
       }).catch((err: unknown) => console.error('[Notification] Failed to fetch admins:', err));
 
-      // Attempt to send email to the customer
+      // Attempt to send email to the customer (do not block response)
       if (shippingData.shippingEmail) {
-        await mailService.sendOrderConfirmation(
+        mailService.sendOrderConfirmation(
           shippingData.shippingEmail,
           shippingData.shippingName,
           order.orderNumber,
