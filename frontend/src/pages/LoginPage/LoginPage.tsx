@@ -66,9 +66,6 @@ export default function LoginPage() {
     if (nextMode === 'forgot') {
       if (user?.email) {
         update('email', user.email);
-      } else if (form.username) {
-        // Carry over whatever the user typed in the login username field
-        update('email', form.username);
       }
     }
 
