@@ -236,10 +236,6 @@ export default function OrderConfirmationPage() {
           <div className="tracking-timeline" ref={timelineRef}>
             {!isCancelled ? (
               <>
-                <div className="tracking-timeline-track">
-                  <div className="tracking-timeline-progress"></div>
-                </div>
-
                 {['pending', 'confirmed', 'shipping', 'delivered'].map((step, index) => {
                   const isActive = index === currentStepIndex;
                   const isCompleted = index < currentStepIndex;
@@ -251,6 +247,7 @@ export default function OrderConfirmationPage() {
                     titleClass += ' active';
                   } else if (isCompleted) {
                     wrapperClass += ' completed';
+                    titleClass += ' completed';
                   }
 
                   return (
