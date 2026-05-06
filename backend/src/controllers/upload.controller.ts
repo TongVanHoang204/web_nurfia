@@ -15,6 +15,32 @@ if (!process.env.CLOUDINARY_URL && process.env.CLOUDINARY_API_KEY && process.env
 const isCloudinaryConfigured = () => !!process.env.CLOUDINARY_URL || (!!process.env.CLOUDINARY_API_KEY && !!process.env.CLOUDINARY_API_SECRET);
 
 export const uploadController = {
+  uploadPaymentProof: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, error: 'No file uploaded.' });
+        return;
+      }
+
+      const isValidSignature = await ensureStoredFileMatchesMimeSignature(req.file.path, req.file.mimetype);
+      if (!isValidSignature) {
+        await deleteStoredFiles([req.file.path]);
+        throw new AppError('Uploaded file content does not match the declared file type.', 400);
+      }
+
+      res.json({
+        success: true,
+        data: {
+          url: `/uploads/${req.file.filename}`,
+          filename: req.file.filename,
+        },
+      });
+    } catch (err) {
+      if (req.file) await deleteStoredFiles([req.file.path]).catch(() => {});
+      next(err);
+    }
+  },
+
   uploadSingle: async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.file) {

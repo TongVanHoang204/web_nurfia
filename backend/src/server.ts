@@ -12,7 +12,9 @@ import path from 'path';
 import config from './config/index.js';
 import prisma from './models/prisma.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { csrfProtection } from './middlewares/csrf.js';
 import authRoutes from './routes/auth.routes.js';
+import aiRoutes from './routes/ai.routes.js';
 import productRoutes from './routes/product.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import cartRoutes from './routes/cart.routes.js';
@@ -29,7 +31,6 @@ import paymentRoutes from './routes/payment.routes.js';
 import compareRoutes from './routes/compare.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import chatRoutes from './routes/chat.routes.js';
-import { aiController } from './controllers/ai.controller.js';
 import { initSocketServer } from './services/socket.service.js';
 import { getAllowedOrigins } from './utils/security.js';
 import { setupSwagger } from './utils/swagger.js';
@@ -51,13 +52,14 @@ app.use(cors({
   origin: getAllowedOrigins(),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/api', csrfProtection);
 
 // Setup Swagger UI
 setupSwagger(app);
@@ -120,7 +122,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), config.upload.dir)))
  *     responses:
  *       200: { description: AI response }
  */
-app.post('/api/ai/chat', aiController.chat);
+app.use('/api/ai', aiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);

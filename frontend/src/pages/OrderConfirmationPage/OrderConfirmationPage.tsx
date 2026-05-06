@@ -99,7 +99,7 @@ export default function OrderConfirmationPage() {
     try {
       const formData = new FormData();
       formData.append('image', proofFile);
-      const uploadRes = await api.post('/upload', formData, {
+      const uploadRes = await api.post('/upload/payment-proof', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

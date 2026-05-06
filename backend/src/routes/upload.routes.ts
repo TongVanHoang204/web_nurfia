@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import config from '../config/index.js';
-import { authenticate } from '../middlewares/auth.js';
+import { authenticate, requireAdminAccess, requireCustomer } from '../middlewares/auth.js';
 import { uploadController } from '../controllers/upload.controller.js';
 import { createApiRateLimiter } from '../middlewares/rateLimit.js';
 
@@ -43,12 +43,30 @@ const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterC
   cb(new Error('Only image or video files (jpg, png, webp, gif, ico, mp4, webm, mov, m4v) are allowed.'));
 };
 
+const imageOnlyFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const imageExt = ['.jpeg', '.jpg', '.png', '.webp'];
+  const imageMime = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mime = file.mimetype.toLowerCase();
+
+  if (imageExt.includes(ext) && imageMime.includes(mime)) {
+    cb(null, true);
+    return;
+  }
+
+  cb(new Error('Only image files (jpg, png, webp) are allowed.'));
+};
+
 const upload = multer({ storage, fileFilter, limits: { fileSize: config.upload.maxFileSize } });
+const proofUpload = multer({ storage, fileFilter: imageOnlyFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 const singleUploadLimiter = createApiRateLimiter(15 * 60 * 1000, 60, 'Too many upload requests. Please try again later.');
 const multipleUploadLimiter = createApiRateLimiter(15 * 60 * 1000, 20, 'Too many bulk upload requests. Please try again later.');
+const paymentProofLimiter = createApiRateLimiter(15 * 60 * 1000, 10, 'Too many payment proof upload requests. Please try again later.');
 
 const router = Router();
 router.use(authenticate);
+router.post('/payment-proof', paymentProofLimiter, requireCustomer, proofUpload.single('image'), uploadController.uploadPaymentProof);
+router.use(requireAdminAccess);
 
 /**
  * @swagger

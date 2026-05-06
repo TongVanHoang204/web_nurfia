@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
 import { authenticate } from '../middlewares/auth.js';
+import { issueCsrfToken } from '../middlewares/csrf.js';
 import { validate } from '../middlewares/validate.js';
 import { createApiRateLimiter } from '../middlewares/rateLimit.js';
 import {
@@ -17,6 +18,8 @@ const router = Router();
 const loginLimiter = createApiRateLimiter(15 * 60 * 1000, 8, 'Too many login attempts. Please try again later.');
 const registerLimiter = createApiRateLimiter(60 * 60 * 1000, 10, 'Too many registration attempts. Please try again later.');
 const passwordResetLimiter = createApiRateLimiter(15 * 60 * 1000, 6, 'Too many password reset requests. Please try again later.');
+
+router.get('/csrf', issueCsrfToken);
 
 /**
  * @swagger

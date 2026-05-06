@@ -124,8 +124,12 @@ FORMATTING:
         { role: 'user', content: message }
       ];
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch(apiUrl, {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
@@ -138,7 +142,7 @@ FORMATTING:
           top_p: 1.0,
           stream: false
         }),
-      });
+      }).finally(() => clearTimeout(timeout));
 
       const responseText = await response.text();
       let result;

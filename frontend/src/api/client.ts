@@ -33,6 +33,48 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+const csrfClient = axios.create({
+  baseURL: getBaseURL(),
+  withCredentials: true,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+let csrfToken: string | null = null;
+let csrfTokenPromise: Promise<string> | null = null;
+
+const unsafeMethods = new Set(['post', 'put', 'patch', 'delete']);
+
+const getCsrfToken = async () => {
+  if (csrfToken) return csrfToken;
+
+  csrfTokenPromise ??= csrfClient.get('/auth/csrf').then(({ data }) => {
+    const token = String(data?.data?.csrfToken || '');
+    if (!token) {
+      throw new Error('CSRF token not returned by server.');
+    }
+    csrfToken = token;
+    return token;
+  }).finally(() => {
+    csrfTokenPromise = null;
+  });
+
+  return csrfTokenPromise;
+};
+
+api.interceptors.request.use(async (config) => {
+  const method = String(config.method || 'get').toLowerCase();
+  if (!unsafeMethods.has(method)) {
+    return config;
+  }
+
+  const token = await getCsrfToken();
+  config.headers.set?.('X-CSRF-Token', token);
+  if (!config.headers.get?.('X-CSRF-Token')) {
+    config.headers['X-CSRF-Token'] = token;
+  }
+  return config;
+});
+
 // Handle 401 globally
 api.interceptors.response.use(
   (response) => response,
@@ -47,6 +89,9 @@ api.interceptors.response.use(
       const reason = message.includes('deactivated') ? 'deactivated' : 'unauthorized';
       localStorage.removeItem('nurfia_user');
       window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { reason } }));
+    }
+    if (error.response?.status === 403 && String(error.response?.data?.message || '').toLowerCase().includes('csrf')) {
+      csrfToken = null;
     }
     return Promise.reject(error);
   }

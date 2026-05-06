@@ -19,7 +19,7 @@ export const errorHandler = (
   _next: NextFunction,
 ): void => {
   const isMulterError = err.name === 'MulterError';
-  const isUploadValidationError = /Only image or video files/i.test(err.message);
+  const isUploadValidationError = /Only image(?: or video)? files/i.test(err.message);
 
   const statusCode = err instanceof AppError
     ? err.statusCode
