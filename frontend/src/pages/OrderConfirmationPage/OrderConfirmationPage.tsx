@@ -202,9 +202,17 @@ export default function OrderConfirmationPage() {
     <div className="order-confirmation-page">
       <div className="container">
         <div className="oc-header">
-          <CheckCircle className="oc-icon" size={64} />
-          <h1 className="oc-title">Order Received</h1>
-          <p className="oc-subtitle">Thank you. Your order has been received.</p>
+          {isCancelled ? (
+            <div className="oc-icon-cancelled">✕</div>
+          ) : (
+            <CheckCircle className="oc-icon" size={64} />
+          )}
+          <h1 className="oc-title">{isCancelled ? 'Order Cancelled' : 'Order Received'}</h1>
+          <p className="oc-subtitle">
+            {isCancelled
+              ? 'This order has been cancelled and will not be processed.'
+              : 'Thank you. Your order has been received.'}
+          </p>
         </div>
 
         <ul className="oc-summary">
