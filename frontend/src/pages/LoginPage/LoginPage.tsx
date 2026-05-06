@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [showResetNewPassword, setShowResetNewPassword] = useState(false);
   const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
   const [isSubmittingAux, setIsSubmittingAux] = useState(false);
-  const { login, register, user, isAuthenticated } = useAuthStore();
+  const { login, register, user, isAuthenticated, isLoading } = useAuthStore();
   const { addToast } = useUIStore();
   const navigate = useNavigate();
 
@@ -66,7 +66,8 @@ export default function LoginPage() {
     if (nextMode === 'forgot') {
       if (user?.email) {
         update('email', user.email);
-      } else if (form.username.includes('@')) {
+      } else if (form.username) {
+        // Carry over whatever the user typed in the login username field
         update('email', form.username);
       }
     }
@@ -338,14 +339,11 @@ export default function LoginPage() {
                     id="forgot-email"
                     className="form-input"
                     type="email"
-                    value={isAuthenticated && user?.email ? user.email : form.email}
+                    value={form.email}
                     onChange={(e) => update('email', e.target.value)}
-                    readOnly={!!(isAuthenticated && user?.email)}
+                    placeholder="Your registered email address"
                     required
                   />
-                  {isAuthenticated && user?.email && (
-                    <p className="form-hint">Using your registered email: {user.email}</p>
-                  )}
                 </div>
               )}
 
