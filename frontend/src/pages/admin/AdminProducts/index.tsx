@@ -404,9 +404,6 @@ export default function AdminProducts() {
 
 
 
-  const addVariant = () => {
-    setFormData({ ...formData, variants: [...formData.variants, { sku: formData.autoGenerateVariantSku ? '' : `${formData.sku ? formData.sku + '-' : ''}V${formData.variants.length + 1}`, stock: 0, price: '', salePrice: '', attributes: [] }] });
-  };
 
   const removeVariant = (i: number) => {
     const newVariants = [...formData.variants];
