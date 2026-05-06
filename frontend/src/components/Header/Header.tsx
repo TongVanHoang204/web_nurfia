@@ -9,68 +9,101 @@ import { useAuthStore } from '../../stores/authStore';
 import { resolveSiteAssetUrl, useSiteSettings } from '../../contexts/SiteSettingsContext';
 import { useState, useEffect, useRef } from 'react';
 import NotificationBell from '../Notifications/NotificationBell';
+import api from '../../api/client';
 
-const NAV_ITEMS = [
+type SubLink = { label: string; href: string };
+type NavGroup = { group: string; items: SubLink[] };
+type NavItem = {
+  label: string;
+  href: string;
+  mega?: boolean;
+  children?: NavGroup[];
+};
+
+const STATIC_LINKS: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Shop', href: '/shop' },
-  {
-    label: 'Women', href: '/category/women', mega: true,
-    children: [
-      { group: 'Clothing', items: [
-        { label: 'Dresses', href: '/category/dresses' },
-        { label: 'Blazers', href: '/category/blazers' },
-        { label: 'Blouses', href: '/category/blouses' },
-        { label: 'Tops', href: '/category/tops' },
-        { label: 'T-Shirts', href: '/category/women-tshirts' },
-        { label: 'Jackets', href: '/category/women-jackets' },
-      ]},
-      { group: 'Bottom Wear', items: [
-        { label: 'Pants', href: '/category/women-pants' },
-        { label: 'Skirts', href: '/category/skirts' },
-        { label: 'Jeans', href: '/category/women-jeans' },
-      ]},
-      { group: 'Knitwear & Suits', items: [
-        { label: 'Knit', href: '/category/knit' },
-        { label: 'Suits', href: '/category/suits' },
-      ]},
-    ],
-  },
-  {
-    label: 'Men', href: '/category/men', mega: true,
-    children: [
-      { group: 'Clothing', items: [
-        { label: 'Jackets', href: '/category/men-jackets' },
-        { label: 'T-Shirts', href: '/category/men-tshirts' },
-        { label: 'Hoodies', href: '/category/hoodies' },
-      ]},
-      { group: 'Bottom Wear', items: [
-        { label: 'Jeans', href: '/category/men-jeans' },
-        { label: 'Pants', href: '/category/men-pants' },
-      ]},
-    ],
-  },
-  {
-    label: 'Accessories', href: '/category/accessories', mega: true,
-    children: [
-      { group: 'Bags', items: [
-        { label: 'Bags', href: '/category/bags' },
-      ]},
-      { group: 'Jewelry', items: [
-        { label: 'Jewelry', href: '/category/jewelry' },
-      ]},
-      { group: 'Hats', items: [
-        { label: 'Hats', href: '/category/hats' },
-      ]},
-    ],
-  },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
 ];
+
+const GENDER_SLUGS = ['women', 'men', 'accessories'];
+
+// Fallback hardcoded children in case API fails
+const FALLBACK_CHILDREN: Record<string, NavGroup[]> = {
+  women: [
+    { group: 'Clothing', items: [
+      { label: 'Dresses', href: '/category/dresses' },
+      { label: 'Blazers', href: '/category/blazers' },
+      { label: 'Blouses', href: '/category/blouses' },
+      { label: 'Tops', href: '/category/tops' },
+      { label: 'T-Shirts', href: '/category/women-tshirts' },
+      { label: 'Jackets', href: '/category/women-jackets' },
+    ]},
+    { group: 'Bottom Wear', items: [
+      { label: 'Pants', href: '/category/women-pants' },
+      { label: 'Skirts', href: '/category/skirts' },
+      { label: 'Jeans', href: '/category/women-jeans' },
+    ]},
+    { group: 'Knitwear & Suits', items: [
+      { label: 'Knit', href: '/category/knit' },
+      { label: 'Suits', href: '/category/suits' },
+    ]},
+  ],
+  men: [
+    { group: 'Clothing', items: [
+      { label: 'Jackets', href: '/category/men-jackets' },
+      { label: 'T-Shirts', href: '/category/men-tshirts' },
+      { label: 'Hoodies', href: '/category/hoodies' },
+    ]},
+    { group: 'Bottom Wear', items: [
+      { label: 'Jeans', href: '/category/men-jeans' },
+      { label: 'Pants', href: '/category/men-pants' },
+    ]},
+  ],
+  accessories: [
+    { group: 'Bags', items: [{ label: 'Bags', href: '/category/bags' }] },
+    { group: 'Jewelry', items: [{ label: 'Jewelry', href: '/category/jewelry' }] },
+    { group: 'Hats', items: [{ label: 'Hats', href: '/category/hats' }] },
+  ],
+};
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [navItems, setNavItems] = useState<NavItem[]>(() => {
+    const genderNavs = GENDER_SLUGS.map((slug) => ({
+      label: slug.charAt(0).toUpperCase() + slug.slice(1),
+      href: `/category/${slug}`,
+      mega: true as const,
+      children: FALLBACK_CHILDREN[slug] || [],
+    }));
+    return [...STATIC_LINKS.slice(0, 2), ...genderNavs, ...STATIC_LINKS.slice(2)];
+  });
+
+  useEffect(() => {
+    api.get('/categories').then((res) => {
+      const roots: Array<{ id: number; name: string; slug: string; children?: Array<{ id: number; name: string; slug: string }> }> = res.data?.data;
+      if (!Array.isArray(roots)) return;
+
+      const genderNavs = GENDER_SLUGS.map((slug) => {
+        const root = roots.find((c) => c.slug === slug);
+        const label = root ? root.name : slug.charAt(0).toUpperCase() + slug.slice(1);
+        const apiChildren = root?.children?.map((child) => ({
+          label: child.name,
+          href: `/category/${child.slug}`,
+        })) || [];
+        const children: NavGroup[] = apiChildren.length > 0
+          ? [{ group: `All ${label}`, items: apiChildren }]
+          : FALLBACK_CHILDREN[slug] || [];
+        return { label, href: `/category/${slug}`, mega: true as const, children };
+      });
+
+      setNavItems([...STATIC_LINKS.slice(0, 2), ...genderNavs, ...STATIC_LINKS.slice(2)]);
+    }).catch(() => {});
+  }, []);
+
   const { openCart } = useCartStore();
   const cartItems = useCartStore((state) => state.items);
   const compareItems = useCompareStore((state) => state.items);
@@ -140,7 +173,7 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="header-nav">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <div
                 key={item.label}
                 className={`nav-item ${item.mega ? 'has-mega' : ''}`}
@@ -225,7 +258,7 @@ export default function Header() {
       {/* Mobile Menu */}
       <div className={`mobile-menu ${isMobileMenuOpen ? 'active' : ''}`}>
         <nav className="mobile-nav">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <div key={item.label} className="mobile-nav-item">
               <Link to={item.href} className="mobile-nav-link" onClick={closeMobileMenu}>
                 {item.label}
