@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [showResetNewPassword, setShowResetNewPassword] = useState(false);
   const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
   const [isSubmittingAux, setIsSubmittingAux] = useState(false);
-  const { login, register, isLoading } = useAuthStore();
+  const { login, register, user, isAuthenticated } = useAuthStore();
   const { addToast } = useUIStore();
   const navigate = useNavigate();
 
@@ -61,6 +61,15 @@ export default function LoginPage() {
     setShowRegisterConfirmPassword(false);
     setShowResetNewPassword(false);
     setShowResetConfirmPassword(false);
+
+    // When switching to forgot, auto-fill email from auth or from the username field if it looks like an email
+    if (nextMode === 'forgot') {
+      if (user?.email) {
+        update('email', user.email);
+      } else if (form.username.includes('@')) {
+        update('email', form.username);
+      }
+    }
 
     if (searchParams.has('resetToken') && nextMode !== 'reset') {
       const nextParams = new URLSearchParams(searchParams);
@@ -325,7 +334,18 @@ export default function LoginPage() {
               {mode === 'forgot' && (
                 <div className="form-group">
                   <label className="form-label" htmlFor="forgot-email">Email Address</label>
-                  <input id="forgot-email" className="form-input" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required />
+                  <input
+                    id="forgot-email"
+                    className="form-input"
+                    type="email"
+                    value={isAuthenticated && user?.email ? user.email : form.email}
+                    onChange={(e) => update('email', e.target.value)}
+                    readOnly={!!(isAuthenticated && user?.email)}
+                    required
+                  />
+                  {isAuthenticated && user?.email && (
+                    <p className="form-hint">Using your registered email: {user.email}</p>
+                  )}
                 </div>
               )}
 

@@ -154,3 +154,15 @@
 
 .login-submit-btn { width: 100%; }
 
+/* Read-only input for auto-filled email */
+.form-input[readonly] {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+.form-hint {
+  font-size: 12px;
+  color: var(--color-text-light, #888);
+  margin-top: 4px;
+}
+
