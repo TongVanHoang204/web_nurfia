@@ -335,6 +335,16 @@ export default function AdminProducts() {
   };
 
   const getColorHex = (name: string): string => {
+    // First check if the color attribute value has a colorHex from API
+    if (colorAttr?.values) {
+      const match = colorAttr.values.find((av: any) => {
+        const avName = String(av.value || '').toLowerCase().trim();
+        const inputName = String(name || '').toLowerCase().trim();
+        return avName === inputName && av.colorHex;
+      });
+      if (match?.colorHex) return match.colorHex;
+    }
+    // Fallback: map common color names
     const lower = name?.toLowerCase().trim() || '';
     return colorNameToHex[lower] || '#cccccc';
   };
