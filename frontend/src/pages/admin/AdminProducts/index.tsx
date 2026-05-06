@@ -340,7 +340,7 @@ export default function AdminProducts() {
       ...prev,
       variants: prev.variants.map((v: any) => ({
         ...v,
-        sku: generateVariantSku(prev.sku, colorMap.get(normalizeAttributeId(v?.attributes?.[0])) || '', sizeMap.get(normalizeAttributeId(v?.attributes?.[1])) || ''),
+        sku: generateVariantSku(prev.sku, (colorMap.get(normalizeAttributeId(v?.attributes?.[0]) as number) || ''), (sizeMap.get(normalizeAttributeId(v?.attributes?.[1]) as number) || '')),
       })),
     }));
   };
@@ -706,7 +706,6 @@ export default function AdminProducts() {
                           disabled={formData.autoGenerateVariantSku}
                           title="Variant SKU"
                           className={isSkuDuplicate ? 'ap-input-error' : ''}
-                          style={isSkuDuplicate ? { borderColor: '#ef4444', background: '#fef2f2' } : {}}
                         />
                       </div>
                       <div className="admin-form-group"><label htmlFor={`v-stock-${idx}`}>Stock</label><input id={`v-stock-${idx}`} type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title="Variant Stock" /></div>
