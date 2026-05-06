@@ -190,26 +190,18 @@ export const authService = {
       attempts: 0,
     });
 
-    const mailResult = await mailService.sendChangePasswordOtp(user.email, user.fullName, otp);
-
-    if (!mailResult.delivered) {
-      // Always log OTP visibly so developer can use it for testing
-      console.warn('');
-      console.warn('╔══════════════════════════════════════════════════════════╗');
-      console.warn('║  EMAIL FAILED — Use this OTP to test password change   ║');
-      console.warn(`║  Email: ${user.email.padEnd(48)}║`);
-      console.warn(`║  OTP:   ${otp.padEnd(48)}║`);
-      console.warn(`║  Error: ${(mailResult.error || 'unknown').padEnd(48)}║`);
-      console.warn('╚══════════════════════════════════════════════════════════╝');
-      console.warn('');
-      // Don't throw — return success so the frontend can proceed.
-      // The OTP is visible in Render logs for manual testing.
-      return {
-        message: 'OTP generated but email delivery failed. Check server logs for the OTP code.',
-        expiresInSeconds: Math.floor(CHANGE_PASSWORD_OTP_TTL_MS / 1000),
-        ...(config.env !== 'production' ? { debugOtp: otp } : {}),
-      };
-    }
+    mailService.sendChangePasswordOtp(user.email, user.fullName, otp).then(mailResult => {
+      if (!mailResult.delivered) {
+        console.warn('');
+        console.warn('╔══════════════════════════════════════════════════════════╗');
+        console.warn('║  EMAIL FAILED — Use this OTP to test password change   ║');
+        console.warn(`║  Email: ${user.email.padEnd(48)}║`);
+        console.warn(`║  OTP:   ${otp.padEnd(48)}║`);
+        console.warn(`║  Error: ${(mailResult.error || 'unknown').padEnd(48)}║`);
+        console.warn('╚══════════════════════════════════════════════════════════╝');
+        console.warn('');
+      }
+    }).catch(err => console.error('[auth:otp] Unhandled exception sending OTP:', err));
 
     return {
       message: 'OTP has been sent to your email. Enter it to confirm password change.',
@@ -272,12 +264,12 @@ export const authService = {
 
     const baseOrigin = resolveTrustedAppOrigin(origin);
     const resetUrl = `${baseOrigin}/login?resetToken=${resetToken}`;
-    const mailResult = await mailService.sendPasswordReset(user.email, user.fullName, resetUrl);
+    
+    // Fire and forget email delivery to avoid blocking the HTTP response
+    mailService.sendPasswordReset(user.email, user.fullName, resetUrl)
+      .catch(err => console.error('[auth:password-reset] Failed to send email:', err));
 
-    return {
-      ...genericResponse,
-      ...(mailResult.delivered ? {} : {}),
-    };
+    return genericResponse;
   },
 
   async resetPassword(token: string, newPassword: string) {
