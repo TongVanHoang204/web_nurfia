@@ -493,7 +493,7 @@ export const orderController = {
 
       // Attempt to send email to the customer
       if (shippingData.shippingEmail) {
-        mailService.sendOrderConfirmation(
+        await mailService.sendOrderConfirmation(
           shippingData.shippingEmail,
           shippingData.shippingName,
           order.orderNumber,
