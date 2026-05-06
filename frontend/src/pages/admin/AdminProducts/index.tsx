@@ -421,7 +421,33 @@ export default function AdminProducts() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Validate variant fields
+    const variantErrors: string[] = [];
+    if (formData.variants.length > 0) {
+      formData.variants.forEach((v: any, idx: number) => {
+        const missing: string[] = [];
+        if (!formData.autoGenerateVariantSku && !String(v.sku || '').trim()) missing.push('SKU');
+        if (v.stock === '' || v.stock === null || v.stock === undefined) missing.push('Stock');
+        if (v.price === '' || v.price === null || v.price === undefined) missing.push('Price');
+        if (missing.length) {
+          const colorName = variantColorValues.find((cv: any) => normalizeAttributeId(cv.id) === normalizeAttributeId(v.attributes?.[0]))?.value || `#${idx + 1}`;
+          const sizeName = variantSizeValues.find((sv: any) => normalizeAttributeId(sv.id) === normalizeAttributeId(v.attributes?.[1]))?.value || '';
+          const label = sizeName ? `${colorName} / ${sizeName}` : colorName;
+          variantErrors.push(`Variant ${label}: missing ${missing.join(', ')}`);
+        }
+      });
+    }
+
+    if (variantErrors.length > 0) {
+      addToast(`Please fix variant errors:\n${variantErrors.slice(0, 3).join('\n')}${variantErrors.length > 3 ? `\n...and ${variantErrors.length - 3} more` : ''}`, 'error');
+      return;
+    }
+
+    if (duplicateSkuCount > 0) {
+      addToast('Please fix duplicate SKUs before saving.', 'error');
+      return;
+    }
     const saveFormData = formData.autoGenerateVariantSku ? { ...formData, variants: buildVariantsWithMissingColorSize(formData.variants, true).variants } : formData;
     
     try {
