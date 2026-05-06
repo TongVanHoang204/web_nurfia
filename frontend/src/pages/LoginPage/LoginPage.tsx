@@ -340,9 +340,9 @@ export default function LoginPage() {
                     className="form-input"
                     type="email"
                     value={form.email}
-                    onChange={(e) => update('email', e.target.value)}
-                    placeholder="Your registered email address"
+                    readOnly
                     required
+                    title="Your registered email address"
                   />
                 </div>
               )}
