@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 const getBaseURL = (): string => {
   // Env override always wins if set
@@ -43,6 +43,7 @@ let csrfToken: string | null = null;
 let csrfTokenPromise: Promise<string> | null = null;
 
 const unsafeMethods = new Set(['post', 'put', 'patch', 'delete']);
+type CsrfRetryConfig = InternalAxiosRequestConfig & { _csrfRetry?: boolean };
 
 const getCsrfToken = async () => {
   if (csrfToken) return csrfToken;
@@ -79,20 +80,30 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    const message = String(error.response?.data?.message || '').toLowerCase();
+    const isCsrfError = error.response?.status === 403 && message.includes('csrf');
+
     if (error.response?.status === 401) {
       const hasStoredUser = Boolean(localStorage.getItem('nurfia_user'));
       if (!hasStoredUser) {
         return Promise.reject(error);
       }
 
-      const message = String(error.response?.data?.message || '').toLowerCase();
       const reason = message.includes('deactivated') ? 'deactivated' : 'unauthorized';
       localStorage.removeItem('nurfia_user');
       window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { reason } }));
     }
-    if (error.response?.status === 403 && String(error.response?.data?.message || '').toLowerCase().includes('csrf')) {
+    if (isCsrfError) {
       csrfToken = null;
+      const originalRequest = error.config as CsrfRetryConfig | undefined;
+      const method = String(originalRequest?.method || 'get').toLowerCase();
+
+      if (originalRequest && unsafeMethods.has(method) && !originalRequest._csrfRetry) {
+        originalRequest._csrfRetry = true;
+        return api(originalRequest);
+      }
     }
+
     return Promise.reject(error);
   }
 );
