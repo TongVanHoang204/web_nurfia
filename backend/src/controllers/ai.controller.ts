@@ -13,24 +13,43 @@ const asksForForbiddenFormat = (message: string) => {
   const asksForJson = /\b(json|dạng json|định dạng json)\b/.test(normalized);
   if (asksForJson) return true;
 
+  // Block when user asks for code, programming, or writing source code
+  const asksForCode = /\b(code|viết code|viết mã|lập trình|programming|script|function|class|method|coding)\b/.test(normalized);
+  if (asksForCode) return true;
+
   // Block when user asks for other structured formats specifically about shopping data
-  const asksForStructuredOutput = /\b(array|object|code|table|csv|yaml|xml|list|structured output)\b/.test(normalized);
+  const asksForStructuredOutput = /\b(array|object|table|csv|yaml|xml|list|structured output)\b/.test(normalized);
   const asksForShoppingData = /\b(cart|shopping cart|order|orders|customer|customers)\b/.test(normalized);
   return asksForStructuredOutput && asksForShoppingData;
 };
 
 const containsForbiddenFormat = (content: string) => {
   const trimmed = content.trim();
-  if (/^```/.test(trimmed)) return true;
+  
+  // Detect code blocks (```) anywhere in the content, not just at start
+  if (/```/.test(trimmed)) return true;
+  
+  // Detect JSON arrays/objects at the very start (e.g. the whole response is JSON)
   if (/^[\[{]/.test(trimmed) && !trimmed.startsWith('[PRODUCT|')) return true;
+  
+  // Detect raw shopping/order data dumps
   if (/"((customer|items|orders?|cart|product_id|unit_price|total_price|subtotal))"\s*:/i.test(content)) return true;
+  
+  // Detect bullet lists and numbered lists
   if (/^\s*[-*+]\s+/m.test(content)) return true;
   if (/^\s*\d+[.)]\s+/m.test(content)) return true;
+  
+  // Detect Markdown tables
   if (/\|---/.test(content)) return true;
 
-  // Detect JSON objects/arrays embedded anywhere in the response text
+  // Detect JSON objects embedded anywhere in the response text
   // (e.g. AI says "Here is the JSON: { "id": 1, ... }")
   if (/"[a-zA-Z_]\w*"\s*:\s*("|\d+|true|false|null|\[|\{)/.test(content)) return true;
+
+  // Detect unmistakable code patterns (inline code, function defs, etc.)
+  // Use narrow patterns to avoid false positives with normal English
+  if (/`[a-z_]+`/.test(content)) return true;                // inline code like `variable`
+  if (/\b(console\.log|print\(|def |=>\s*\{)/.test(content)) return true;
 
   return false;
 };
