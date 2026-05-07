@@ -7,20 +7,32 @@ const FORBIDDEN_FORMAT_RESPONSE = 'I cannot answer using JSON, code, tables, or 
 
 const asksForForbiddenFormat = (message: string) => {
   const normalized = message.toLowerCase();
-  const asksForStructuredOutput = /\b(json|array|object|code|table|csv|yaml|xml|list|structured output)\b/.test(normalized);
-  const asksForShoppingData = /\b(cart|shopping cart|order|orders|customer|customers)\b/.test(normalized);
 
+  // Block explicit JSON/structured format requests — these are globally banned
+  // regardless of topic (system prompt rule #6).
+  const asksForJson = /\b(json|dạng json|định dạng json)\b/.test(normalized);
+  if (asksForJson) return true;
+
+  // Block when user asks for other structured formats specifically about shopping data
+  const asksForStructuredOutput = /\b(array|object|code|table|csv|yaml|xml|list|structured output)\b/.test(normalized);
+  const asksForShoppingData = /\b(cart|shopping cart|order|orders|customer|customers)\b/.test(normalized);
   return asksForStructuredOutput && asksForShoppingData;
 };
 
 const containsForbiddenFormat = (content: string) => {
   const trimmed = content.trim();
-  return /^```/.test(trimmed)
-    || (/^[\[{]/.test(trimmed) && !trimmed.startsWith('[PRODUCT|'))
-    || /"((customer|items|orders?|cart|product_id|unit_price|total_price|subtotal))"\s*:/i.test(content)
-    || /^\s*[-*+]\s+/m.test(content)
-    || /^\s*\d+[.)]\s+/m.test(content)
-    || /\|---/.test(content);
+  if (/^```/.test(trimmed)) return true;
+  if (/^[\[{]/.test(trimmed) && !trimmed.startsWith('[PRODUCT|')) return true;
+  if (/"((customer|items|orders?|cart|product_id|unit_price|total_price|subtotal))"\s*:/i.test(content)) return true;
+  if (/^\s*[-*+]\s+/m.test(content)) return true;
+  if (/^\s*\d+[.)]\s+/m.test(content)) return true;
+  if (/\|---/.test(content)) return true;
+
+  // Detect JSON objects/arrays embedded anywhere in the response text
+  // (e.g. AI says "Here is the JSON: { "id": 1, ... }")
+  if (/"[a-zA-Z_]\w*"\s*:\s*("|\d+|true|false|null|\[|\{)/.test(content)) return true;
+
+  return false;
 };
 
 export const aiController = {
