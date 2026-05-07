@@ -225,6 +225,7 @@ const normalizeSparklineSeries = <T extends Record<string, unknown>>(series: T[]
 
   return series.map((item) => ({
     ...item,
+    rawValue: Number(item[key] || 0),
     sparkValue: range === 0 ? 52 : 18 + ((Number(item[key] || 0) - min) / range) * 64,
   }));
 };
@@ -268,7 +269,8 @@ function CustomTooltip({ active, payload, label, formatter, labelFormatter }: To
       </p>
       <div className="reports-analytics-tooltip-list">
         {payload.map((item, index) => {
-          const formatted = formatter ? formatter(item.value, item.name) : [item.value || 0, item.name || 'Value'];
+          const rawValue = (item as any)?.payload?.rawValue ?? item.value;
+          const formatted = formatter ? formatter(rawValue, item.name) : [rawValue || 0, item.name || 'Value'];
           return (
             <div key={`${item.name || 'metric'}-${index}`} className="reports-analytics-tooltip-item">
               <span className="reports-analytics-tooltip-dot" />
@@ -339,6 +341,9 @@ function MetricCard({
                   </linearGradient>
                 </defs>
                 <YAxis hide domain={[0, 100]} />
+                <RechartsTooltip
+                  content={<CustomTooltip />}
+                />
                 <Area
                   type="monotone"
                   dataKey="sparkValue"
@@ -347,7 +352,7 @@ function MetricCard({
                   fill={`url(#${gradientId})`}
                   fillOpacity={1}
                   dot={false}
-                  activeDot={false}
+                  activeDot={{ r: 4, strokeWidth: 2, stroke: '#fff', fill: gradient[0] }}
                 />
               </AreaChart>
             </ResponsiveContainer>
