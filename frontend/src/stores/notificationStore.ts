@@ -23,7 +23,7 @@ interface NotificationState {
   fetchNotifications: (page?: number) => Promise<void>;
   markAsRead: (id: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;
-  initSocket: (_userId: number) => void;
+  initSocket: (userId: number, onOrderStatusChanged?: (payload: any) => void) => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -84,10 +84,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
-  initSocket: (_userId: number) => {
+  initSocket: (_userId: number, onOrderStatusChanged?: (payload: any) => void) => {
     if (get().isInitialized) return;
 
-    // connectSocket() ensures the socket is created AND connected
     const socket = connectSocket();
     if (!socket) {
       console.warn('[NotificationStore] Socket unavailable, skipping listener setup.');
@@ -101,9 +100,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       }));
     };
 
-    // Avoid registering duplicate listeners across React strict-mode remounts
     socket.off('new_notification', handleNewNotification);
     socket.on('new_notification', handleNewNotification);
+
+    // Listen for order status changes in real-time
+    if (onOrderStatusChanged) {
+      socket.off('order-status-changed', onOrderStatusChanged);
+      socket.on('order-status-changed', onOrderStatusChanged);
+    }
 
     set({ isInitialized: true });
   },

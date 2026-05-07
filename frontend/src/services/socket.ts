@@ -14,6 +14,12 @@ type ServerToClientEvents = {
     updatedAt?: string;
   }) => void;
   'new_notification': (payload: any) => void;
+  'order-status-changed': (payload: {
+    orderId: number;
+    orderNumber: string;
+    status: string;
+    paymentStatus: string;
+  }) => void;
 };
 
 let socket: Socket<ServerToClientEvents> | null = null;

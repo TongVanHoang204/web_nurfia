@@ -10,6 +10,7 @@ import { useAuthStore } from './stores/authStore';
 import { useCartStore } from './stores/cartStore';
 import { useCompareStore } from './stores/compareStore';
 import { useWishlistStore } from './stores/wishlistStore';
+import { useNotificationStore } from './stores/notificationStore';
 import { connectSocket, disconnectSocket } from './services/socket';
 import AIChatbot from './components/AIChatbot';
 
@@ -116,6 +117,7 @@ export default function App() {
   const { fetchCart } = useCartStore();
   const { fetchCompare, resetCompare } = useCompareStore();
   const { fetchWishlist, clearWishlistLocally } = useWishlistStore();
+  const { fetchNotifications, initSocket } = useNotificationStore();
 
   useEffect(() => { loadUser(); }, []);
   useEffect(() => { 
@@ -123,11 +125,13 @@ export default function App() {
       fetchCart(); 
       fetchWishlist();
       fetchCompare();
+      fetchNotifications();
+      if (user) initSocket(user.id);
     } else {
       clearWishlistLocally();
       resetCompare();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (!isAuthenticated) {
