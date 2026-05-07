@@ -546,13 +546,15 @@ const validateBlogPostPayload = async (body: any, postId?: number) => {
 };
 
 export const adminController = {
-  getDashboard: async (_req: Request, res: Response, next: NextFunction) => {
+  getDashboard: async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const requestedRange = req.query.range === '30d' || req.query.range === 'all' ? req.query.range : '7d';
       const now = new Date();
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfSevenDayWindow = new Date(startOfToday);
-      startOfSevenDayWindow.setDate(startOfSevenDayWindow.getDate() - 6);
+      const presetDays = requestedRange === '30d' ? 30 : 7;
+      const startOfPresetWindow = new Date(startOfToday);
+      startOfPresetWindow.setDate(startOfPresetWindow.getDate() - (presetDays - 1));
 
       const toDateKey = (date: Date) => {
         const year = date.getFullYear();
@@ -561,12 +563,33 @@ export const adminController = {
         return `${year}-${month}-${day}`;
       };
 
-      const sevenDayBuckets = Array.from({ length: 7 }, (_, index) => {
-        const date = new Date(startOfSevenDayWindow);
-        date.setDate(startOfSevenDayWindow.getDate() + index);
+      const buildDailyBuckets = (startDate: Date, endDate: Date) => {
+        const buckets = [];
+        const cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+        while (cursor <= end) {
+          const bucketDate = new Date(cursor);
+          buckets.push({
+            key: toDateKey(bucketDate),
+            label: bucketDate.toLocaleDateString('en-US', requestedRange === '7d'
+              ? { weekday: 'short' }
+              : { month: 'short', day: 'numeric' }),
+          });
+          cursor.setDate(cursor.getDate() + 1);
+        }
+
+        return buckets;
+      };
+
+      const presetBuckets = Array.from({ length: presetDays }, (_, index) => {
+        const date = new Date(startOfPresetWindow);
+        date.setDate(startOfPresetWindow.getDate() + index);
         return {
           key: toDateKey(date),
-          label: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          label: date.toLocaleDateString('en-US', requestedRange === '7d'
+            ? { weekday: 'short' }
+            : { month: 'short', day: 'numeric' }),
         };
       });
 
@@ -581,7 +604,8 @@ export const adminController = {
         revenueToday,
         averageOrderValue,
         monthRevenue,
-        sevenDayOrders,
+        trendOrders,
+        firstTrendOrder,
         topProducts,
         stockWatchProducts,
         stockWatchVariants,
@@ -621,12 +645,17 @@ export const adminController = {
         prisma.order.findMany({
           where: {
             status: { not: 'CANCELLED' },
-            createdAt: { gte: startOfSevenDayWindow },
+            ...(requestedRange === 'all' ? {} : { createdAt: { gte: startOfPresetWindow } }),
           },
           select: {
             createdAt: true,
             totalAmount: true,
           },
+        }),
+        prisma.order.findFirst({
+          where: { status: { not: 'CANCELLED' } },
+          orderBy: { createdAt: 'asc' },
+          select: { createdAt: true },
         }),
         prisma.product.findMany({
           take: 6,
@@ -686,19 +715,23 @@ export const adminController = {
         return acc;
       }, {});
 
-      const revenueByDate = sevenDayBuckets.reduce<Record<string, { revenue: number; orders: number }>>((acc, bucket) => {
+      const trendBuckets = requestedRange === 'all' && firstTrendOrder
+        ? buildDailyBuckets(firstTrendOrder.createdAt, startOfToday)
+        : presetBuckets;
+
+      const revenueByDate = trendBuckets.reduce<Record<string, { revenue: number; orders: number }>>((acc, bucket) => {
         acc[bucket.key] = { revenue: 0, orders: 0 };
         return acc;
       }, {});
 
-      for (const order of sevenDayOrders) {
+      for (const order of trendOrders) {
         const key = toDateKey(order.createdAt);
         if (!revenueByDate[key]) continue;
         revenueByDate[key].revenue += Number(order.totalAmount || 0);
         revenueByDate[key].orders += 1;
       }
 
-      const revenueLast7Days = sevenDayBuckets.map((bucket) => ({
+      const revenueTrend = trendBuckets.map((bucket) => ({
         date: bucket.key,
         label: bucket.label,
         revenue: revenueByDate[bucket.key]?.revenue || 0,
@@ -747,7 +780,9 @@ export const adminController = {
           recentCustomers,
           topProducts,
           lowStockProducts,
-          revenueLast7Days,
+          revenueTrend,
+          revenueLast7Days: revenueTrend,
+          range: requestedRange,
           ordersByStatus: ordersByStatusMap,
         },
       });

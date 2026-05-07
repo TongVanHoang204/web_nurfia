@@ -79,11 +79,20 @@ type DashboardData = {
   recentCustomers: DashboardCustomer[];
   topProducts: DashboardProduct[];
   lowStockProducts: DashboardLowStockProduct[];
+  revenueTrend?: RevenuePoint[];
   revenueLast7Days: RevenuePoint[];
+  range?: DashboardRange;
   ordersByStatus: Record<string, number>;
 };
 
 const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'] as const;
+type DashboardRange = '7d' | '30d' | 'all';
+
+const DASHBOARD_RANGES: { value: DashboardRange; label: string }[] = [
+  { value: '7d', label: '7 Days' },
+  { value: '30d', label: '30 Days' },
+  { value: 'all', label: 'All' },
+];
 
 const formatCurrency = (value: number | string | null | undefined) => {
   const amount = Number(value || 0);
@@ -109,18 +118,22 @@ const formatDateTime = (date: string) => {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedRange, setSelectedRange] = useState<DashboardRange>('7d');
 
   useEffect(() => {
-    api.get('/admin/dashboard')
+    setIsLoading(true);
+    api.get('/admin/dashboard', { params: { range: selectedRange } })
       .then(r => setStats(r.data.data))
       .catch(console.error)
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [selectedRange]);
 
   if (isLoading) return <div className="loading-page"><div className="spinner" /></div>;
   if (!stats) return <div className="admin-empty-state"><p>Data unavailable</p></div>;
 
   const totalTrackedStatus = ORDER_STATUSES.reduce((sum, status) => sum + (stats.ordersByStatus?.[status] || 0), 0);
+  const revenueTrend = stats.revenueTrend ?? stats.revenueLast7Days;
+  const selectedRangeLabel = DASHBOARD_RANGES.find((range) => range.value === selectedRange)?.label || '7 Days';
 
   return (
     <div className="admin-dashboard-page">
@@ -147,11 +160,24 @@ export default function AdminDashboard() {
           <div className="admin-db-card">
             <div className="admin-db-card-header">
               <h3>Revenue Trends</h3>
-              <small>Last 7 Days</small>
+              <div className="admin-dashboard-range-tabs" aria-label="Revenue trend range">
+                {DASHBOARD_RANGES.map((range) => (
+                  <button
+                    key={range.value}
+                    type="button"
+                    className={selectedRange === range.value ? 'is-active' : ''}
+                    onClick={() => setSelectedRange(range.value)}
+                    aria-pressed={selectedRange === range.value}
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
             </div>
+            <small className="admin-dashboard-range-caption">Showing {selectedRangeLabel}</small>
             <div className="admin-revenue-chart-container">
               <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={stats.revenueLast7Days} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <LineChart data={revenueTrend} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />

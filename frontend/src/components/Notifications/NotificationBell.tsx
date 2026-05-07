@@ -56,20 +56,37 @@ export default function NotificationBell() {
   return (
     <div className="notif-bell-wrapper" ref={wrapperRef}>
       {/* Trigger button — reuses global .action-btn from Header.css */}
-      <button
-        className="action-btn notif-trigger-btn notification-btn"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-label="Open notifications"
-        aria-haspopup="dialog"
-        aria-expanded={isOpen ? "true" : "false"}
-      >
-        <Bell size={18} />
-        {unreadCount > 0 && (
-          <span className="cart-count" aria-label={`${unreadCount} unread notifications`}>
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
-        )}
-      </button>
+      {isOpen ? (
+        <button
+          className="action-btn notif-trigger-btn notification-btn"
+          onClick={() => setIsOpen(false)}
+          aria-label="Close notifications"
+          aria-haspopup="dialog"
+          aria-expanded="true"
+        >
+          <Bell size={18} />
+          {unreadCount > 0 && (
+            <span className="cart-count" aria-label={`${unreadCount} unread notifications`}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </button>
+      ) : (
+        <button
+          className="action-btn notif-trigger-btn notification-btn"
+          onClick={() => setIsOpen(true)}
+          aria-label="Open notifications"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+        >
+          <Bell size={18} />
+          {unreadCount > 0 && (
+            <span className="cart-count" aria-label={`${unreadCount} unread notifications`}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {isOpen && (
         <NotificationDropdown
