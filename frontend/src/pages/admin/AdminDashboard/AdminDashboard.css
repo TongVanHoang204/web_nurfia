@@ -125,43 +125,12 @@
 }
 
 /* Revenue Chart (CSS Bars) */
-.admin-revenue-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.admin-revenue-chart-container {
+  padding: 16px 0;
 }
 
-.admin-revenue-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.admin-revenue-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-}
-
-.admin-revenue-meta span:first-child {
-  font-weight: 600;
-  color: var(--color-black);
-}
-
-.admin-revenue-meta span:last-child {
-  color: var(--color-text-light);
-}
-
-.admin-revenue-bar-bg {
-  height: 6px;
-  background: var(--color-bg-alt);
-  width: 100%;
-}
-
-.admin-revenue-bar-fill {
-  height: 100%;
-  background: var(--color-accent);
-  transition: width 1s var(--transition-base);
+.admin-revenue-chart-container .recharts-tooltip-wrapper {
+  outline: none;
 }
 
 /* Status Distribution */

@@ -9,6 +9,15 @@ import {
   ArrowUpRight,
   Plus
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts';
 import api from '../../../api/client';
 import './AdminDashboard.css';
 
@@ -111,7 +120,6 @@ export default function AdminDashboard() {
   if (isLoading) return <div className="loading-page"><div className="spinner" /></div>;
   if (!stats) return <div className="admin-empty-state"><p>Data unavailable</p></div>;
 
-  const maxRevenue = Math.max(...(stats.revenueLast7Days?.map((point) => Number(point.revenue)) || [0]), 1);
   const totalTrackedStatus = ORDER_STATUSES.reduce((sum, status) => sum + (stats.ordersByStatus?.[status] || 0), 0);
 
   return (
@@ -141,18 +149,28 @@ export default function AdminDashboard() {
               <h3>Revenue Trends</h3>
               <small>Last 7 Days</small>
             </div>
-            <div className="admin-revenue-list">
-              {stats.revenueLast7Days?.map((point) => (
-                <div key={point.date} className="admin-revenue-item">
-                  <div className="admin-revenue-meta">
-                    <span>{point.label}</span>
-                    <span>{formatCurrency(point.revenue)} ({point.orders} orders)</span>
-                  </div>
-                  <div className="admin-revenue-bar-bg">
-                    <div className="admin-revenue-bar-fill" style={{ width: `${(point.revenue / maxRevenue) * 100}%` }} />
-                  </div>
-                </div>
-              ))}
+            <div className="admin-revenue-chart-container">
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={stats.revenueLast7Days} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      background: '#fff',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 8,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    }}
+                    formatter={(value: number, name: string) => {
+                      if (name === 'revenue') return [formatCurrency(value), 'Revenue'];
+                      return [value, 'Orders'];
+                    }}
+                    labelFormatter={(label: string) => `Date: ${label}`}
+                  />
+                  <Line type="monotone" dataKey="revenue" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="revenue" />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </section>
