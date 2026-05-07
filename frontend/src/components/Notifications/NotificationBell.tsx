@@ -61,7 +61,7 @@ export default function NotificationBell() {
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Open notifications"
         aria-haspopup="dialog"
-        aria-expanded={isOpen}
+        aria-expanded={isOpen ? "true" : "false"}
       >
         <Bell size={18} />
         {unreadCount > 0 && (

@@ -491,6 +491,8 @@ export const orderController = {
         }
       }).catch((err: unknown) => console.error('[Notification] Failed to fetch admins:', err));
 
+        notificationService.checkAndNotifyLowStock().catch(() => {});
+
       // Attempt to send email to the customer (fire-and-forget, don't block response)
       if (shippingData.shippingEmail) {
         mailService.sendOrderConfirmation(

@@ -909,6 +909,9 @@ export const adminController = {
       }
 
       res.json({ success: true, data: product });
+
+      // Check low stock after product update
+      notificationService.checkAndNotifyLowStock().catch(() => {});
     } catch (err) { next(err); }
   },
 
