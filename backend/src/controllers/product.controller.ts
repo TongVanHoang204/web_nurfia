@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../models/prisma.js';
+import { AppError } from '../middlewares/errorHandler.js';
 
 const normalizeText = (value: string) => String(value || '').trim().toLowerCase();
 
@@ -252,6 +253,7 @@ export const productController = {
         include: {
           images: { orderBy: { sortOrder: 'asc' } },
           category: true,
+          brand: true,
           variants: { where: { isActive: true }, include: { attributes: { include: { attributeValue: { include: { attribute: true } } } } } },
           reviews: { where: { isApproved: true }, include: { user: { select: { fullName: true, username: true } } }, orderBy: { createdAt: 'desc' } },
         },
@@ -264,6 +266,57 @@ export const productController = {
 
       await prisma.product.update({ where: { id: product.id }, data: { viewCount: { increment: 1 } } });
       res.json({ success: true, data: product });
+    } catch (err) { next(err); }
+  },
+
+  getRelatedProducts: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      if (Number.isNaN(id)) throw new AppError('Invalid product ID.', 400);
+
+      const product = await prisma.product.findUnique({
+        where: { id },
+        select: { id: true, categoryId: true },
+      });
+
+      if (!product) throw new AppError('Product not found.', 404);
+
+      const limit = parseInt(req.query.limit as string) || 4;
+      const products = await prisma.product.findMany({
+        where: {
+          isActive: true,
+          id: { not: id },
+          ...(product.categoryId ? { categoryId: product.categoryId } : {}),
+        },
+        take: limit,
+        orderBy: { viewCount: 'desc' },
+        include: { images: { orderBy: { sortOrder: 'asc' }, take: 2 } },
+      });
+      res.json({ success: true, data: products });
+    } catch (err) { next(err); }
+  },
+
+  getByIds: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        res.json({ success: true, data: [] });
+        return;
+      }
+      const productIds = ids.map(Number).filter((n: number) => !Number.isNaN(n));
+      if (productIds.length === 0) {
+        res.json({ success: true, data: [] });
+        return;
+      }
+      const products = await prisma.product.findMany({
+        where: { id: { in: productIds }, isActive: true },
+        include: { images: { orderBy: { sortOrder: 'asc' }, take: 2 } },
+      });
+      // Maintain original order from request
+      const ordered = productIds
+        .map((pid: number) => products.find((p) => p.id === pid))
+        .filter(Boolean);
+      res.json({ success: true, data: ordered });
     } catch (err) { next(err); }
   },
 

@@ -190,6 +190,13 @@ export const authService = {
       attempts: 0,
     });
 
+    setTimeout(() => {
+      const state = changePasswordOtpStore.get(user.id);
+      if (state && state.otpHash === otpHash) {
+        changePasswordOtpStore.delete(user.id);
+      }
+    }, CHANGE_PASSWORD_OTP_TTL_MS);
+
     const mailResult = await mailService.sendChangePasswordOtp(user.email, user.fullName, otp);
 
     if (!mailResult.delivered) {

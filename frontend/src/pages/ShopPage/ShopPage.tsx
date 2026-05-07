@@ -16,6 +16,7 @@ export default function ShopPage() {
   const [itemsPerPage] = useState(12);
   const [gridCols, setGridCols] = useState(3); // Default to 3 columns per screenshot
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
   
   const page = parseInt(searchParams.get('page') || '1');
 
@@ -43,6 +44,23 @@ export default function ShopPage() {
     fetchProducts();
   }, [page, sort, itemsPerPage, searchParams.get('minPrice'), searchParams.get('maxPrice'), searchParams.get('colors'), searchParams.get('sizes'), searchParams.get('brands'), searchParams.get('category')]);
 
+  // Load recently viewed from localStorage
+  useEffect(() => {
+    const loadRecent = async () => {
+      try {
+        const stored = localStorage.getItem('nurfia_recent_views');
+        const ids: number[] = stored ? JSON.parse(stored) : [];
+        if (ids.length > 0) {
+          const { data } = await api.post('/products/by-ids', { ids });
+          setRecentlyViewed(data.data || []);
+        }
+      } catch (e) {
+        console.error('Failed to load recently viewed:', e);
+      }
+    };
+    loadRecent();
+  }, []);
+
   const handleSort = (newSort: string) => {
     setSort(newSort);
     searchParams.set('sort', newSort);
@@ -65,7 +83,7 @@ export default function ShopPage() {
         <div className={`shop-sidebar-container ${isMobileFilterOpen ? 'mobile-open' : ''}`}>
            <div className="mobile-filter-header">
               <h3>Filters</h3>
-              <button onClick={() => setIsMobileFilterOpen(false)}><X size={20} /></button>
+              <button title="Close filters" onClick={() => setIsMobileFilterOpen(false)}><X size={20} /></button>
            </div>
            <FilterSidebar />
         </div>
@@ -150,15 +168,17 @@ export default function ShopPage() {
         </main>
       </div>
 
-      {/* Recently Viewed Section (Mock per screenshot) */}
-      <div className="recently-viewed">
-        <h3>Recently viewed</h3>
-        <div className="recent-grid grid-4">
-          {products.slice(0, 4).map(product => (
-             <ProductCard key={`recent-${product.id}`} product={product} />
-          ))}
+      {/* Recently Viewed Section */}
+      {recentlyViewed.length > 0 && (
+        <div className="recently-viewed">
+          <h3>Recently viewed</h3>
+          <div className="recent-grid grid-4">
+            {recentlyViewed.slice(0, 4).map(product => (
+               <ProductCard key={`recent-${product.id}`} product={product} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

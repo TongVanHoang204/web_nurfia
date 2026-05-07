@@ -8,6 +8,7 @@ import { emitCustomerStatusChanged, subscribeCustomerStatusChanged } from '../se
 import { sanitizeRichText } from '../utils/html.js';
 import { getProtectedBankTransferProofUrl } from '../utils/bankTransferProof.js';
 import { notificationService } from '../services/notification.service.js';
+import { getSocketServer } from '../services/socket.service.js';
 
 const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'] as const;
 const PAYMENT_STATUSES = ['UNPAID', 'PAID', 'REFUNDED'] as const;
@@ -1555,6 +1556,15 @@ export const adminController = {
         ).catch((err: unknown) => console.error('[Notification] Failed to notify customer on status update:', err));
       }
 
+      const io = getSocketServer();
+      if (io) {
+        io.to(`user:${currentOrder.userId}`).emit('order-status-changed', {
+          orderId: order.id,
+          orderNumber: currentOrder.orderNumber,
+          status: order.status,
+          paymentStatus: order.paymentStatus,
+        });
+      }
       res.json({ success: true, data: order });
     } catch (err) { next(err); }
   },

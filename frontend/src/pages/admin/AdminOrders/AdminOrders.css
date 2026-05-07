@@ -394,3 +394,77 @@
     flex-wrap: wrap;
   }
 }
+
+/* ── Inline style replacement utilities ── */
+.admin-order-small {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.admin-order-totals {
+  margin-top: 32px;
+  padding: 24px;
+  border-top: 2px solid var(--color-black);
+}
+
+.admin-order-total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.admin-order-total-label {
+  font-size: 14px;
+}
+
+.admin-order-total-value {
+  font-size: 16px;
+}
+
+.admin-order-total-accent {
+  color: var(--color-accent);
+}
+
+.admin-order-grand-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-order-grand-label {
+  font-size: 18px;
+  font-family: var(--font-heading);
+}
+
+.admin-order-grand-value {
+  font-size: 24px;
+  font-family: var(--font-heading);
+  color: var(--color-black);
+}
+
+.admin-order-pagination-text {
+  margin: 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-modal-content-lg {
+  max-width: 800px;
+}
+
+.admin-order-note-text {
+  font-style: italic;
+}
+
+.admin-order-proof-img {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.admin-icon-right {
+  margin-right: 6px;
+}

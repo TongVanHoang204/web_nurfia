@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -9,10 +9,19 @@ import './LoginPage.css';
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset';
 
 export default function LoginPage() {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const resetToken = searchParams.get('resetToken') || '';
+  const resetToken = searchParams.get('resetToken') || searchParams.get('token') || '';
   const redirect = searchParams.get('redirect') || '/';
-  const [mode, setMode] = useState<AuthMode>(resetToken ? 'reset' : 'login');
+  
+  const getInitialMode = (): AuthMode => {
+    if (resetToken || location.pathname.includes('/reset-password')) return 'reset';
+    if (location.pathname.includes('/forgot-password')) return 'forgot';
+    if (location.pathname.includes('/register')) return 'register';
+    return 'login';
+  };
+
+  const [mode, setMode] = useState<AuthMode>(getInitialMode());
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -37,7 +46,7 @@ export default function LoginPage() {
   const stripWhitespace = (value: string) => value.replace(/\s+/g, '');
 
   useEffect(() => {
-    setMode(resetToken ? 'reset' : 'login');
+    setMode(getInitialMode());
     setError('');
     const persistedNotice = localStorage.getItem('nurfia_auth_notice') || '';
     if (persistedNotice) {
@@ -49,7 +58,7 @@ export default function LoginPage() {
 
     setAuthNotice('');
     setInfoMessage('');
-  }, [resetToken]);
+  }, [resetToken, location.pathname]);
 
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);

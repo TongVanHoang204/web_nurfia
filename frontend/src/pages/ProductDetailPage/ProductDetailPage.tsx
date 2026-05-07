@@ -58,15 +58,12 @@ export default function ProductDetailPage() {
         // Manage Recently Viewed
         try {
           const viewedStr = localStorage.getItem('nurfia_recent_views');
-          let viewed = viewedStr ? JSON.parse(viewedStr) : [];
-          const existingIdx = viewed.findIndex((p: any) => p.id === data.data.id);
-          if (existingIdx !== -1) {
-            viewed.splice(existingIdx, 1);
-          }
-          viewed.unshift(data.data);
-          if (viewed.length > 5) viewed = viewed.slice(0, 5);
-          localStorage.setItem('nurfia_recent_views', JSON.stringify(viewed));
-          setRecentlyViewed(viewed.filter((p: any) => p.id !== data.data.id));
+          let viewedIds: number[] = viewedStr ? JSON.parse(viewedStr) : [];
+          viewedIds = [data.data.id, ...viewedIds.filter((id: number) => id !== data.data.id)];
+          if (viewedIds.length > 5) viewedIds = viewedIds.slice(0, 5);
+          localStorage.setItem('nurfia_recent_views', JSON.stringify(viewedIds));
+          const rvRes = await api.post('/products/by-ids', { ids: viewedIds.filter(id => id !== data.data.id) });
+          setRecentlyViewed(rvRes.data.data || []);
         } catch (e) {
           console.error('Failed to parse recently viewed', e);
         }

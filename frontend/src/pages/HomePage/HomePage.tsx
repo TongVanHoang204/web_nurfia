@@ -60,6 +60,7 @@ export default function HomePage() {
   const [dressesProducts, setDressesProducts] = useState<Product[]>([]);
   const [tshirtsProducts, setTshirtsProducts] = useState<Product[]>([]);
   const [homeBlogs, setHomeBlogs] = useState<BlogPost[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const [activeTab1, setActiveTab1] = useState<'women' | 'dresses' | 'men' | 'tshirts'>('women');
   const [activeTab2, setActiveTab2] = useState<'featured' | 'new' | 'bestsellers'>('new');
   const [isLoading, setIsLoading] = useState(true);
@@ -100,6 +101,20 @@ export default function HomePage() {
       }
     };
     fetchData();
+
+    // Load recently viewed
+    (async () => {
+      try {
+        const stored = localStorage.getItem('nurfia_recent_views');
+        const ids: number[] = stored ? JSON.parse(stored) : [];
+        if (ids.length > 0) {
+          const { data } = await api.post('/products/by-ids', { ids });
+          setRecentlyViewed(data.data || []);
+        }
+      } catch (e) {
+        console.error('Failed to load recently viewed:', e);
+      }
+    })();
   }, []);
 
   const getProductsForTab1 = (tab: 'women' | 'dresses' | 'men' | 'tshirts') => {
@@ -432,6 +447,36 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ⭐️ 12. Recently Viewed ⭐️ */}
+      {recentlyViewed.length > 0 && (
+        <section className="products-section py-section">
+          <div className="container">
+            <div className="products-section-header">
+              <h2 className="section-title section-title-left">Recently viewed</h2>
+            </div>
+            <Swiper
+              modules={[Navigation, Autoplay]}
+              spaceBetween={20}
+              slidesPerView={4}
+              navigation
+              breakpoints={{
+                0: { slidesPerView: 1.2, spaceBetween: 10 },
+                640: { slidesPerView: 2, spaceBetween: 10 },
+                768: { slidesPerView: 3, spaceBetween: 16 },
+                1024: { slidesPerView: 4, spaceBetween: 20 },
+              }}
+              className="products-swiper"
+            >
+              {recentlyViewed.slice(0, 8).map(product => (
+                <SwiperSlide key={product.id}>
+                  <ProductCard product={product} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

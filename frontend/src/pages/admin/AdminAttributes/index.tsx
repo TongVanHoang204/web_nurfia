@@ -228,7 +228,7 @@ export default function AdminAttributes() {
           <p>Global catalog properties like Size, Color, and Materials.</p>
         </div>
         <button className="btn btn-primary" onClick={openCreateAttr}>
-          <Plus size={16} style={{ marginRight: 8 }} /> Create Attribute
+          <Plus size={16} className="admin-icon-right-8" /> Create Attribute
         </button>
       </header>
 
@@ -247,7 +247,7 @@ export default function AdminAttributes() {
         {isLoading ? (
            <div className="loading-page"><div className="spinner" /></div>
         ) : filteredAttributes.length === 0 ? (
-           <div style={{ padding: '80px 40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+           <div className="admin-empty-state">
              <Sliders size={48} strokeWidth={1} style={{ marginBottom: 16, opacity: 0.5 }} />
              <p>No attributes found in the catalog.</p>
            </div>
@@ -255,11 +255,11 @@ export default function AdminAttributes() {
           <table className="admin-attr-table">
             <thead>
               <tr>
-                <th style={{ width: 60 }}></th>
+                <th className="admin-col-actions"></th>
                 <th>Attribute Name</th>
                 <th>Slug ID</th>
                 <th>Sample Values</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th className="admin-col-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -268,7 +268,7 @@ export default function AdminAttributes() {
                 return (
                   <React.Fragment key={attr.id}>
                     <tr className={`admin-attr-row ${isExpanded ? 'is-expanded' : ''}`}>
-                      <td style={{ textAlign: 'center' }}>
+                      <td className="admin-col-center">
                         <button 
                           className="admin-attr-expand-btn"
                           onClick={() => toggleExpand(attr.id)}
@@ -292,24 +292,24 @@ export default function AdminAttributes() {
                             </span>
                           ))}
                           {attr.values && attr.values.length > 4 && (
-                            <span style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                            <span className="admin-text-muted-sm">
                               +{attr.values.length - 4} MORE
                             </span>
                           )}
                           {(!attr.values || attr.values.length === 0) && (
-                            <span style={{ color: 'var(--color-text-muted)', fontSize: 12, fontStyle: 'italic' }}>None defined</span>
+                            <span className="admin-text-muted-italic">None defined</span>
                           )}
                         </div>
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: 12 }}>
+                      <td className="admin-col-right">
+                        <div className="admin-inline-flex">
                           <button className="admin-attr-expand-btn" title="Add Term" onClick={() => openCreateVal(attr)}>
                             <Plus size={18} />
                           </button>
                           <button className="admin-attr-expand-btn" title="Edit" onClick={() => openEditAttr(attr)}>
                             <Edit2 size={16} />
                           </button>
-                          <button className="admin-attr-expand-btn" title="Delete" onClick={() => handleDeleteAttr(attr)} style={{ color: 'var(--color-error)' }}>
+                          <button className="admin-attr-expand-btn admin-color-error" title="Delete" onClick={() => handleDeleteAttr(attr)}>
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -322,7 +322,7 @@ export default function AdminAttributes() {
                              <div className="admin-attr-terms-header">
                                <h4>Configure "{attr.name}" Terms</h4>
                                <button className="btn btn-outline btn-sm" onClick={() => openCreateVal(attr)}>
-                                  <Plus size={14} style={{ marginRight: 6 }}/> Add New Term
+                                  <Plus size={14} className="admin-icon-right-6"/> Add New Term
                                </button>
                              </div>
                              
@@ -334,14 +334,14 @@ export default function AdminAttributes() {
                                       <th>Hex Code</th>
                                       <th>Sort</th>
                                       <th>Status</th>
-                                      <th style={{ textAlign: 'right' }}>Actions</th>
+                                      <th className="admin-col-right">Actions</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     {attr.values.map(val => (
                                       <tr key={val.id}>
                                         <td>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                          <div className="admin-flex-row">
                                             {val.colorHex && <div className="admin-attr-color-dot" style={{ width: 14, height: 14, background: val.colorHex }} />}
                                             <span className="admin-term-label">{val.value}</span>
                                           </div>
@@ -357,10 +357,10 @@ export default function AdminAttributes() {
                                             <span className="admin-term-unused">Unused</span>
                                           )}
                                         </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                          <div style={{ display: 'inline-flex', gap: 12 }}>
-                                            <button className="admin-attr-expand-btn" onClick={() => openEditVal(val, attr)}><Edit2 size={14} /></button>
-                                            <button className="admin-attr-expand-btn" onClick={() => handleDeleteVal(val)} style={{ color: 'var(--color-error)' }}><Trash2 size={14} /></button>
+                                        <td className="admin-col-right">
+                                          <div className="admin-inline-flex">
+                                            <button className="admin-attr-expand-btn" title="Edit Term" onClick={() => openEditVal(val, attr)}><Edit2 size={14} /></button>
+                                            <button className="admin-attr-expand-btn admin-color-error" title="Delete Term" onClick={() => handleDeleteVal(val)}><Trash2 size={14} /></button>
                                           </div>
                                         </td>
                                       </tr>
@@ -368,7 +368,7 @@ export default function AdminAttributes() {
                                   </tbody>
                                 </table>
                              ) : (
-                               <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)', border: '1px dashed var(--color-border)' }}>
+                               <div className="admin-empty-terms">
                                  No terms available for this attribute.
                                </div>
                              )}
@@ -390,7 +390,7 @@ export default function AdminAttributes() {
           <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">{editingAttr ? 'Edit Attribute' : 'Create Attribute'}</h2>
-              <button type="button" className="admin-modal-close" onClick={() => setAttrModalOpen(false)}><X size={20} /></button>
+              <button type="button" className="admin-modal-close" title="Close" onClick={() => setAttrModalOpen(false)}><X size={20} /></button>
             </div>
             <form className="admin-form" onSubmit={handleSaveAttr}>
               <div className="admin-modal-body">
@@ -430,11 +430,11 @@ export default function AdminAttributes() {
         <div className="admin-modal-overlay" onClick={() => setValModalOpen(false)}>
           <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div className="admin-val-modal-header">
                 <h2 className="admin-modal-title">{editingVal ? 'Edit Term' : 'Add Term'}</h2>
-                <span style={{ fontSize: 12, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Attribute: {parentAttr.name}</span>
+                <span className="admin-val-modal-subtitle">Attribute: {parentAttr.name}</span>
               </div>
-              <button type="button" className="admin-modal-close" onClick={() => setValModalOpen(false)}><X size={20} /></button>
+              <button type="button" className="admin-modal-close" title="Close" onClick={() => setValModalOpen(false)}><X size={20} /></button>
             </div>
             <form className="admin-form" onSubmit={handleSaveVal}>
               <div className="admin-modal-body">
@@ -442,20 +442,21 @@ export default function AdminAttributes() {
                 
                 <div className="admin-form-row">
                   <label>Term Label</label>
-                  <input type="text" value={valForm.value} onChange={e => setValForm(prev => ({ ...prev, value: e.target.value }))} placeholder="e.g. Silk, XL, #000000" required autoFocus />
+                  <input type="text" value={valForm.value} onChange={e => setValForm(prev => ({ ...prev, value: e.target.value }))} placeholder="e.g. Silk, XL, #000000" title="Term Label" required autoFocus />
                 </div>
 
                 <div className="admin-form-row">
                   <label>Visual Color (Hex)</label>
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <div style={{ position: 'relative', flex: 1 }}>
-                      <Hash size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                  <div className="admin-flex-color">
+                    <div className="admin-hash-wrapper">
+                      <Hash size={14} className="admin-hash-icon" />
                       <input 
                         type="text" 
                         value={valForm.colorHex?.replace('#', '')} 
                         onChange={e => setValForm(prev => ({ ...prev, colorHex: '#' + e.target.value.replace('#', '') }))} 
                         placeholder="FFFFFF" 
-                        style={{ paddingLeft: 32 }}
+                        title="Color hex code"
+                        className="admin-color-hex-input"
                         maxLength={7} 
                       />
                     </div>
@@ -463,14 +464,15 @@ export default function AdminAttributes() {
                       type="color" 
                       value={valForm.colorHex || '#ffffff'} 
                       onChange={e => setValForm(prev => ({ ...prev, colorHex: e.target.value }))} 
-                      style={{ width: 50, height: 46, padding: 4, cursor: 'pointer', border: '1px solid var(--color-border)', background: '#fff' }} 
+                      className="admin-color-input" 
+                      title="Color picker"
                     />
                   </div>
                 </div>
 
                 <div className="admin-form-row">
                   <label>Display Priority (Sort Order)</label>
-                  <input type="number" min="0" value={valForm.sortOrder} onChange={e => setValForm(prev => ({ ...prev, sortOrder: Number(e.target.value) || 0 }))} />
+                  <input type="number" min="0" value={valForm.sortOrder} onChange={e => setValForm(prev => ({ ...prev, sortOrder: Number(e.target.value) || 0 }))} title="Sort Order" />
                 </div>
               </div>
               <div className="admin-modal-actions">

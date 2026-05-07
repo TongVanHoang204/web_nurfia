@@ -199,7 +199,7 @@ export default function AdminOrders() {
         {isLoading ? (
           <div className="loading-page"><div className="spinner" /></div>
         ) : filteredOrders.length === 0 ? (
-          <div className="admin-empty-notifications" style={{ border: '1px solid var(--color-border)' }}>
+          <div className="admin-empty-notifications">
              <h3>No orders found</h3>
              <p>Try adjusting your search or filters.</p>
           </div>
@@ -214,7 +214,7 @@ export default function AdminOrders() {
               <div className="admin-order-card-customer">
                 <strong>{order.shippingName}</strong>
                 <span>{order.shippingEmail}</span>
-                <small style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</small>
+                <small className="admin-order-small">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</small>
               </div>
 
               <div className="admin-order-card-financials">
@@ -265,7 +265,7 @@ export default function AdminOrders() {
           >
             Previous
           </button>
-          <span style={{ margin: '0 20px', fontSize: 13, fontWeight: 600 }}>Page {pagination.page} of {pagination.totalPages}</span>
+          <span className="admin-order-pagination-text">Page {pagination.page} of {pagination.totalPages}</span>
           <button 
             className="btn btn-outline"
             disabled={pagination.page === pagination.totalPages}
@@ -279,10 +279,10 @@ export default function AdminOrders() {
       {/* Details Modal */}
       {selectedOrder && (
         <div className="admin-modal-overlay" onClick={closeModal}>
-          <div className="admin-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 800 }}>
+          <div className="admin-modal-content admin-modal-content-lg" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Order Details</h2>
-              <button type="button" className="admin-modal-close" onClick={closeModal}><X size={20} /></button>
+              <button type="button" className="admin-modal-close" title="Close" onClick={closeModal}><X size={20} /></button>
             </div>
             
             <div className="admin-modal-body admin-order-modal-body">
@@ -321,64 +321,64 @@ export default function AdminOrders() {
                   ))}
                 </div>
 
-                <div style={{ marginTop: 32, padding: 24, borderTop: '2px solid var(--color-black)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <span style={{ fontSize: 14 }}>Subtotal</span>
-                    <strong style={{ fontSize: 16 }}>{formatCurrency(selectedOrder.subtotal)}</strong>
+                <div className="admin-order-totals">
+                  <div className="admin-order-total-row">
+                    <span className="admin-order-total-label">Subtotal</span>
+                    <strong className="admin-order-total-value">{formatCurrency(selectedOrder.subtotal)}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <span style={{ fontSize: 14 }}>Shipping</span>
-                    <strong style={{ fontSize: 16 }}>{formatCurrency(selectedOrder.shippingCost)}</strong>
+                  <div className="admin-order-total-row">
+                    <span className="admin-order-total-label">Shipping</span>
+                    <strong className="admin-order-total-value">{formatCurrency(selectedOrder.shippingCost)}</strong>
                   </div>
                   {Number(selectedOrder.discountAmount) > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, color: 'var(--color-accent)' }}>
-                      <span style={{ fontSize: 14 }}>Discount</span>
-                      <strong style={{ fontSize: 16 }}>-{formatCurrency(selectedOrder.discountAmount)}</strong>
+                    <div className="admin-order-total-row admin-order-total-accent">
+                      <span className="admin-order-total-label">Discount</span>
+                      <strong className="admin-order-total-value">-{formatCurrency(selectedOrder.discountAmount)}</strong>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
-                    <span style={{ fontSize: 18, fontFamily: 'var(--font-heading)' }}>Grand Total</span>
-                    <strong style={{ fontSize: 24, fontFamily: 'var(--font-heading)', color: 'var(--color-black)' }}>{formatCurrency(selectedOrder.totalAmount)}</strong>
+                  <div className="admin-order-grand-row">
+                    <span className="admin-order-grand-label">Grand Total</span>
+                    <strong className="admin-order-grand-value">{formatCurrency(selectedOrder.totalAmount)}</strong>
                   </div>
                 </div>
               </div>
 
               <div className="admin-order-details-right">
                 <div className="admin-order-info-card">
-                  <h4><User size={12} style={{ marginRight: 6 }} /> Customer Contact</h4>
+                  <h4><User size={12} className="admin-icon-right" /> Customer Contact</h4>
                   <p><strong>{selectedOrder.shippingName}</strong></p>
                   <p>{selectedOrder.shippingEmail}</p>
                   <p>{selectedOrder.shippingPhone}</p>
                 </div>
 
                 <div className="admin-order-info-card">
-                  <h4><MapPin size={12} style={{ marginRight: 6 }} /> Shipping Address</h4>
+                  <h4><MapPin size={12} className="admin-icon-right" /> Shipping Address</h4>
                   <p>{selectedOrder.shippingStreet}</p>
                   <p>{selectedOrder.shippingWard ? `${selectedOrder.shippingWard}, ` : ''}{selectedOrder.shippingDistrict}</p>
                   <p>{selectedOrder.shippingProvince}</p>
                 </div>
 
                 <div className="admin-order-info-card">
-                  <h4><DollarSign size={12} style={{ marginRight: 6 }} /> Payment Method</h4>
+                  <h4><DollarSign size={12} className="admin-icon-right" /> Payment Method</h4>
                   <p><strong>{selectedOrder.paymentMethod}</strong></p>
                   <p>Status: <span className="admin-status-badge">{selectedOrder.paymentStatus}</span></p>
                 </div>
 
                 {selectedOrder.note && (
                   <div className="admin-order-info-card">
-                    <h4><FileText size={12} style={{ marginRight: 6 }} /> Order Note</h4>
-                    <p style={{ fontStyle: 'italic' }}>"{selectedOrder.note}"</p>
+                    <h4><FileText size={12} className="admin-icon-right" /> Order Note</h4>
+                    <p className="admin-order-note-text">"{selectedOrder.note}"</p>
                   </div>
                 )}
 
                 {selectedOrder.bankTransferImage && (
                   <div className="admin-order-info-card">
-                    <h4><ImageIcon size={12} style={{ marginRight: 6 }} /> Payment Proof</h4>
+                    <h4><ImageIcon size={12} className="admin-icon-right" /> Payment Proof</h4>
                     <a href={resolveSiteAssetUrl(selectedOrder.bankTransferImage)} target="_blank" rel="noreferrer">
                       <img 
                         src={resolveSiteAssetUrl(selectedOrder.bankTransferImage)} 
                         alt="Proof" 
-                        style={{ width: '100%', border: '1px solid var(--color-border)', cursor: 'pointer' }} 
+                        className="admin-order-proof-img" 
                       />
                     </a>
                   </div>

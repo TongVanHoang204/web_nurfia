@@ -88,7 +88,7 @@ export const cartController = {
       const product = await prisma.product.findUnique({ where: { id: cartItem.productId } });
       if (!product || !product.isActive) throw new AppError('Product not found.', 404);
 
-      let availableStock = product.stock;
+      let variantStock = product.stock;
       if (cartItem.variantId) {
         const variant = await prisma.productVariant.findFirst({
           where: {
@@ -100,11 +100,24 @@ export const cartController = {
         if (!variant || !variant.isActive) {
           throw new AppError('Variant not found.', 404);
         }
-        availableStock = variant.stock;
+        variantStock = variant.stock;
       }
 
-      if (normalizedQuantity > availableStock) {
-        throw new AppError(`Only ${availableStock} items available.`, 400);
+      if (normalizedQuantity > variantStock) {
+        throw new AppError(`Only ${variantStock} items available for this variant/product.`, 400);
+      }
+
+      const existingCartItems = await prisma.cartItem.findMany({
+        where: { userId: req.userId!, productId: cartItem.productId },
+      });
+
+      const otherVariantsQty = existingCartItems
+        .filter((i) => i.id !== id)
+        .reduce((sum, i) => sum + i.quantity, 0);
+
+      const totalProductQty = otherVariantsQty + normalizedQuantity;
+      if (totalProductQty > product.stock) {
+        throw new AppError(`Only ${product.stock} total items available for this product.`, 400);
       }
 
       const updated = await prisma.cartItem.update({ where: { id }, data: { quantity: normalizedQuantity } });

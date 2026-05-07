@@ -186,7 +186,7 @@ export default function AdminBlog() {
           <div className="admin-modal-content admin-blog-modal-large">
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">{editingPost ? 'Edit Post' : 'Add New Post'}</h2>
-              <button type="button" className="admin-modal-close" onClick={closeModal}><X size={20} /></button>
+              <button type="button" className="admin-modal-close" title="Close" onClick={closeModal}><X size={20} /></button>
             </div>
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-row">

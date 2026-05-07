@@ -136,6 +136,9 @@ export const staffController = {
       const normalizedEmail = String(email).trim().toLowerCase();
       const normalizedUsername = String(username).trim();
       const hasExplicitPermissions = Array.isArray(permissions);
+      if (hasExplicitPermissions && new Set(permissions).size !== permissions.length) {
+        throw new AppError('Phát hiện quyền trùng lặp.', 400);
+      }
       const normalizedPermissions = hasExplicitPermissions
         ? normalizeAdminPermissions(permissions)
         : ROLE_PERMISSION_DEFAULTS[role];
@@ -203,10 +206,7 @@ export const staffController = {
       }
 
       const existingStaff = await prisma.user.findFirst({
-        where: {
-          id,
-          OR: STAFF_ROLES.map((role) => ({ role: role as any })),
-        },
+        where: { id },
         select: {
           id: true,
           role: true,
@@ -216,8 +216,11 @@ export const staffController = {
         }
       });
 
-      if (!existingStaff) {
+      if (!existingStaff || !STAFF_MANAGEMENT_ROLES.includes(existingStaff.role as any)) {
         throw new AppError('Staff member not found.', 404);
+      }
+      if (existingStaff.role === 'ADMIN') {
+        throw new AppError('Cannot modify ADMIN account.', 403);
       }
 
       const { fullName, permissions, isActive, password } = req.body;
@@ -233,6 +236,9 @@ export const staffController = {
       if (permissions !== undefined) {
         if (!Array.isArray(permissions)) {
           throw new AppError('Permissions must be an array.', 400);
+        }
+        if (new Set(permissions).size !== permissions.length) {
+          throw new AppError('Phát hiện quyền trùng lặp.', 400);
         }
         const normalizedPermissions = normalizeAdminPermissions(permissions);
         if (normalizedPermissions.length !== permissions.length) {
@@ -302,15 +308,15 @@ export const staffController = {
       }
 
       const existingStaff = await prisma.user.findFirst({
-        where: {
-          id,
-          OR: STAFF_ROLES.map((role) => ({ role: role as any })),
-        },
-        select: { id: true, username: true, email: true }
+        where: { id },
+        select: { id: true, username: true, email: true, role: true }
       });
 
-      if (!existingStaff) {
+      if (!existingStaff || !STAFF_MANAGEMENT_ROLES.includes(existingStaff.role as any)) {
         throw new AppError('Staff member not found.', 404);
+      }
+      if (existingStaff.role === 'ADMIN') {
+        throw new AppError('Cannot modify or delete ADMIN account.', 403);
       }
 
       await prisma.user.delete({ where: { id } });

@@ -21,6 +21,11 @@ export const addressController = {
       const existingAddressCount = await prisma.address.count({
         where: { userId: req.userId! },
       });
+
+      if (existingAddressCount >= 10) {
+        throw new AppError('Tối đa 10 địa chỉ. Vui lòng xoá bớt để thêm mới.', 400);
+      }
+
       const shouldBeDefault = existingAddressCount === 0 ? true : Boolean(isDefault);
 
       if (shouldBeDefault) {

@@ -47,6 +47,43 @@ export const reviewController = {
     } catch (err) { next(err); }
   },
 
+  getReviews: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const productId = parseInt(req.params.productId as string);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const sort = req.query.sort as string || 'NEWEST';
+
+      if (!Number.isInteger(productId) || productId <= 0) {
+        throw new AppError('Invalid product ID.', 400);
+      }
+
+      const orderBy: any = sort === 'OLDEST' ? { createdAt: 'asc' } 
+          : sort === 'RATING_ASC' ? [{ rating: 'asc' }, { createdAt: 'desc' }]
+          : sort === 'RATING_DESC' ? [{ rating: 'desc' }, { createdAt: 'desc' }]
+          : { createdAt: 'desc' };
+
+      const [reviews, total] = await Promise.all([
+        prisma.productReview.findMany({
+          where: { productId, isApproved: true },
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy,
+          include: {
+            user: { select: { fullName: true } }
+          }
+        }),
+        prisma.productReview.count({ where: { productId, isApproved: true } })
+      ]);
+
+      res.json({
+        success: true,
+        data: reviews,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+      });
+    } catch (err) { next(err); }
+  },
+
   createReview: async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const productId = parseInt(req.params.productId as string);
