@@ -162,11 +162,6 @@ export default function AdminDashboard() {
                       borderRadius: 8,
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                     }}
-                    formatter={(value: number, name: string) => {
-                      if (name === 'revenue') return [formatCurrency(value), 'Revenue'];
-                      return [value, 'Orders'];
-                    }}
-                    labelFormatter={(label: string) => `Date: ${label}`}
                   />
                   <Line type="monotone" dataKey="revenue" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="revenue" />
                 </LineChart>
