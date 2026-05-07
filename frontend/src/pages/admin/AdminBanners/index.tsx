@@ -164,10 +164,21 @@ export default function AdminBanners() {
           {banners.map((banner) => (
             <article key={banner.id} className="admin-banner-card">
               <div className="admin-banner-card-image">
-                {banner.imageUrl ? (
+                {banner.videoUrl ? (
+                  <video
+                    src={resolveSiteAssetUrl(banner.videoUrl)}
+                    poster={banner.imageUrl ? resolveSiteAssetUrl(banner.imageUrl) : undefined}
+                    muted
+                    loop
+                    playsInline
+                    className="admin-banner-card-video"
+                    onMouseEnter={(e) => (e.target as HTMLVideoElement).play()}
+                    onMouseLeave={(e) => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
+                  />
+                ) : banner.imageUrl ? (
                   <img src={resolveSiteAssetUrl(banner.imageUrl) || banner.imageUrl} alt={banner.title} />
                 ) : (
-                  <div className="admin-banner-no-image">No image</div>
+                  <div className="admin-banner-no-image">No image / video</div>
                 )}
                 <span className={`admin-banner-status-badge ${banner.isActive ? 'is-active' : 'is-inactive'}`}>
                   {banner.isActive ? 'Active' : 'Inactive'}
@@ -200,7 +211,7 @@ export default function AdminBanners() {
 
       {isModalOpen && (
         <div className="admin-modal-overlay">
-          <div className="admin-modal-content" style={{ maxWidth: 640 }}>
+          <div className="admin-modal-content admin-banners-modal">
             <div className="admin-modal-header">
               <h3 className="admin-modal-title">{editingBanner ? 'Edit Banner' : 'Add New Banner'}</h3>
               <button type="button" onClick={closeModal} className="admin-modal-close" aria-label="Close">
@@ -285,16 +296,15 @@ export default function AdminBanners() {
                   </label>
                 </div>
                 {formData.videoUrl && (
-                  <div style={{ marginTop: 12, position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+                  <div className="admin-banners-video-preview">
                     <video
                       src={resolveSiteAssetUrl(formData.videoUrl)}
                       controls
-                      style={{ width: '100%', display: 'block', maxHeight: 200, objectFit: 'cover' }}
                     />
                     <button 
                       type="button" 
                       onClick={() => setFormData({ ...formData, videoUrl: '' })}
-                      style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(255,0,0,0.8)', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      className="admin-banners-video-remove-btn"
                       title="Remove video"
                     >
                       <X size={14} />
