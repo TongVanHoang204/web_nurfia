@@ -32,6 +32,7 @@ import compareRoutes from './routes/compare.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import chatRoutes from './routes/chat.routes.js';
 import { initSocketServer } from './services/socket.service.js';
+import { startChatHistoryRetentionJob } from './services/chat-retention.service.js';
 import { getAllowedOrigins } from './utils/security.js';
 import { setupSwagger } from './utils/swagger.js';
 import {
@@ -170,6 +171,7 @@ app.use(errorHandler);
 // Start server
 const httpServer = createServer(app);
 initSocketServer(httpServer);
+startChatHistoryRetentionJob();
 
 httpServer.listen(config.port, () => {
   console.log(`[Server] Running on http://localhost:${config.port}`);

@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, X, User, Loader2, ShoppingBag, Maximize2, Minimize2, RefreshCw } from 'lucide-react';
+import { MessageSquare, Send, X, User, Loader2, ShoppingBag, Maximize2, Minimize2, RefreshCw, ThumbsUp, ThumbsDown, Headphones } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
+import { useUIStore } from '../../stores/uiStore';
 import { getImageUrl } from '../../utils/url';
 import './AIChatbot.css';
 
@@ -26,9 +27,36 @@ type Message = {
   timestamp?: number;
 };
 
-const QUICK_REPLIES = [
-  "How much is shipping?",
-  "Return policy?",
+type QuickIntent = {
+  label: string;
+  prompt: string;
+};
+
+const QUICK_INTENTS: QuickIntent[] = [
+  {
+    label: 'Outfit Advice',
+    prompt: 'Help me choose an outfit. Please ask one short question first if you need my occasion, size, color preference, or budget.',
+  },
+  {
+    label: 'Shipping Fee',
+    prompt: 'How much is shipping and when will my order arrive?',
+  },
+  {
+    label: 'Return Policy',
+    prompt: 'What is the return policy?',
+  },
+  {
+    label: 'Compare Products',
+    prompt: 'Help me compare two products in short plain sentences. Ask me for the two product names if needed.',
+  },
+  {
+    label: 'Size Guide',
+    prompt: 'Help me choose a size. Ask me for height, weight, fit preference, and product type if needed.',
+  },
+  {
+    label: 'Cart Summary',
+    prompt: 'Summarize my cart safely in plain sentences. Do not use JSON, tables, or lists.',
+  },
 ];
 
 // Helper to parse content with embedded product cards
@@ -81,10 +109,18 @@ const WELCOME = {
 
 export default function AIChatbot() {
   const { isAuthenticated, user } = useAuthStore();
+  const { openConfirm } = useUIStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
+  const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('nurfia_ai_feedback') || '{}');
+    } catch {
+      return {};
+    }
+  });
 
   // Load history from backend when user changes
   useEffect(() => {
@@ -131,6 +167,18 @@ export default function AIChatbot() {
   }, [messages, isTyping]);
 
   if (!isAuthenticated) return null;
+
+  const handleFeedback = (messageId: string, value: 'up' | 'down') => {
+    setFeedback((prev) => {
+      const next = { ...prev, [messageId]: value };
+      localStorage.setItem('nurfia_ai_feedback', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleHumanHandoff = () => {
+    handleSend('I need human support with an order-specific issue. Please hand me off to store support.');
+  };
 
   const handleSend = async (overrideInput?: string) => {
     const textToSend = overrideInput || input;
@@ -180,12 +228,19 @@ export default function AIChatbot() {
   };
 
   const handleClearHistory = () => {
-    if (confirm('Are you sure you want to clear the chat history? This action cannot be undone.')) {
-      setMessages([{ ...WELCOME, timestamp: Date.now() }]);
-      if (user?.id) {
-        api.delete('/chat/history').catch(() => {});
-      }
-    }
+    openConfirm({
+      title: 'Clear chat history?',
+      message: 'This will remove your saved AI chat history. This action cannot be undone.',
+      confirmText: 'Clear',
+      cancelText: 'Cancel',
+      danger: true,
+      onConfirm: () => {
+        setMessages([{ ...WELCOME, timestamp: Date.now() }]);
+        if (user?.id) {
+          api.delete('/chat/history').catch(() => {});
+        }
+      },
+    });
   };
 
   return (
@@ -228,7 +283,7 @@ export default function AIChatbot() {
 
         <div className="ai-chatbot-messages" ref={scrollRef}>
           <div className="ai-chat-note">
-            Chat history is synced across all your devices.
+            Chat history will be deleted within 30 days.
           </div>
           {messages.map((msg) => (
             <div key={msg.id} className={`ai-chat-msg ${msg.role}`}>
@@ -242,6 +297,28 @@ export default function AIChatbot() {
                   msg.content
                 )}
                 {msg.timestamp && <span className="msg-timestamp">{formatTime(msg.timestamp)}</span>}
+                {msg.role === 'assistant' && msg.id !== WELCOME.id && (
+                  <div className="ai-feedback-actions" aria-label="Rate AI response">
+                    <button
+                      type="button"
+                      className={feedback[msg.id] === 'up' ? 'is-active' : ''}
+                      onClick={() => handleFeedback(msg.id, 'up')}
+                      title="Helpful"
+                      aria-label="Mark response as helpful"
+                    >
+                      <ThumbsUp size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      className={feedback[msg.id] === 'down' ? 'is-active' : ''}
+                      onClick={() => handleFeedback(msg.id, 'down')}
+                      title="Not helpful"
+                      aria-label="Mark response as not helpful"
+                    >
+                      <ThumbsDown size={13} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -257,17 +334,25 @@ export default function AIChatbot() {
         </div>
 
         <div className="ai-chatbot-footer">
-          {messages.length < 3 && !isTyping && (
-            <div className="quick-replies">
-              {QUICK_REPLIES.map((reply, i) => (
+          {!isTyping && (
+            <div className="quick-replies" aria-label="Quick chatbot actions">
+              {QUICK_INTENTS.map((intent) => (
                 <button 
-                  key={i} 
+                  key={intent.label}
                   className="quick-reply-btn"
-                  onClick={() => handleSend(reply)}
+                  onClick={() => handleSend(intent.prompt)}
                 >
-                  {reply}
+                  {intent.label}
                 </button>
               ))}
+              <button
+                type="button"
+                className="quick-reply-btn human-handoff-btn"
+                onClick={handleHumanHandoff}
+              >
+                <Headphones size={13} />
+                Contact Staff
+              </button>
             </div>
           )}
           <div className="ai-chatbot-input">

@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AppError } from '../middlewares/errorHandler.js';
 import prisma from '../models/prisma.js';
 import { AuthRequest } from '../middlewares/auth.js';
+import { deleteExpiredChatHistory } from '../services/chat-retention.service.js';
 
 export const chatController = {
   async getHistory(req: AuthRequest, res: Response, next: NextFunction) {
@@ -9,6 +10,8 @@ export const chatController = {
       if (!req.userId) {
         return res.json({ success: true, data: null });
       }
+
+      await deleteExpiredChatHistory();
 
       const history = await prisma.chatHistory.findUnique({
         where: { userId: req.userId },
