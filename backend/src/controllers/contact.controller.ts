@@ -4,6 +4,7 @@ import { AuthRequest } from '../middlewares/auth.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { logActivity } from '../services/activity.service.js';
 import { mailService } from '../services/mail.service.js';
+import { notificationService } from '../services/notification.service.js';
 
 const NEWSLETTER_SETTING_KEY = 'newsletterSubscribers';
 
@@ -39,6 +40,22 @@ export const contactController = {
       await prisma.contactMessage.create({
         data: { name, email, subject, message }
       });
+
+      // Notify all admin/staff about new contact message
+      prisma.user.findMany({
+        where: { role: { in: ['ADMIN', 'STAFF', 'MANAGER'] }, isActive: true },
+        select: { id: true },
+      }).then((admins) => {
+        for (const admin of admins) {
+          notificationService.createNotification(
+            admin.id,
+            'CONTACT',
+            'New Contact Message',
+            `Message from ${name} (${email}): ${subject}`,
+            `/admin/contacts`
+          ).catch((err: unknown) => console.error('[Notification] Failed to notify admin on contact message:', err));
+        }
+      }).catch((err: unknown) => console.error('[Notification] Failed to fetch admins:', err));
 
       res.json({ success: true, message: 'Message sent successfully!' });
     } catch (err) { next(err); }
