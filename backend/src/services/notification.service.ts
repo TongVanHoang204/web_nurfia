@@ -66,7 +66,7 @@ export const notificationService = {
 
   async checkAndNotifyLowStock() {
     try {
-      const threshold = 20;
+      const threshold = 5;
       const lowStockProducts = await prisma.product.findMany({
         where: { isActive: true, stock: { lte: threshold } },
         select: { id: true, name: true, sku: true, stock: true },
