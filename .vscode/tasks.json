@@ -1,0 +1,10 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Explore frontend pages",
+			"type": "shell",
+			"command": "cd \"c:\\Users\\Hoang\\Desktop\\Working brooo\\Web_klbtheme\\frontend\\src\\pages\" && Get-ChildItem -Recurse -Name"
+		}
+	]
+}

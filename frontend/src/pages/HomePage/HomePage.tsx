@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation, EffectFade } from 'swiper/modules';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-import 'swiper/css/effect-fade';
 import api from '../../api/client';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
@@ -141,12 +140,14 @@ export default function HomePage() {
       {/* ═══ 1. Hero Slider ═══════════════════════════════════════════════════ */}
       <section className="hero-section">
         <Swiper
-          modules={[Autoplay, Pagination, Navigation, EffectFade]}
-          effect="fade"
+          modules={[Autoplay, Pagination, Navigation]}
+          slidesPerView={1}
+          spaceBetween={0}
           autoplay={{ delay: 6000, disableOnInteraction: false }}
           pagination={{ clickable: true }}
           navigation={true}
           loop={banners.length > 1}
+          speed={800}
           className="hero-swiper"
         >
           {banners.length > 0 ? (
@@ -358,9 +359,6 @@ export default function HomePage() {
                 <p className="testimonial-text">
                   We focus on well-designed, quality clothing that fits your lifestyle. Thoughtfully made for comfort, versatility, and everyday wear.
                 </p>
-                <div className="testimonial-avatar">
-                  <img src="/assets/images/testimonial-01.png" alt="Testimonial" />
-                </div>
               </div>
             </SwiperSlide>
             <SwiperSlide>
@@ -368,9 +366,6 @@ export default function HomePage() {
                 <p className="testimonial-text">
                   Fashion is not just about clothes. It's about feeling confident, expressing yourself, and embracing the beauty of who you are.
                 </p>
-                <div className="testimonial-avatar">
-                  <img src="/assets/images/testimonial-01.png" alt="Testimonial" />
-                </div>
               </div>
             </SwiperSlide>
           </Swiper>

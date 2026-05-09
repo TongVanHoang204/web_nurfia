@@ -45,15 +45,19 @@
   justify-content: center;
   background-size: cover;
   background-position: center;
+  overflow: hidden;
 }
 
-.hero-slide-1 {
-  background: url('/assets/images/slider-01.webp') center/cover no-repeat;
+/* Ensure Swiper slides don't overlap during horizontal transition */
+.hero-swiper .swiper-slide {
+  opacity: 1 !important;
 }
 
-.hero-slide-2 {
-  background: url('/assets/images/banner-03.webp') center/cover no-repeat;
+.hero-swiper .swiper-wrapper {
+  transition-timing-function: ease-in-out;
 }
+
+/* Static background fallbacks are handled inline via API data */
 
 .hero-video {
   position: absolute;
@@ -415,11 +419,22 @@
 
 /* ─── 8. Testimonial ──────────────────────────────────────────────────────── */
 .testimonial-section {
-  background: var(--color-bg-alt);
+  position: relative;
   padding: 116px 0;
+  background: url('/assets/images/image-01.webp') center/cover no-repeat;
+}
+
+.testimonial-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
 }
 
 .testimonial-inner {
+  position: relative;
+  z-index: 2;
   max-width: 768px;
   margin: 0 auto;
   text-align: center;
@@ -430,19 +445,8 @@
   font-size: 28px;
   font-weight: 400;
   line-height: 1.5;
-  color: var(--color-text);
+  color: var(--color-white);
   margin-bottom: 32px;
-}
-
-.testimonial-avatar {
-  display: inline-block;
-}
-
-.testimonial-avatar img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  margin: 0 auto;
 }
 
 .testimonial-swiper .swiper-button-next,
