@@ -74,7 +74,29 @@ const toDateOrUndefined = (value: unknown): Date | undefined => {
 const isStaffRole = (value: unknown): value is typeof STAFF_ROLES[number] =>
   (STAFF_ROLES as readonly string[]).includes(String(value || '').toUpperCase());
 
-const isSupportedDeleteRollbackModel = (model: string) => model === 'user' || model === 'banner';
+const DELETE_ROLLBACK_MODELS = new Set([
+  'user',
+  'product',
+  'category',
+  'brand',
+  'productAttribute',
+  'productAttributeValue',
+  'coupon',
+  'shippingMethod',
+  'blogPost',
+  'banner',
+  'productReview',
+  'contactMessage',
+]);
+
+const isSupportedDeleteRollbackModel = (model: string) => DELETE_ROLLBACK_MODELS.has(model);
+
+const requireRollbackFields = (data: Record<string, unknown>, fields: string[]) => {
+  const missing = fields.filter((field) => data[field] === undefined || data[field] === null || data[field] === '');
+  if (missing.length) {
+    throw new AppError(`Rollback snapshot is missing required field(s): ${missing.join(', ')}.`, 400);
+  }
+};
 
 const extractPrefixedSnapshot = (source: Record<string, unknown>) => {
   const snapshot: Record<string, unknown> = {};
@@ -131,18 +153,36 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
   if (type === 'PRODUCT') {
     const data: Record<string, unknown> = {};
     const name = toStringOrNullOrUndefined(snapshot.name);
+    const slug = toStringOrNullOrUndefined(snapshot.slug);
     const sku = toStringOrNullOrUndefined(snapshot.sku);
+    const shortDescription = toStringOrNullOrUndefined(snapshot.shortDescription);
+    const description = toStringOrNullOrUndefined(snapshot.description);
     const price = toNumberOrUndefined(snapshot.price);
     const salePrice = snapshot.salePrice === null ? null : toNumberOrUndefined(snapshot.salePrice);
+    const costPrice = snapshot.costPrice === null ? null : toNumberOrUndefined(snapshot.costPrice);
     const stock = toIntegerOrNullOrUndefined(snapshot.stock);
+    const lowStockThreshold = toIntegerOrNullOrUndefined(snapshot.lowStockThreshold);
+    const categoryId = toIntegerOrNullOrUndefined(snapshot.categoryId);
+    const brandId = toIntegerOrNullOrUndefined(snapshot.brandId);
+    const isFeatured = toBooleanOrUndefined(snapshot.isFeatured);
     const isActive = toBooleanOrUndefined(snapshot.isActive);
+    const weight = snapshot.weight === null ? null : toNumberOrUndefined(snapshot.weight);
 
     if (name !== undefined && name !== null) data.name = name;
+    if (slug !== undefined && slug !== null) data.slug = slug;
     if (sku !== undefined && sku !== null) data.sku = sku;
+    if (shortDescription !== undefined) data.shortDescription = shortDescription;
+    if (description !== undefined) data.description = description;
     if (price !== undefined) data.price = price;
     if (salePrice !== undefined) data.salePrice = salePrice;
+    if (costPrice !== undefined) data.costPrice = costPrice;
     if (stock !== undefined && stock !== null) data.stock = stock;
+    if (lowStockThreshold !== undefined && lowStockThreshold !== null) data.lowStockThreshold = lowStockThreshold;
+    if (categoryId !== undefined) data.categoryId = categoryId;
+    if (brandId !== undefined) data.brandId = brandId;
+    if (isFeatured !== undefined) data.isFeatured = isFeatured;
     if (isActive !== undefined) data.isActive = isActive;
+    if (weight !== undefined) data.weight = weight;
 
     return { model: 'product', data };
   }
@@ -151,17 +191,62 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
     const data: Record<string, unknown> = {};
     const name = toStringOrNullOrUndefined(snapshot.name);
     const slug = toStringOrNullOrUndefined(snapshot.slug);
+    const description = toStringOrNullOrUndefined(snapshot.description);
+    const image = toStringOrNullOrUndefined(snapshot.image);
     const parentId = toIntegerOrNullOrUndefined(snapshot.parentId);
     const sortOrder = toIntegerOrNullOrUndefined(snapshot.sortOrder);
     const isActive = toBooleanOrUndefined(snapshot.isActive);
 
     if (name !== undefined && name !== null) data.name = name;
     if (slug !== undefined && slug !== null) data.slug = slug;
+    if (description !== undefined) data.description = description;
+    if (image !== undefined) data.image = image;
     if (parentId !== undefined) data.parentId = parentId;
     if (sortOrder !== undefined && sortOrder !== null) data.sortOrder = sortOrder;
     if (isActive !== undefined) data.isActive = isActive;
 
     return { model: 'category', data };
+  }
+
+  if (type === 'BRAND') {
+    const data: Record<string, unknown> = {};
+    const name = toStringOrNullOrUndefined(snapshot.name);
+    const slug = toStringOrNullOrUndefined(snapshot.slug);
+    const sortOrder = toIntegerOrNullOrUndefined(snapshot.sortOrder);
+    const isActive = toBooleanOrUndefined(snapshot.isActive);
+
+    if (name !== undefined && name !== null) data.name = name;
+    if (slug !== undefined && slug !== null) data.slug = slug;
+    if (sortOrder !== undefined && sortOrder !== null) data.sortOrder = sortOrder;
+    if (isActive !== undefined) data.isActive = isActive;
+
+    return { model: 'brand', data };
+  }
+
+  if (type === 'ATTRIBUTE') {
+    const data: Record<string, unknown> = {};
+    const name = toStringOrNullOrUndefined(snapshot.name);
+    const slug = toStringOrNullOrUndefined(snapshot.slug);
+
+    if (name !== undefined && name !== null) data.name = name;
+    if (slug !== undefined && slug !== null) data.slug = slug;
+
+    return { model: 'productAttribute', data };
+  }
+
+  if (type === 'ATTRIBUTE_VALUE') {
+    const data: Record<string, unknown> = {};
+    const attributeId = toIntegerOrNullOrUndefined(snapshot.attributeId);
+    const value = toStringOrNullOrUndefined(snapshot.value);
+    const colorHex = toStringOrNullOrUndefined(snapshot.colorHex);
+    const sortOrder = toIntegerOrNullOrUndefined(snapshot.sortOrder);
+
+    if (attributeId !== undefined && attributeId !== null) data.attributeId = attributeId;
+    if (value !== undefined && value !== null) data.value = value;
+    if (colorHex !== undefined) data.colorHex = colorHex;
+    if (sortOrder !== undefined && sortOrder !== null) data.sortOrder = sortOrder;
+
+    return { model: 'productAttributeValue', data };
   }
 
   if (type === 'COUPON') {
@@ -194,10 +279,12 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
     const name = toStringOrNullOrUndefined(snapshot.name);
     const description = toStringOrNullOrUndefined(snapshot.description);
     const isActive = toBooleanOrUndefined(snapshot.isActive);
+    const zones = Array.isArray(snapshot.zones) ? snapshot.zones : undefined;
 
     if (name !== undefined && name !== null) data.name = name;
     if (description !== undefined) data.description = description;
     if (isActive !== undefined) data.isActive = isActive;
+    if (zones !== undefined) data.zones = zones;
 
     return { model: 'shippingMethod', data };
   }
@@ -212,6 +299,7 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
     const author = toStringOrNullOrUndefined(snapshot.author);
     const category = toStringOrNullOrUndefined(snapshot.category);
     const isPublished = toBooleanOrUndefined(snapshot.isPublished);
+    const publishedAt = toDateOrUndefined(snapshot.publishedAt);
 
     if (title !== undefined && title !== null) data.title = title;
     if (slug !== undefined && slug !== null) data.slug = slug;
@@ -221,6 +309,7 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
     if (author !== undefined && author !== null) data.author = author;
     if (category !== undefined) data.category = category;
     if (isPublished !== undefined) data.isPublished = isPublished;
+    if (publishedAt !== undefined) data.publishedAt = publishedAt;
 
     return { model: 'blogPost', data };
   }
@@ -259,6 +348,50 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
     if (isActive !== undefined) data.isActive = isActive;
 
     return { model: 'banner', data };
+  }
+
+  if (type === 'CUSTOMER') {
+    const isActive = toBooleanOrUndefined(snapshot.isActive);
+    return {
+      model: 'user',
+      data: isActive === undefined ? {} : { isActive },
+    };
+  }
+
+  if (type === 'REVIEW') {
+    const data: Record<string, unknown> = {};
+    const productId = toIntegerOrNullOrUndefined(snapshot.productId);
+    const userId = toIntegerOrNullOrUndefined(snapshot.userId);
+    const rating = toIntegerOrNullOrUndefined(snapshot.rating);
+    const title = toStringOrNullOrUndefined(snapshot.title);
+    const comment = toStringOrNullOrUndefined(snapshot.comment);
+    const isApproved = toBooleanOrUndefined(snapshot.isApproved);
+
+    if (productId !== undefined && productId !== null) data.productId = productId;
+    if (userId !== undefined && userId !== null) data.userId = userId;
+    if (rating !== undefined && rating !== null) data.rating = rating;
+    if (title !== undefined) data.title = title;
+    if (comment !== undefined) data.comment = comment;
+    if (isApproved !== undefined) data.isApproved = isApproved;
+
+    return { model: 'productReview', data };
+  }
+
+  if (type === 'CONTACT_MESSAGE') {
+    const data: Record<string, unknown> = {};
+    const name = toStringOrNullOrUndefined(snapshot.name);
+    const email = toStringOrNullOrUndefined(snapshot.email);
+    const subject = toStringOrNullOrUndefined(snapshot.subject);
+    const message = toStringOrNullOrUndefined(snapshot.message);
+    const isRead = toBooleanOrUndefined(snapshot.isRead);
+
+    if (name !== undefined && name !== null) data.name = name;
+    if (email !== undefined && email !== null) data.email = email;
+    if (subject !== undefined && subject !== null) data.subject = subject;
+    if (message !== undefined && message !== null) data.message = message;
+    if (isRead !== undefined) data.isRead = isRead;
+
+    return { model: 'contactMessage', data };
   }
 
   if (type === 'STAFF' || type === 'ROLE') {
@@ -437,15 +570,121 @@ export const activityController = {
       }
 
       if (rollbackTarget.model === 'product') {
-        result = await prisma.product.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['name', 'slug', 'sku', 'price']);
+          result = await prisma.product.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.ProductUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.product.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
       } else if (rollbackTarget.model === 'category') {
-        result = await prisma.category.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['name', 'slug']);
+          result = await prisma.category.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.CategoryUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.category.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
+      } else if (rollbackTarget.model === 'brand') {
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['name', 'slug']);
+          result = await prisma.brand.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.BrandUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.brand.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
+      } else if (rollbackTarget.model === 'productAttribute') {
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['name', 'slug']);
+          result = await prisma.productAttribute.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.ProductAttributeUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.productAttribute.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
+      } else if (rollbackTarget.model === 'productAttributeValue') {
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['attributeId', 'value']);
+          result = await prisma.productAttributeValue.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.ProductAttributeValueUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.productAttributeValue.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
       } else if (rollbackTarget.model === 'coupon') {
-        result = await prisma.coupon.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['code', 'type', 'value', 'startDate', 'endDate']);
+          result = await prisma.coupon.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.CouponUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.coupon.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
       } else if (rollbackTarget.model === 'shippingMethod') {
-        result = await prisma.shippingMethod.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        const { zones, ...methodData } = rollbackTarget.data;
+        if (action === 'DELETE') {
+          requireRollbackFields(methodData, ['name']);
+          result = await prisma.$transaction(async (tx) => {
+            const method = await tx.shippingMethod.create({
+              data: {
+                id: log.entityId,
+                ...methodData,
+              } as Prisma.ShippingMethodUncheckedCreateInput,
+            });
+
+            if (Array.isArray(zones) && zones.length) {
+              await tx.shippingZone.createMany({
+                data: zones
+                  .map((zone) => toObject(zone))
+                  .filter((zone): zone is Record<string, unknown> => Boolean(zone))
+                  .map((zone) => ({
+                    shippingMethodId: method.id,
+                    zoneName: String(zone.zoneName || ''),
+                    cost: toNumberOrUndefined(zone.cost) ?? 0,
+                    freeShipMinOrder: zone.freeShipMinOrder === null ? null : toNumberOrUndefined(zone.freeShipMinOrder),
+                  }))
+                  .filter((zone) => zone.zoneName),
+              });
+            }
+
+            return method;
+          });
+        } else {
+          result = await prisma.shippingMethod.update({ where: { id: log.entityId }, data: methodData });
+        }
       } else if (rollbackTarget.model === 'blogPost') {
-        result = await prisma.blogPost.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['title', 'slug', 'author']);
+          result = await prisma.blogPost.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.BlogPostUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.blogPost.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
       } else if (rollbackTarget.model === 'order') {
         result = await prisma.order.update({ where: { id: log.entityId }, data: rollbackTarget.data });
       } else if (rollbackTarget.model === 'banner') {
@@ -458,6 +697,30 @@ export const activityController = {
           });
         } else {
           result = await prisma.banner.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
+      } else if (rollbackTarget.model === 'productReview') {
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['productId', 'userId', 'rating']);
+          result = await prisma.productReview.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.ProductReviewUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.productReview.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
+      } else if (rollbackTarget.model === 'contactMessage') {
+        if (action === 'DELETE') {
+          requireRollbackFields(rollbackTarget.data, ['name', 'email', 'subject', 'message']);
+          result = await prisma.contactMessage.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.ContactMessageUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.contactMessage.update({ where: { id: log.entityId }, data: rollbackTarget.data });
         }
       } else if (rollbackTarget.model === 'user') {
         if (action === 'DELETE') {
@@ -523,6 +786,14 @@ export const activityController = {
     } catch (err: any) {
       if (err?.code === 'P2025') {
         next(new AppError('Target entity no longer exists, rollback cannot be applied.', 404));
+        return;
+      }
+      if (err?.code === 'P2002') {
+        next(new AppError('Rollback conflict: a record with the same unique value already exists.', 409));
+        return;
+      }
+      if (err?.code === 'P2003') {
+        next(new AppError('Rollback failed because a related record is missing.', 409));
         return;
       }
       next(err);

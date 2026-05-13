@@ -344,7 +344,11 @@ export const reviewController = {
       if (req.userId) {
         await logActivity(req.userId, 'DELETE', 'REVIEW', id, {
           productId: review.productId,
+          userId: review.userId,
           rating: review.rating,
+          title: review.title,
+          comment: review.comment,
+          isApproved: review.isApproved,
         }, req.ip);
       }
 

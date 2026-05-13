@@ -959,7 +959,20 @@ export const adminController = {
         select: {
           id: true,
           name: true,
+          slug: true,
           sku: true,
+          shortDescription: true,
+          description: true,
+          price: true,
+          salePrice: true,
+          costPrice: true,
+          stock: true,
+          lowStockThreshold: true,
+          categoryId: true,
+          brandId: true,
+          isFeatured: true,
+          isActive: true,
+          weight: true,
           _count: { select: { orderItems: true } },
         }
       });
@@ -974,7 +987,8 @@ export const adminController = {
       await prisma.product.delete({ where: { id } });
 
       if (req.userId) {
-        await logActivity(req.userId, 'DELETE', 'PRODUCT', id, existingProduct, req.ip);
+        const { _count, ...productSnapshot } = existingProduct;
+        await logActivity(req.userId, 'DELETE', 'PRODUCT', id, productSnapshot, req.ip);
       }
 
       res.json({ success: true, message: 'Product deleted' });
@@ -1081,7 +1095,10 @@ export const adminController = {
       await prisma.productAttribute.delete({ where: { id } });
 
       if (req.userId) {
-        await logActivity(req.userId, 'DELETE', 'ATTRIBUTE', id, { name: attribute.name }, req.ip);
+        await logActivity(req.userId, 'DELETE', 'ATTRIBUTE', id, {
+          name: attribute.name,
+          slug: attribute.slug,
+        }, req.ip);
       }
 
       res.json({ success: true, message: 'Attribute deleted.' });
@@ -1184,7 +1201,12 @@ export const adminController = {
       await prisma.productAttributeValue.delete({ where: { id } });
 
       if (req.userId) {
-        await logActivity(req.userId, 'DELETE', 'ATTRIBUTE_VALUE', id, { value: attrValue.value }, req.ip);
+        await logActivity(req.userId, 'DELETE', 'ATTRIBUTE_VALUE', id, {
+          attributeId: attrValue.attributeId,
+          value: attrValue.value,
+          colorHex: attrValue.colorHex,
+          sortOrder: attrValue.sortOrder,
+        }, req.ip);
       }
 
       res.json({ success: true, message: 'Attribute value deleted.' });
@@ -1319,6 +1341,8 @@ export const adminController = {
         await logActivity(req.userId, 'DELETE', 'BRAND', id, {
           name: brand.name,
           slug: brand.slug,
+          sortOrder: brand.sortOrder,
+          isActive: brand.isActive,
         }, req.ip);
       }
 
@@ -1462,6 +1486,11 @@ export const adminController = {
         await logActivity(req.userId, 'DELETE', 'CATEGORY', id, {
           name: category.name,
           slug: category.slug,
+          description: category.description,
+          image: category.image,
+          parentId: category.parentId,
+          sortOrder: category.sortOrder,
+          isActive: category.isActive,
         }, req.ip);
       }
 
@@ -2120,6 +2149,14 @@ export const adminController = {
         await logActivity(req.userId, 'DELETE', 'COUPON', id, {
           code: coupon.code,
           type: coupon.type,
+          value: coupon.value,
+          minOrderValue: coupon.minOrderValue,
+          maxDiscount: coupon.maxDiscount,
+          usageLimit: coupon.usageLimit,
+          usedCount: coupon.usedCount,
+          startDate: coupon.startDate,
+          endDate: coupon.endDate,
+          isActive: coupon.isActive,
         }, req.ip);
       }
 
@@ -2229,7 +2266,12 @@ export const adminController = {
         await logActivity(req.userId, 'DELETE', 'SHIPPING_METHOD', id, {
           name: method.name,
           description: method.description,
-          zoneCount: method.zones.length,
+          isActive: method.isActive,
+          zones: method.zones.map((zone) => ({
+            zoneName: zone.zoneName,
+            cost: zone.cost,
+            freeShipMinOrder: zone.freeShipMinOrder,
+          })),
         }, req.ip);
       }
 
@@ -2344,6 +2386,13 @@ export const adminController = {
         await logActivity(req.userId, 'DELETE', 'BLOG_POST', id, {
           title: post.title,
           slug: post.slug,
+          excerpt: post.excerpt,
+          content: post.content,
+          image: post.image,
+          author: post.author,
+          category: post.category,
+          isPublished: post.isPublished,
+          publishedAt: post.publishedAt,
         }, req.ip);
       }
 

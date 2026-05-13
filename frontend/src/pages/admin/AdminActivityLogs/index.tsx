@@ -335,6 +335,22 @@ const getSection = (sections: DetailSection[], title: DetailSection['title']) =>
   return sections.find((section) => section.title === title);
 };
 
+const DELETE_ROLLBACK_ENTITY_TYPES = new Set([
+  'PRODUCT',
+  'CATEGORY',
+  'BRAND',
+  'ATTRIBUTE',
+  'ATTRIBUTE_VALUE',
+  'COUPON',
+  'SHIPPING_METHOD',
+  'BLOG_POST',
+  'BANNER',
+  'STAFF',
+  'ROLE',
+  'REVIEW',
+  'CONTACT_MESSAGE',
+]);
+
 const buildComparisonRows = (sections: DetailSection[]): ComparisonRow[] => {
   const beforeEntries = getSection(sections, 'Before')?.entries || [];
   const afterEntries = getSection(sections, 'After')?.entries || [];
@@ -367,7 +383,7 @@ const canRollbackFromSections = (log: ActivityLog, sections: DetailSection[]) =>
     return Boolean(getSection(sections, 'Before')?.entries.length);
   }
 
-  if (action === 'DELETE' && (entityType === 'STAFF' || entityType === 'ROLE' || entityType === 'BANNER')) {
+  if (action === 'DELETE' && DELETE_ROLLBACK_ENTITY_TYPES.has(entityType)) {
     return Boolean(sections.some((section) => section.entries.length));
   }
 

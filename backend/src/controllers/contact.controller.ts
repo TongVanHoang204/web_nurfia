@@ -183,8 +183,11 @@ export const contactController = {
 
       if (req.userId) {
         await logActivity(req.userId, 'DELETE', 'CONTACT_MESSAGE', message.id, {
+          name: message.name,
           email: message.email,
           subject: message.subject,
+          message: message.message,
+          isRead: message.isRead,
         }, req.ip);
       }
 
