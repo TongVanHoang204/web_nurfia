@@ -2,11 +2,20 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodError } from 'zod';
 import { AppError } from './errorHandler.js';
 
+const assignRequestValue = (req: Request, key: 'body' | 'query' | 'params', value: unknown) => {
+  Object.defineProperty(req, key, {
+    value,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+};
+
 // Validate request body against a Zod schema
 export const validate = (schema: ZodSchema) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
-      req.body = schema.parse(req.body);
+      assignRequestValue(req, 'body', schema.parse(req.body));
       next();
     } catch (err) {
       if (err instanceof ZodError) {
@@ -22,7 +31,7 @@ export const validate = (schema: ZodSchema) => {
 export const validateQuery = (schema: ZodSchema) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
-      req.query = schema.parse(req.query) as any;
+      assignRequestValue(req, 'query', schema.parse(req.query));
       next();
     } catch (err) {
       if (err instanceof ZodError) {
@@ -38,7 +47,7 @@ export const validateQuery = (schema: ZodSchema) => {
 export const validateParams = (schema: ZodSchema) => {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
-      req.params = schema.parse(req.params) as any;
+      assignRequestValue(req, 'params', schema.parse(req.params));
       next();
     } catch (err) {
       if (err instanceof ZodError) {
