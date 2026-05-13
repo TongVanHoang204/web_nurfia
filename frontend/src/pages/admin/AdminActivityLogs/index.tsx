@@ -367,7 +367,7 @@ const canRollbackFromSections = (log: ActivityLog, sections: DetailSection[]) =>
     return Boolean(getSection(sections, 'Before')?.entries.length);
   }
 
-  if (action === 'DELETE' && (entityType === 'STAFF' || entityType === 'ROLE')) {
+  if (action === 'DELETE' && (entityType === 'STAFF' || entityType === 'ROLE' || entityType === 'BANNER')) {
     return Boolean(sections.some((section) => section.entries.length));
   }
 
@@ -626,11 +626,12 @@ export default function AdminActivityLogs() {
     }
 
     const isDeleteRollback = String(log.action || '').toUpperCase() === 'DELETE';
+    const isDeletedStaffRollback = ['STAFF', 'ROLE'].includes(String(log.entityType || '').toUpperCase());
 
     openConfirm({
       title: isDeleteRollback ? 'Restore Deleted Record?' : 'Rollback This Change?',
       message: isDeleteRollback
-        ? `Restore deleted ${getEntityLabel(log.entityType, log.entityId)} from this log? The restored account may require a password reset.`
+        ? `Restore deleted ${getEntityLabel(log.entityType, log.entityId)} from this log?${isDeletedStaffRollback ? ' The restored account may require a password reset.' : ''}`
         : `Restore ${getEntityLabel(log.entityType, log.entityId)} to previous values captured in this log?`,
       confirmText: 'Rollback',
       cancelText: 'Cancel',

@@ -74,6 +74,8 @@ const toDateOrUndefined = (value: unknown): Date | undefined => {
 const isStaffRole = (value: unknown): value is typeof STAFF_ROLES[number] =>
   (STAFF_ROLES as readonly string[]).includes(String(value || '').toUpperCase());
 
+const isSupportedDeleteRollbackModel = (model: string) => model === 'user' || model === 'banner';
+
 const extractPrefixedSnapshot = (source: Record<string, unknown>) => {
   const snapshot: Record<string, unknown> = {};
   const prefixes = ['previous', 'before', 'old', 'prev'];
@@ -232,6 +234,31 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
     if (['UNPAID', 'PAID', 'REFUNDED'].includes(String(paymentStatus))) data.paymentStatus = paymentStatus;
 
     return { model: 'order', data };
+  }
+
+  if (type === 'BANNER') {
+    const data: Record<string, unknown> = {};
+    const title = toStringOrNullOrUndefined(snapshot.title);
+    const subtitle = toStringOrNullOrUndefined(snapshot.subtitle);
+    const imageUrl = toStringOrNullOrUndefined(snapshot.imageUrl);
+    const videoUrl = toStringOrNullOrUndefined(snapshot.videoUrl);
+    const linkUrl = toStringOrNullOrUndefined(snapshot.linkUrl);
+    const buttonText = toStringOrNullOrUndefined(snapshot.buttonText);
+    const position = toStringOrNullOrUndefined(snapshot.position);
+    const sortOrder = toIntegerOrNullOrUndefined(snapshot.sortOrder);
+    const isActive = toBooleanOrUndefined(snapshot.isActive);
+
+    if (title !== undefined && title !== null) data.title = title;
+    if (subtitle !== undefined) data.subtitle = subtitle;
+    if (imageUrl !== undefined && imageUrl !== null) data.imageUrl = imageUrl;
+    if (videoUrl !== undefined) data.videoUrl = videoUrl;
+    if (linkUrl !== undefined) data.linkUrl = linkUrl;
+    if (buttonText !== undefined) data.buttonText = buttonText;
+    if (position !== undefined && position !== null) data.position = position;
+    if (sortOrder !== undefined && sortOrder !== null) data.sortOrder = sortOrder;
+    if (isActive !== undefined) data.isActive = isActive;
+
+    return { model: 'banner', data };
   }
 
   if (type === 'STAFF' || type === 'ROLE') {
@@ -405,7 +432,7 @@ export const activityController = {
       }
 
       let result: unknown;
-      if (action === 'DELETE' && rollbackTarget.model !== 'user') {
+      if (action === 'DELETE' && !isSupportedDeleteRollbackModel(rollbackTarget.model)) {
         throw new AppError(`DELETE rollback is not supported for entity type ${log.entityType}.`, 400);
       }
 
@@ -421,6 +448,17 @@ export const activityController = {
         result = await prisma.blogPost.update({ where: { id: log.entityId }, data: rollbackTarget.data });
       } else if (rollbackTarget.model === 'order') {
         result = await prisma.order.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+      } else if (rollbackTarget.model === 'banner') {
+        if (action === 'DELETE') {
+          result = await prisma.banner.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+            } as Prisma.BannerUncheckedCreateInput,
+          });
+        } else {
+          result = await prisma.banner.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+        }
       } else if (rollbackTarget.model === 'user') {
         if (action === 'DELETE') {
           const temporaryPasswordHash = await bcrypt.hash(crypto.randomBytes(24).toString('base64url'), SALT_ROUNDS);
