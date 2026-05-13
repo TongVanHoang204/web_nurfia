@@ -177,6 +177,27 @@
   margin-bottom: 4px;
 }
 
+.staff-role-pill-admin {
+  border: 1px solid #293241;
+  border-radius: 3px;
+  background: #fff;
+  color: transparent;
+  background-image: linear-gradient(90deg, #071a52, #0f4c81, #5ec8ff, #071a52);
+  background-size: 260% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: staff-admin-rgb-shift 2.8s linear infinite;
+}
+
+@keyframes staff-admin-rgb-shift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 260% 50%;
+  }
+}
+
 .staff-status-pill {
   display: block;
   font-size: 11px;

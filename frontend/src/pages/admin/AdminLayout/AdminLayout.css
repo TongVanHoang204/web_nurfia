@@ -155,11 +155,36 @@
 }
 
 .admin-user-role {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--color-accent);
+}
+
+.admin-user-role-rgb {
+  padding: 2px 7px;
+  border: 1px solid #293241;
+  border-radius: 3px;
+  background: #fff;
+  color: transparent;
+  background-image: linear-gradient(90deg, #071a52, #0f4c81, #5ec8ff, #071a52);
+  background-size: 260% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: admin-role-rgb-shift 2.8s linear infinite;
+}
+
+@keyframes admin-role-rgb-shift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 260% 50%;
+  }
 }
 
 .admin-user-avatar {

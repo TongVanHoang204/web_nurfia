@@ -495,7 +495,9 @@ export default function AdminStaff() {
                       </div>
 
                       <div className="staff-role-col">
-                        <span className="staff-role-pill">{staff.role}</span>
+                        <span className={`staff-role-pill ${staff.role === 'ADMIN' ? 'staff-role-pill-admin' : ''}`}>
+                          {staff.role}
+                        </span>
                         <span className={`staff-status-pill ${staff.isActive ? 'is-active' : 'is-inactive'}`}>
                           {staff.isActive ? 'Active' : 'Inactive'}
                         </span>

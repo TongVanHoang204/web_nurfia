@@ -144,8 +144,8 @@ export default function AdminLayout() {
             <NotificationBell />
             <div className="admin-user-profile">
               <span className="admin-user-name">{user?.fullName}</span>
-              <span className="admin-user-role">
-                {user?.role === 'ADMIN' ? 'Administrator' : user?.role === 'MANAGER' ? 'Manager' : 'Staff'}
+              <span className={`admin-user-role ${user?.role === 'ADMIN' ? 'admin-user-role-rgb' : ''}`}>
+                {user?.role === 'ADMIN' ? 'ADMIN' : user?.role === 'MANAGER' ? 'Manager' : 'Staff'}
               </span>
             </div>
             <div className="admin-user-avatar">{user?.fullName?.[0]}</div>
