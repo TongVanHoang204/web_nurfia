@@ -33,3 +33,19 @@ export const validateQuery = (schema: ZodSchema) => {
     }
   };
 };
+
+// Validate route params
+export const validateParams = (schema: ZodSchema) => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    try {
+      req.params = schema.parse(req.params) as any;
+      next();
+    } catch (err) {
+      if (err instanceof ZodError) {
+        const message = err.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        return next(new AppError(`Param validation error: ${message}`, 400));
+      }
+      next(err);
+    }
+  };
+};

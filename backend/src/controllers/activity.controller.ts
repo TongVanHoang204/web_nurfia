@@ -1,9 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import type { Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import prisma from '../models/prisma.js';
 import { AppError } from '../middlewares/errorHandler.js';
-import type { AuthRequest } from '../middlewares/auth.js';
+import {
+  normalizeAdminPermissions,
+  ROLE_PERMISSION_DEFAULTS,
+  type AuthRequest,
+} from '../middlewares/auth.js';
 import { logActivity } from '../services/activity.service.js';
+
+const SALT_ROUNDS = 10;
+const STAFF_ROLES = ['STAFF', 'MANAGER'] as const;
 
 const parsePositiveInt = (value: unknown, fallback: number, max = 100) => {
   const parsed = Number.parseInt(String(value || ''), 10);
@@ -61,6 +70,9 @@ const toDateOrUndefined = (value: unknown): Date | undefined => {
   if (Number.isNaN(date.getTime())) return undefined;
   return date;
 };
+
+const isStaffRole = (value: unknown): value is typeof STAFF_ROLES[number] =>
+  (STAFF_ROLES as readonly string[]).includes(String(value || '').toUpperCase());
 
 const extractPrefixedSnapshot = (source: Record<string, unknown>) => {
   const snapshot: Record<string, unknown> = {};
@@ -222,6 +234,34 @@ const pickRollbackDataForEntity = (entityType: string, snapshot: Record<string, 
     return { model: 'order', data };
   }
 
+  if (type === 'STAFF' || type === 'ROLE') {
+    const username = toStringOrNullOrUndefined(snapshot.username);
+    const email = toStringOrNullOrUndefined(snapshot.email);
+    const fullName = toStringOrNullOrUndefined(snapshot.fullName);
+    const role = String(snapshot.role || '').toUpperCase();
+    const isActive = toBooleanOrUndefined(snapshot.isActive);
+
+    if (!username || !email || !isStaffRole(role)) {
+      return { model: 'user', data: {} };
+    }
+
+    const permissions = Array.isArray(snapshot.permissions)
+      ? normalizeAdminPermissions(snapshot.permissions)
+      : ROLE_PERMISSION_DEFAULTS[role];
+
+    return {
+      model: 'user',
+      data: {
+        username,
+        email: email.toLowerCase(),
+        fullName: fullName || username,
+        role,
+        permissions,
+        isActive: isActive ?? false,
+      },
+    };
+  }
+
   return { model: 'unsupported', data: {} };
 };
 
@@ -341,15 +381,16 @@ export const activityController = {
         throw new AppError('Activity log not found.', 404);
       }
 
-      if (String(log.action).toUpperCase() !== 'UPDATE') {
-        throw new AppError('Only UPDATE activity logs can be rolled back.', 400);
+      const action = String(log.action).toUpperCase();
+      if (action !== 'UPDATE' && action !== 'DELETE') {
+        throw new AppError('Only UPDATE and supported DELETE activity logs can be rolled back.', 400);
       }
 
       if (!log.entityId) {
         throw new AppError('Rollback requires an entity ID.', 400);
       }
 
-      const snapshot = resolveRollbackSnapshot(log.details);
+      const snapshot = action === 'DELETE' ? toObject(log.details) : resolveRollbackSnapshot(log.details);
       if (!snapshot || !Object.keys(snapshot).length) {
         throw new AppError('No previous data available for rollback on this log.', 400);
       }
@@ -364,6 +405,10 @@ export const activityController = {
       }
 
       let result: unknown;
+      if (action === 'DELETE' && rollbackTarget.model !== 'user') {
+        throw new AppError(`DELETE rollback is not supported for entity type ${log.entityType}.`, 400);
+      }
+
       if (rollbackTarget.model === 'product') {
         result = await prisma.product.update({ where: { id: log.entityId }, data: rollbackTarget.data });
       } else if (rollbackTarget.model === 'category') {
@@ -376,6 +421,44 @@ export const activityController = {
         result = await prisma.blogPost.update({ where: { id: log.entityId }, data: rollbackTarget.data });
       } else if (rollbackTarget.model === 'order') {
         result = await prisma.order.update({ where: { id: log.entityId }, data: rollbackTarget.data });
+      } else if (rollbackTarget.model === 'user') {
+        if (action === 'DELETE') {
+          const temporaryPasswordHash = await bcrypt.hash(crypto.randomBytes(24).toString('base64url'), SALT_ROUNDS);
+          result = await prisma.user.create({
+            data: {
+              id: log.entityId,
+              ...rollbackTarget.data,
+              password: temporaryPasswordHash,
+            } as Prisma.UserUncheckedCreateInput,
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              fullName: true,
+              role: true,
+              permissions: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          });
+        } else {
+          result = await prisma.user.update({
+            where: { id: log.entityId },
+            data: rollbackTarget.data as Prisma.UserUpdateInput,
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              fullName: true,
+              role: true,
+              permissions: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          });
+        }
       } else {
         throw new AppError('Unsupported rollback target.', 400);
       }

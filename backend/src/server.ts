@@ -13,6 +13,7 @@ import config from './config/index.js';
 import prisma from './models/prisma.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { csrfProtection } from './middlewares/csrf.js';
+import { createApiRateLimiter } from './middlewares/rateLimit.js';
 import authRoutes from './routes/auth.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import productRoutes from './routes/product.routes.js';
@@ -42,15 +43,33 @@ import {
 } from './utils/bankTransferProof.js';
 
 const app = express();
+const apiLimiter = createApiRateLimiter(15 * 60 * 1000, 600, 'Too many API requests. Please try again later.');
+const allowedOrigins = getAllowedOrigins();
+const cspConnectSrc = ["'self'", ...allowedOrigins];
 
 // Security headers
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+      fontSrc: ["'self'", 'data:'],
+      connectSrc: cspConnectSrc,
+      frameAncestors: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
 }));
 
 // CORS
 app.use(cors({
-  origin: getAllowedOrigins(),
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
@@ -60,6 +79,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/api', apiLimiter);
 app.use('/api', csrfProtection);
 
 // Setup Swagger UI
@@ -170,13 +190,15 @@ app.use(errorHandler);
 
 // Start server
 const httpServer = createServer(app);
-initSocketServer(httpServer);
-startChatHistoryRetentionJob();
+if (config.env !== 'test') {
+  initSocketServer(httpServer);
+  startChatHistoryRetentionJob();
 
-httpServer.listen(config.port, () => {
-  console.log(`[Server] Running on http://localhost:${config.port}`);
-  console.log(`[Server] Environment: ${config.env}`);
-  console.log(`[Socket] Running on ws://localhost:${config.port}`);
-});
+  httpServer.listen(config.port, () => {
+    console.log(`[Server] Running on http://localhost:${config.port}`);
+    console.log(`[Server] Environment: ${config.env}`);
+    console.log(`[Socket] Running on ws://localhost:${config.port}`);
+  });
+}
 
 export default app;

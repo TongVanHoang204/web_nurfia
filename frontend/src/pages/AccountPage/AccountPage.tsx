@@ -142,9 +142,7 @@ export function ProfileSection() {
       });
       const responseData = data?.data || {};
       setOtpRequested(true);
-      const baseNotice = responseData.message || 'OTP has been sent to your email.';
-      const debugOtp = responseData.debugOtp || '';
-      setOtpNotice(debugOtp ? `${baseNotice} [DEV] OTP: ${debugOtp}` : baseNotice);
+      setOtpNotice(responseData.message || 'OTP has been sent to your email.');
       addToast(responseData.message || 'OTP sent to your email.', 'success');
     } catch (err: any) {
       setOtpRequested(false);

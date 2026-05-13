@@ -31,6 +31,7 @@ export const staffController = {
       const limit = parseInt(req.query.limit as string, 10) || 20;
       const search = String(req.query.search || '').trim();
       const status = String(req.query.status || '').trim().toUpperCase();
+      const roleFilter = String(req.query.role || 'ALL').trim().toUpperCase();
       const sort = String(req.query.sort || 'NEWEST').trim().toUpperCase();
       const skip = (page - 1) * limit;
 
@@ -45,6 +46,9 @@ export const staffController = {
       }
       if (status === 'INACTIVE') {
         andClauses.push({ isActive: false });
+      }
+      if (STAFF_MANAGEMENT_ROLES.includes(roleFilter as any)) {
+        andClauses.push({ role: roleFilter as any });
       }
 
       if (search) {
@@ -309,7 +313,15 @@ export const staffController = {
 
       const existingStaff = await prisma.user.findFirst({
         where: { id },
-        select: { id: true, username: true, email: true, role: true }
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          fullName: true,
+          role: true,
+          permissions: true,
+          isActive: true,
+        }
       });
 
       if (!existingStaff || !STAFF_MANAGEMENT_ROLES.includes(existingStaff.role as any)) {

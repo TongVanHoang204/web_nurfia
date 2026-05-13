@@ -95,6 +95,7 @@ type StaffStats = {
 };
 
 type StaffStatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
+type StaffRoleFilter = 'ALL' | 'ADMIN' | 'STAFF' | 'MANAGER';
 type StaffSortOption = 'NEWEST' | 'OLDEST' | 'NAME_ASC' | 'NAME_DESC' | 'UPDATED_DESC';
 
 const formatDate = (value: string) => {
@@ -107,6 +108,13 @@ const formatDate = (value: string) => {
 
 const formatPermissionLabel = (permission: string) => {
   return permission.replace('MANAGE_', '').replace('VIEW_', '').split('_').join(' ').toLowerCase();
+};
+
+const formatPermissionTitle = (permission: string) => {
+  return permission
+    .split('_')
+    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+    .join(' ');
 };
 
 const getPageNumbers = (current: number, total: number) => {
@@ -138,6 +146,7 @@ export default function AdminStaff() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [statusFilter, setStatusFilter] = useState<StaffStatusFilter>('ALL');
+  const [roleFilter, setRoleFilter] = useState<StaffRoleFilter>('ALL');
   const [sortOption, setSortOption] = useState<StaffSortOption>('NEWEST');
 
   const [formData, setFormData] = useState({
@@ -152,13 +161,26 @@ export default function AdminStaff() {
 
   const { addToast } = useUIStore();
 
-  const fetchStaffs = (page = 1, keyword = search) => {
+  const fetchStaffs = (
+    page = 1,
+    options?: {
+      keyword?: string;
+      status?: StaffStatusFilter;
+      role?: StaffRoleFilter;
+      sort?: StaffSortOption;
+    },
+  ) => {
     setIsLoading(true);
+    const keyword = options?.keyword ?? search;
+    const nextStatus = options?.status ?? statusFilter;
+    const nextRole = options?.role ?? roleFilter;
+    const nextSort = options?.sort ?? sortOption;
     const query = new URLSearchParams({
       page: String(page),
       limit: '20',
-      sort: sortOption,
-      ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+      sort: nextSort,
+      ...(nextStatus !== 'ALL' ? { status: nextStatus } : {}),
+      ...(nextRole !== 'ALL' ? { role: nextRole } : {}),
       ...(keyword ? { search: keyword } : {}),
     });
 
@@ -178,22 +200,23 @@ export default function AdminStaff() {
   };
 
   useEffect(() => {
-    fetchStaffs(1, search);
-  }, [statusFilter, sortOption]);
+    fetchStaffs(1);
+  }, [statusFilter, roleFilter, sortOption]);
 
   const handleSearch = (event: FormEvent) => {
     event.preventDefault();
     const keyword = searchInput.trim();
     setSearch(keyword);
-    fetchStaffs(1, keyword);
+    fetchStaffs(1, { keyword });
   };
 
   const resetFilters = () => {
     setSearch('');
     setSearchInput('');
     setStatusFilter('ALL');
+    setRoleFilter('ALL');
     setSortOption('NEWEST');
-    fetchStaffs(1, '');
+    fetchStaffs(1, { keyword: '', status: 'ALL', role: 'ALL', sort: 'NEWEST' });
   };
 
   const resetForm = () => {
@@ -325,6 +348,19 @@ export default function AdminStaff() {
   };
 
   const pageNumbers = useMemo(() => getPageNumbers(pagination.page, pagination.totalPages), [pagination.page, pagination.totalPages]);
+  const permissionSummary = useMemo(() => {
+    const roleDefaults = ROLE_DEFAULT_PERMISSIONS[formData.role];
+    const selected = Array.from(new Set(formData.permissions));
+    const extra = selected.filter((permission) => !roleDefaults.includes(permission));
+    const missing = roleDefaults.filter((permission) => !selected.includes(permission));
+
+    return {
+      selected,
+      extra,
+      missing,
+      defaultCount: roleDefaults.length,
+    };
+  }, [formData.permissions, formData.role]);
   const selectableStaffIds = useMemo(
     () => staffs.filter((staff) => staff.role !== 'ADMIN').map((staff) => staff.id),
     [staffs],
@@ -380,6 +416,16 @@ export default function AdminStaff() {
               <option value="ALL">All status</option>
               <option value="ACTIVE">Active only</option>
               <option value="INACTIVE">Inactive only</option>
+            </select>
+          </label>
+
+          <label className="staff-select-wrap" aria-label="Filter staff role">
+            <Shield size={15} />
+            <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as StaffRoleFilter)}>
+              <option value="ALL">All roles</option>
+              <option value="ADMIN">Admin</option>
+              <option value="MANAGER">Manager</option>
+              <option value="STAFF">Staff</option>
             </select>
           </label>
 
@@ -582,6 +628,34 @@ export default function AdminStaff() {
 
               <div className="admin-form-group">
                 <label>Permissions Overview</label>
+                <div className="staff-permission-summary">
+                  <div>
+                    <span>Selected</span>
+                    <strong>{permissionSummary.selected.length} / {PERMISSION_OPTIONS.length}</strong>
+                  </div>
+                  <div>
+                    <span>{formData.role} default</span>
+                    <strong>{permissionSummary.defaultCount}</strong>
+                  </div>
+                  <div>
+                    <span>Extra</span>
+                    <strong>{permissionSummary.extra.length}</strong>
+                  </div>
+                  <div>
+                    <span>Missing default</span>
+                    <strong>{permissionSummary.missing.length}</strong>
+                  </div>
+                </div>
+                {(permissionSummary.extra.length > 0 || permissionSummary.missing.length > 0) && (
+                  <div className="staff-permission-diff">
+                    {permissionSummary.extra.length > 0 && (
+                      <p><strong>Extra:</strong> {permissionSummary.extra.map(formatPermissionTitle).join(', ')}</p>
+                    )}
+                    {permissionSummary.missing.length > 0 && (
+                      <p><strong>Missing default:</strong> {permissionSummary.missing.map(formatPermissionTitle).join(', ')}</p>
+                    )}
+                  </div>
+                )}
                 <div className="staff-permission-presets">
                   {Object.entries(PERMISSION_PRESETS).map(([presetKey, preset]) => (
                     <button key={presetKey} type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyPermissionPreset(presetKey)}>

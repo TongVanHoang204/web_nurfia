@@ -359,9 +359,19 @@ const buildComparisonRows = (sections: DetailSection[]): ComparisonRow[] => {
 };
 
 const canRollbackFromSections = (log: ActivityLog, sections: DetailSection[]) => {
-  if (String(log.action || '').toUpperCase() !== 'UPDATE') return false;
+  const action = String(log.action || '').toUpperCase();
+  const entityType = String(log.entityType || '').toUpperCase();
   if (!log.entityId) return false;
-  return Boolean(getSection(sections, 'Before')?.entries.length);
+
+  if (action === 'UPDATE') {
+    return Boolean(getSection(sections, 'Before')?.entries.length);
+  }
+
+  if (action === 'DELETE' && (entityType === 'STAFF' || entityType === 'ROLE')) {
+    return Boolean(sections.some((section) => section.entries.length));
+  }
+
+  return false;
 };
 
 const getDetailsText = (details: unknown) => {
@@ -615,9 +625,13 @@ export default function AdminActivityLogs() {
       return;
     }
 
+    const isDeleteRollback = String(log.action || '').toUpperCase() === 'DELETE';
+
     openConfirm({
-      title: 'Rollback This Change?',
-      message: `Restore ${getEntityLabel(log.entityType, log.entityId)} to previous values captured in this log?`,
+      title: isDeleteRollback ? 'Restore Deleted Record?' : 'Rollback This Change?',
+      message: isDeleteRollback
+        ? `Restore deleted ${getEntityLabel(log.entityType, log.entityId)} from this log? The restored account may require a password reset.`
+        : `Restore ${getEntityLabel(log.entityType, log.entityId)} to previous values captured in this log?`,
       confirmText: 'Rollback',
       cancelText: 'Cancel',
       danger: true,

@@ -1,4 +1,4 @@
-import type { Response } from 'express';
+import type { CookieOptions, Response } from 'express';
 import config from '../config/index.js';
 
 const DURATION_PATTERN = /^(\d+)(ms|s|m|h|d)$/i;
@@ -53,12 +53,31 @@ const parseDurationToMs = (value: string) => {
   return amount * (multipliers[unit] || multipliers.d);
 };
 
-export const getAuthCookieOptions = () => ({
+const normalizeSameSite = (value: string | undefined) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'strict' || normalized === 'lax' || normalized === 'none') {
+    return normalized;
+  }
+
+  return config.env === 'production' ? 'lax' : 'none';
+};
+
+const getCookieSameSite = () => normalizeSameSite(process.env.AUTH_COOKIE_SAMESITE);
+
+export const getAuthCookieOptions = (): CookieOptions => ({
   httpOnly: true,
-  secure: true, // Always true for SameSite=None
-  sameSite: 'none' as const,
+  secure: config.env === 'production' || getCookieSameSite() === 'none',
+  sameSite: getCookieSameSite(),
   path: '/',
   maxAge: parseDurationToMs(config.jwt.expiresIn),
+});
+
+export const getCsrfCookieOptions = (): CookieOptions => ({
+  httpOnly: true,
+  secure: config.env === 'production' || getCookieSameSite() === 'none',
+  sameSite: getCookieSameSite(),
+  path: '/',
+  maxAge: 60 * 60 * 1000,
 });
 
 export const setAuthCookie = (res: Response, token: string) => {

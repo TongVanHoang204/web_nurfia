@@ -1,6 +1,14 @@
 import { Router } from 'express';
 import { authenticate, requireCustomer } from '../middlewares/auth.js';
 import { orderController } from '../controllers/order.controller.js';
+import { validate, validateParams } from '../middlewares/validate.js';
+import {
+  bankTransferProofSchema,
+  createOrderSchema,
+  orderIdParamSchema,
+  shippingOptionsSchema,
+  validateCouponSchema,
+} from '../validators/commerce.validator.js';
 
 const router = Router();
 router.use(authenticate);
@@ -25,7 +33,7 @@ router.use(authenticate);
  *     responses:
  *       200: { description: Coupon validated }
  */
-router.post('/validate-coupon', requireCustomer, orderController.validateCoupon);
+router.post('/validate-coupon', requireCustomer, validate(validateCouponSchema), orderController.validateCoupon);
 
 /**
  * @swagger
@@ -48,7 +56,7 @@ router.post('/validate-coupon', requireCustomer, orderController.validateCoupon)
  *     responses:
  *       200: { description: Shipping options list }
  */
-router.post('/shipping-options', requireCustomer, orderController.getShippingOptions);
+router.post('/shipping-options', requireCustomer, validate(shippingOptionsSchema), orderController.getShippingOptions);
 
 /**
  * @swagger
@@ -79,7 +87,7 @@ router.post('/shipping-options', requireCustomer, orderController.getShippingOpt
  *     responses:
  *       201: { description: Order created successfully }
  */
-router.post('/', requireCustomer, orderController.createOrder);
+router.post('/', requireCustomer, validate(createOrderSchema), orderController.createOrder);
 
 /**
  * @swagger
@@ -108,7 +116,7 @@ router.get('/', orderController.getOrders);
  *     responses:
  *       200: { description: Order detail }
  */
-router.get('/:id', orderController.getOrderById);
+router.get('/:id', validateParams(orderIdParamSchema), orderController.getOrderById);
 
 /**
  * @swagger
@@ -135,8 +143,8 @@ router.get('/:id', orderController.getOrderById);
  *     responses:
  *       200: { description: Proof uploaded }
  */
-router.get('/:id/bank-transfer-proof', orderController.getBankTransferProof);
-router.post('/:id/bank-transfer-proof', orderController.uploadBankTransferProof);
+router.get('/:id/bank-transfer-proof', validateParams(orderIdParamSchema), orderController.getBankTransferProof);
+router.post('/:id/bank-transfer-proof', validateParams(orderIdParamSchema), validate(bankTransferProofSchema), orderController.uploadBankTransferProof);
 
 /**
  * @swagger
@@ -153,7 +161,7 @@ router.post('/:id/bank-transfer-proof', orderController.uploadBankTransferProof)
  *     responses:
  *       200: { description: Order cancelled }
  */
-router.post('/:id/cancel', orderController.cancelOrder);
+router.post('/:id/cancel', validateParams(orderIdParamSchema), orderController.cancelOrder);
 
 /**
  * @swagger
@@ -170,6 +178,6 @@ router.post('/:id/cancel', orderController.cancelOrder);
  *     responses:
  *       200: { description: Items added to cart }
  */
-router.post('/:id/reorder', orderController.reorder);
+router.post('/:id/reorder', validateParams(orderIdParamSchema), orderController.reorder);
 
 export default router;

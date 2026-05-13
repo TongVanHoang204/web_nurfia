@@ -8,4 +8,5 @@ backend/.env
 frontend/.env
 .env
 *.log
+backend/nurfia.sql
 claude_system/

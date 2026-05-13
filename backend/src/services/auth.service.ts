@@ -180,7 +180,7 @@ export const authService = {
       throw new AppError('New password must be different from current password.', 400);
     }
 
-    console.info(`[auth:otp] Requesting change password OTP for user ID: ${userId} (${user.email})`);
+    console.info(`[auth:otp] Requesting change password OTP for user ID: ${userId}`);
 
     const otp = String(crypto.randomInt(100000, 1000000));
     const otpHash = await bcrypt.hash(otp, 10);
@@ -200,21 +200,16 @@ export const authService = {
     const mailResult = await mailService.sendChangePasswordOtp(user.email, user.fullName, otp);
 
     if (!mailResult.delivered) {
-      // Always log OTP visibly so developer can use it for testing
+      // Do not expose OTP values in logs or API responses.
       console.warn('');
       console.warn('╔══════════════════════════════════════════════════════════╗');
-      console.warn('║  EMAIL FAILED — Use this OTP to test password change   ║');
-      console.warn(`║  Email: ${user.email.padEnd(48)}║`);
-      console.warn(`║  OTP:   ${otp.padEnd(48)}║`);
-      console.warn(`║  Error: ${(mailResult.error || 'unknown').padEnd(48)}║`);
+      console.warn('║  EMAIL FAILED — OTP was not delivered                  ║');
+      console.warn(`[auth:otp] Failed to deliver change password OTP for user ID ${userId}: ${mailResult.error || 'unknown'}`);
       console.warn('╚══════════════════════════════════════════════════════════╝');
       console.warn('');
-      // Don't throw — return success so the frontend can proceed.
-      // The OTP is visible in Render logs for manual testing.
       return {
-        message: 'OTP generated but email delivery failed. Check server logs for the OTP code.',
+        message: 'Unable to send OTP email. Please try again later.',
         expiresInSeconds: Math.floor(CHANGE_PASSWORD_OTP_TTL_MS / 1000),
-        ...(config.env !== 'production' ? { debugOtp: otp } : {}),
       };
     }
 
@@ -222,7 +217,6 @@ export const authService = {
       message: 'OTP has been sent to your email. Enter it to confirm password change.',
       expiresInSeconds: Math.floor(CHANGE_PASSWORD_OTP_TTL_MS / 1000),
       delivered: true,
-      ...(config.env !== 'production' ? { debugOtp: otp } : {}),
     };
   },
 

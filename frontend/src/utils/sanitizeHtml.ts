@@ -24,7 +24,8 @@ const SANITIZE_OPTIONS = {
     'img',
     'span',
   ],
-  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel', 'class'],
+  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target', 'rel'],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|\/(?!\/))/i,
   ALLOW_DATA_ATTR: false,
 };
 

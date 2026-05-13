@@ -8,8 +8,41 @@ import { reportController } from '../controllers/report.controller.js';
 import { inventoryController } from '../controllers/inventory.controller.js';
 import { bannerController } from '../controllers/banner.controller.js';
 import { contactController } from '../controllers/contact.controller.js';
-import { validate } from '../middlewares/validate.js';
+import { validate, validateParams, validateQuery } from '../middlewares/validate.js';
 import { adminContactReplySchema } from '../validators/commerce.validator.js';
+import {
+  adminActivityQuerySchema,
+  adminCouponQuerySchema,
+  adminCustomerQuerySchema,
+  adminCustomerRecentOrdersQuerySchema,
+  adminIdParamSchema,
+  adminInventoryHistoryQuerySchema,
+  adminInventoryStockQuerySchema,
+  adminListQuerySchema,
+  adminOrderQuerySchema,
+  adminReviewQuerySchema,
+  bannerSchema,
+  blogPostSchema,
+  booleanToggleSchema,
+  brandSchema,
+  bulkActiveSchema,
+  bulkIdsSchema,
+  categorySchema,
+  couponSchema,
+  createStaffSchema,
+  dashboardQuerySchema,
+  inventoryUpdateSchema,
+  productSchema,
+  reviewApprovalSchema,
+  shippingMethodSchema,
+  updateBannerSchema,
+  updateBrandSchema,
+  updateCategorySchema,
+  updateOrderStatusSchema,
+  updatePaymentStatusSchema,
+  updateProductSchema,
+  updateStaffSchema,
+} from '../validators/admin.validator.js';
 
 const router = Router();
 
@@ -32,7 +65,7 @@ router.use(authenticate, requireAdminAccess);
  *     responses:
  *       200: { description: Activity logs }
  */
-router.get('/activities', requirePermission('VIEW_ACTIVITY_LOGS'), activityController.getLogs);
+router.get('/activities', requirePermission('VIEW_ACTIVITY_LOGS'), validateQuery(adminActivityQuerySchema), activityController.getLogs);
 
 /**
  * @swagger
@@ -49,7 +82,7 @@ router.get('/activities', requirePermission('VIEW_ACTIVITY_LOGS'), activityContr
  *     responses:
  *       200: { description: Rollback executed }
  */
-router.post('/activities/:id/rollback', requirePermission('MANAGE_SETTINGS'), activityController.rollbackLog);
+router.post('/activities/:id/rollback', requirePermission('MANAGE_SETTINGS'), validateParams(adminIdParamSchema), activityController.rollbackLog);
 
 /**
  * @swagger
@@ -61,7 +94,7 @@ router.post('/activities/:id/rollback', requirePermission('MANAGE_SETTINGS'), ac
  *     responses:
  *       200: { description: Dashboard data }
  */
-router.get('/dashboard', adminController.getDashboard);
+router.get('/dashboard', validateQuery(dashboardQuerySchema), adminController.getDashboard);
 
 /**
  * @swagger
@@ -85,8 +118,8 @@ router.get('/dashboard', adminController.getDashboard);
  *     responses:
  *       201: { description: Product created }
  */
-router.get('/products', requirePermission('MANAGE_PRODUCTS'), adminController.getProducts);
-router.post('/products', requirePermission('MANAGE_PRODUCTS'), adminController.createProduct);
+router.get('/products', requirePermission('MANAGE_PRODUCTS'), validateQuery(adminListQuerySchema), adminController.getProducts);
+router.post('/products', requirePermission('MANAGE_PRODUCTS'), validate(productSchema), adminController.createProduct);
 
 /**
  * @swagger
@@ -125,9 +158,9 @@ router.post('/products', requirePermission('MANAGE_PRODUCTS'), adminController.c
  *     responses:
  *       200: { description: Product deleted }
  */
-router.get('/products/:id', requirePermission('MANAGE_PRODUCTS'), adminController.getProductById);
-router.put('/products/:id', requirePermission('MANAGE_PRODUCTS'), adminController.updateProduct);
-router.delete('/products/:id', requirePermission('MANAGE_PRODUCTS'), adminController.deleteProduct);
+router.get('/products/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), adminController.getProductById);
+router.put('/products/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), validate(updateProductSchema), adminController.updateProduct);
+router.delete('/products/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), adminController.deleteProduct);
 
 /**
  * @swagger
@@ -174,8 +207,8 @@ router.post('/attributes', requirePermission('MANAGE_PRODUCTS'), adminController
  *     responses:
  *       200: { description: Attribute deleted }
  */
-router.put('/attributes/:id', requirePermission('MANAGE_PRODUCTS'), adminController.updateAttribute);
-router.delete('/attributes/:id', requirePermission('MANAGE_PRODUCTS'), adminController.deleteAttribute);
+router.put('/attributes/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), adminController.updateAttribute);
+router.delete('/attributes/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), adminController.deleteAttribute);
 
 /**
  * @swagger
@@ -215,8 +248,8 @@ router.post('/attribute-values', requirePermission('MANAGE_PRODUCTS'), adminCont
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/attribute-values/:id', requirePermission('MANAGE_PRODUCTS'), adminController.updateAttributeValue);
-router.delete('/attribute-values/:id', requirePermission('MANAGE_PRODUCTS'), adminController.deleteAttributeValue);
+router.put('/attribute-values/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), adminController.updateAttributeValue);
+router.delete('/attribute-values/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), adminController.deleteAttributeValue);
 
 /**
  * @swagger
@@ -234,8 +267,8 @@ router.delete('/attribute-values/:id', requirePermission('MANAGE_PRODUCTS'), adm
  *     responses:
  *       201: { description: Category created }
  */
-router.get('/categories', requirePermission('MANAGE_CATEGORIES'), adminController.getCategories);
-router.post('/categories', requirePermission('MANAGE_CATEGORIES'), adminController.createCategory);
+router.get('/categories', requirePermission('MANAGE_CATEGORIES'), validateQuery(adminListQuerySchema), adminController.getCategories);
+router.post('/categories', requirePermission('MANAGE_CATEGORIES'), validate(categorySchema), adminController.createCategory);
 
 /**
  * @swagger
@@ -263,8 +296,8 @@ router.post('/categories', requirePermission('MANAGE_CATEGORIES'), adminControll
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/categories/:id', requirePermission('MANAGE_CATEGORIES'), adminController.updateCategory);
-router.delete('/categories/:id', requirePermission('MANAGE_CATEGORIES'), adminController.deleteCategory);
+router.put('/categories/:id', requirePermission('MANAGE_CATEGORIES'), validateParams(adminIdParamSchema), validate(updateCategorySchema), adminController.updateCategory);
+router.delete('/categories/:id', requirePermission('MANAGE_CATEGORIES'), validateParams(adminIdParamSchema), adminController.deleteCategory);
 
 /**
  * @swagger
@@ -282,8 +315,8 @@ router.delete('/categories/:id', requirePermission('MANAGE_CATEGORIES'), adminCo
  *     responses:
  *       201: { description: Brand created }
  */
-router.get('/brands', requirePermission('MANAGE_PRODUCTS'), adminController.getBrands);
-router.post('/brands', requirePermission('MANAGE_PRODUCTS'), adminController.createBrand);
+router.get('/brands', requirePermission('MANAGE_PRODUCTS'), validateQuery(adminListQuerySchema), adminController.getBrands);
+router.post('/brands', requirePermission('MANAGE_PRODUCTS'), validate(brandSchema), adminController.createBrand);
 
 /**
  * @swagger
@@ -311,8 +344,8 @@ router.post('/brands', requirePermission('MANAGE_PRODUCTS'), adminController.cre
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/brands/:id', requirePermission('MANAGE_PRODUCTS'), adminController.updateBrand);
-router.delete('/brands/:id', requirePermission('MANAGE_PRODUCTS'), adminController.deleteBrand);
+router.put('/brands/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), validate(updateBrandSchema), adminController.updateBrand);
+router.delete('/brands/:id', requirePermission('MANAGE_PRODUCTS'), validateParams(adminIdParamSchema), adminController.deleteBrand);
 
 /**
  * @swagger
@@ -330,8 +363,8 @@ router.delete('/brands/:id', requirePermission('MANAGE_PRODUCTS'), adminControll
  *     responses:
  *       201: { description: Staff created }
  */
-router.get('/staffs', requirePermission('MANAGE_STAFF'), staffController.getStaffs);
-router.post('/staffs', requirePermission('MANAGE_STAFF'), staffController.createStaff);
+router.get('/staffs', requirePermission('MANAGE_STAFF'), validateQuery(adminListQuerySchema), staffController.getStaffs);
+router.post('/staffs', requirePermission('MANAGE_STAFF'), validate(createStaffSchema), staffController.createStaff);
 
 /**
  * @swagger
@@ -359,8 +392,8 @@ router.post('/staffs', requirePermission('MANAGE_STAFF'), staffController.create
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/staffs/:id', requirePermission('MANAGE_STAFF'), staffController.updateStaff);
-router.delete('/staffs/:id', requirePermission('MANAGE_STAFF'), staffController.deleteStaff);
+router.put('/staffs/:id', requirePermission('MANAGE_STAFF'), validateParams(adminIdParamSchema), validate(updateStaffSchema), staffController.updateStaff);
+router.delete('/staffs/:id', requirePermission('MANAGE_STAFF'), validateParams(adminIdParamSchema), staffController.deleteStaff);
 
 /**
  * @swagger
@@ -384,7 +417,7 @@ router.get('/reports', requirePermission('VIEW_REPORTS'), reportController.getSt
  *     responses:
  *       200: { description: Inventory history }
  */
-router.get('/inventory', requirePermission('MANAGE_INVENTORY'), inventoryController.getInventoryHistory);
+router.get('/inventory', requirePermission('MANAGE_INVENTORY'), validateQuery(adminInventoryHistoryQuerySchema), inventoryController.getInventoryHistory);
 
 /**
  * @swagger
@@ -396,7 +429,7 @@ router.get('/inventory', requirePermission('MANAGE_INVENTORY'), inventoryControl
  *     responses:
  *       200: { description: Stock data }
  */
-router.get('/inventory/stock', requirePermission('MANAGE_INVENTORY'), inventoryController.getStocks);
+router.get('/inventory/stock', requirePermission('MANAGE_INVENTORY'), validateQuery(adminInventoryStockQuerySchema), inventoryController.getStocks);
 
 /**
  * @swagger
@@ -408,7 +441,7 @@ router.get('/inventory/stock', requirePermission('MANAGE_INVENTORY'), inventoryC
  *     responses:
  *       200: { description: Stock updated }
  */
-router.post('/inventory/update', requirePermission('MANAGE_INVENTORY'), inventoryController.updateStock);
+router.post('/inventory/update', requirePermission('MANAGE_INVENTORY'), validate(inventoryUpdateSchema), inventoryController.updateStock);
 
 /**
  * @swagger
@@ -420,7 +453,7 @@ router.post('/inventory/update', requirePermission('MANAGE_INVENTORY'), inventor
  *     responses:
  *       200: { description: Orders list }
  */
-router.get('/orders', requirePermission('MANAGE_ORDERS'), adminController.getOrders);
+router.get('/orders', requirePermission('MANAGE_ORDERS'), validateQuery(adminOrderQuerySchema), adminController.getOrders);
 
 /**
  * @swagger
@@ -437,7 +470,7 @@ router.get('/orders', requirePermission('MANAGE_ORDERS'), adminController.getOrd
  *     responses:
  *       200: { description: Order status updated }
  */
-router.put('/orders/:id/status', requirePermission('MANAGE_ORDERS'), adminController.updateOrderStatus);
+router.put('/orders/:id/status', requirePermission('MANAGE_ORDERS'), validateParams(adminIdParamSchema), validate(updateOrderStatusSchema), adminController.updateOrderStatus);
 
 /**
  * @swagger
@@ -454,7 +487,7 @@ router.put('/orders/:id/status', requirePermission('MANAGE_ORDERS'), adminContro
  *     responses:
  *       200: { description: Payment status updated }
  */
-router.put('/orders/:id/payment-status', requirePermission('MANAGE_ORDERS'), adminController.updatePaymentStatus);
+router.put('/orders/:id/payment-status', requirePermission('MANAGE_ORDERS'), validateParams(adminIdParamSchema), validate(updatePaymentStatusSchema), adminController.updatePaymentStatus);
 
 /**
  * @swagger
@@ -466,7 +499,7 @@ router.put('/orders/:id/payment-status', requirePermission('MANAGE_ORDERS'), adm
  *     responses:
  *       200: { description: Customers list }
  */
-router.get('/customers', requirePermission('MANAGE_CUSTOMERS'), adminController.getCustomers);
+router.get('/customers', requirePermission('MANAGE_CUSTOMERS'), validateQuery(adminCustomerQuerySchema), adminController.getCustomers);
 
 /**
  * @swagger
@@ -495,7 +528,7 @@ router.get('/customers/stream', requirePermission('MANAGE_CUSTOMERS'), adminCont
  *     responses:
  *       200: { description: Customer recent orders }
  */
-router.get('/customers/:id/recent-orders', requirePermission('MANAGE_CUSTOMERS'), adminController.getCustomerRecentOrders);
+router.get('/customers/:id/recent-orders', requirePermission('MANAGE_CUSTOMERS'), validateParams(adminIdParamSchema), validateQuery(adminCustomerRecentOrdersQuerySchema), adminController.getCustomerRecentOrders);
 
 /**
  * @swagger
@@ -512,7 +545,7 @@ router.get('/customers/:id/recent-orders', requirePermission('MANAGE_CUSTOMERS')
  *     responses:
  *       200: { description: Customer status updated }
  */
-router.put('/customers/:id/active', requirePermission('MANAGE_CUSTOMERS'), adminController.updateCustomerActive);
+router.put('/customers/:id/active', requirePermission('MANAGE_CUSTOMERS'), validateParams(adminIdParamSchema), validate(booleanToggleSchema), adminController.updateCustomerActive);
 
 /**
  * @swagger
@@ -530,8 +563,8 @@ router.put('/customers/:id/active', requirePermission('MANAGE_CUSTOMERS'), admin
  *     responses:
  *       201: { description: Coupon created }
  */
-router.get('/coupons', requirePermission('MANAGE_COUPONS'), adminController.getCoupons);
-router.post('/coupons', requirePermission('MANAGE_COUPONS'), adminController.createCoupon);
+router.get('/coupons', requirePermission('MANAGE_COUPONS'), validateQuery(adminCouponQuerySchema), adminController.getCoupons);
+router.post('/coupons', requirePermission('MANAGE_COUPONS'), validate(couponSchema), adminController.createCoupon);
 
 /**
  * @swagger
@@ -543,7 +576,7 @@ router.post('/coupons', requirePermission('MANAGE_COUPONS'), adminController.cre
  *     responses:
  *       200: { description: Coupons updated }
  */
-router.post('/coupons/bulk-active', requirePermission('MANAGE_COUPONS'), adminController.bulkUpdateCouponActive);
+router.post('/coupons/bulk-active', requirePermission('MANAGE_COUPONS'), validate(bulkActiveSchema), adminController.bulkUpdateCouponActive);
 
 /**
  * @swagger
@@ -571,8 +604,8 @@ router.post('/coupons/bulk-active', requirePermission('MANAGE_COUPONS'), adminCo
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/coupons/:id', requirePermission('MANAGE_COUPONS'), adminController.updateCoupon);
-router.delete('/coupons/:id', requirePermission('MANAGE_COUPONS'), adminController.deleteCoupon);
+router.put('/coupons/:id', requirePermission('MANAGE_COUPONS'), validateParams(adminIdParamSchema), validate(couponSchema), adminController.updateCoupon);
+router.delete('/coupons/:id', requirePermission('MANAGE_COUPONS'), validateParams(adminIdParamSchema), adminController.deleteCoupon);
 
 /**
  * @swagger
@@ -589,7 +622,7 @@ router.delete('/coupons/:id', requirePermission('MANAGE_COUPONS'), adminControll
  *     responses:
  *       200: { description: Coupon active status updated }
  */
-router.put('/coupons/:id/active', requirePermission('MANAGE_COUPONS'), adminController.updateCouponActive);
+router.put('/coupons/:id/active', requirePermission('MANAGE_COUPONS'), validateParams(adminIdParamSchema), validate(booleanToggleSchema), adminController.updateCouponActive);
 
 /**
  * @swagger
@@ -608,7 +641,7 @@ router.put('/coupons/:id/active', requirePermission('MANAGE_COUPONS'), adminCont
  *       201: { description: Shipping method created }
  */
 router.get('/shipping', requirePermission('MANAGE_SHIPPING'), adminController.getShippingMethods);
-router.post('/shipping', requirePermission('MANAGE_SHIPPING'), adminController.createShippingMethod);
+router.post('/shipping', requirePermission('MANAGE_SHIPPING'), validate(shippingMethodSchema), adminController.createShippingMethod);
 
 /**
  * @swagger
@@ -636,8 +669,8 @@ router.post('/shipping', requirePermission('MANAGE_SHIPPING'), adminController.c
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/shipping/:id', requirePermission('MANAGE_SHIPPING'), adminController.updateShippingMethod);
-router.delete('/shipping/:id', requirePermission('MANAGE_SHIPPING'), adminController.deleteShippingMethod);
+router.put('/shipping/:id', requirePermission('MANAGE_SHIPPING'), validateParams(adminIdParamSchema), validate(shippingMethodSchema), adminController.updateShippingMethod);
+router.delete('/shipping/:id', requirePermission('MANAGE_SHIPPING'), validateParams(adminIdParamSchema), adminController.deleteShippingMethod);
 
 /**
  * @swagger
@@ -655,8 +688,8 @@ router.delete('/shipping/:id', requirePermission('MANAGE_SHIPPING'), adminContro
  *     responses:
  *       201: { description: Blog post created }
  */
-router.get('/blog', requirePermission('MANAGE_BLOG'), adminController.getBlogPosts);
-router.post('/blog', requirePermission('MANAGE_BLOG'), adminController.createBlogPost);
+router.get('/blog', requirePermission('MANAGE_BLOG'), validateQuery(adminListQuerySchema), adminController.getBlogPosts);
+router.post('/blog', requirePermission('MANAGE_BLOG'), validate(blogPostSchema), adminController.createBlogPost);
 
 /**
  * @swagger
@@ -684,8 +717,8 @@ router.post('/blog', requirePermission('MANAGE_BLOG'), adminController.createBlo
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/blog/:id', requirePermission('MANAGE_BLOG'), adminController.updateBlogPost);
-router.delete('/blog/:id', requirePermission('MANAGE_BLOG'), adminController.deleteBlogPost);
+router.put('/blog/:id', requirePermission('MANAGE_BLOG'), validateParams(adminIdParamSchema), validate(blogPostSchema), adminController.updateBlogPost);
+router.delete('/blog/:id', requirePermission('MANAGE_BLOG'), validateParams(adminIdParamSchema), adminController.deleteBlogPost);
 
 /**
  * @swagger
@@ -697,7 +730,7 @@ router.delete('/blog/:id', requirePermission('MANAGE_BLOG'), adminController.del
  *     responses:
  *       200: { description: Reviews list }
  */
-router.get('/reviews', requirePermission('MANAGE_REVIEWS'), reviewController.getAdminReviews);
+router.get('/reviews', requirePermission('MANAGE_REVIEWS'), validateQuery(adminReviewQuerySchema), reviewController.getAdminReviews);
 
 /**
  * @swagger
@@ -709,7 +742,7 @@ router.get('/reviews', requirePermission('MANAGE_REVIEWS'), reviewController.get
  *     responses:
  *       200: { description: Reviews approved }
  */
-router.post('/reviews/bulk-approve', requirePermission('MANAGE_REVIEWS'), reviewController.bulkApproveReviews);
+router.post('/reviews/bulk-approve', requirePermission('MANAGE_REVIEWS'), validate(bulkIdsSchema.extend({ isApproved: reviewApprovalSchema.shape.isApproved })), reviewController.bulkApproveReviews);
 
 /**
  * @swagger
@@ -721,7 +754,7 @@ router.post('/reviews/bulk-approve', requirePermission('MANAGE_REVIEWS'), review
  *     responses:
  *       200: { description: Reviews deleted }
  */
-router.post('/reviews/bulk-delete', requirePermission('MANAGE_REVIEWS'), reviewController.bulkDeleteReviews);
+router.post('/reviews/bulk-delete', requirePermission('MANAGE_REVIEWS'), validate(bulkIdsSchema), reviewController.bulkDeleteReviews);
 
 /**
  * @swagger
@@ -738,7 +771,7 @@ router.post('/reviews/bulk-delete', requirePermission('MANAGE_REVIEWS'), reviewC
  *     responses:
  *       200: { description: Review approved }
  */
-router.put('/reviews/:id/approve', requirePermission('MANAGE_REVIEWS'), reviewController.approveReview);
+router.put('/reviews/:id/approve', requirePermission('MANAGE_REVIEWS'), validateParams(adminIdParamSchema), validate(reviewApprovalSchema), reviewController.approveReview);
 
 /**
  * @swagger
@@ -755,7 +788,7 @@ router.put('/reviews/:id/approve', requirePermission('MANAGE_REVIEWS'), reviewCo
  *     responses:
  *       200: { description: Review deleted }
  */
-router.delete('/reviews/:id', requirePermission('MANAGE_REVIEWS'), reviewController.deleteReview);
+router.delete('/reviews/:id', requirePermission('MANAGE_REVIEWS'), validateParams(adminIdParamSchema), reviewController.deleteReview);
 
 /**
  * @swagger
@@ -774,7 +807,7 @@ router.delete('/reviews/:id', requirePermission('MANAGE_REVIEWS'), reviewControl
  *       201: { description: Banner created }
  */
 router.get('/banners', requirePermission('MANAGE_BANNERS'), bannerController.getAdminBanners);
-router.post('/banners', requirePermission('MANAGE_BANNERS'), bannerController.createBanner);
+router.post('/banners', requirePermission('MANAGE_BANNERS'), validate(bannerSchema), bannerController.createBanner);
 
 /**
  * @swagger
@@ -802,8 +835,8 @@ router.post('/banners', requirePermission('MANAGE_BANNERS'), bannerController.cr
  *     responses:
  *       200: { description: Deleted }
  */
-router.put('/banners/:id', requirePermission('MANAGE_BANNERS'), bannerController.updateBanner);
-router.delete('/banners/:id', requirePermission('MANAGE_BANNERS'), bannerController.deleteBanner);
+router.put('/banners/:id', requirePermission('MANAGE_BANNERS'), validateParams(adminIdParamSchema), validate(updateBannerSchema), bannerController.updateBanner);
+router.delete('/banners/:id', requirePermission('MANAGE_BANNERS'), validateParams(adminIdParamSchema), bannerController.deleteBanner);
 
 /**
  * @swagger
@@ -832,7 +865,7 @@ router.get('/contacts', requirePermission('MANAGE_CONTACTS'), contactController.
  *     responses:
  *       200: { description: Marked as read }
  */
-router.put('/contacts/:id/read', requirePermission('MANAGE_CONTACTS'), contactController.markRead);
+router.put('/contacts/:id/read', requirePermission('MANAGE_CONTACTS'), validateParams(adminIdParamSchema), contactController.markRead);
 
 /**
  * @swagger
@@ -849,7 +882,7 @@ router.put('/contacts/:id/read', requirePermission('MANAGE_CONTACTS'), contactCo
  *     responses:
  *       200: { description: Reply sent }
  */
-router.post('/contacts/:id/reply', requirePermission('MANAGE_CONTACTS'), validate(adminContactReplySchema), contactController.replyMessage);
+router.post('/contacts/:id/reply', requirePermission('MANAGE_CONTACTS'), validateParams(adminIdParamSchema), validate(adminContactReplySchema), contactController.replyMessage);
 
 /**
  * @swagger
@@ -866,6 +899,6 @@ router.post('/contacts/:id/reply', requirePermission('MANAGE_CONTACTS'), validat
  *     responses:
  *       200: { description: Deleted }
  */
-router.delete('/contacts/:id', requirePermission('MANAGE_CONTACTS'), contactController.deleteMessage);
+router.delete('/contacts/:id', requirePermission('MANAGE_CONTACTS'), validateParams(adminIdParamSchema), contactController.deleteMessage);
 
 export default router;

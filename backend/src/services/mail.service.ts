@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { promises as dnsPromises } from 'node:dns';
+import sanitizeHtml from 'sanitize-html';
 import config from '../config/index.js';
 
 let transporter: nodemailer.Transporter | null = null;
@@ -49,9 +50,6 @@ const getTransporter = async (): Promise<nodemailer.Transporter | null> => {
         user: config.smtp.user,
         pass: config.smtp.pass,
       },
-      tls: {
-        rejectUnauthorized: false, // Handle self-signed or untrusted certs
-      },
     } as any);
   }
 
@@ -64,6 +62,25 @@ const getErrorMessage = (error: unknown) => {
   }
   return 'Unknown SMTP error.';
 };
+
+const escapeHtml = (value: string) => sanitizeHtml(value, {
+  allowedTags: [],
+  allowedAttributes: {},
+});
+
+const sanitizeEmailHtml = (value: string) => sanitizeHtml(value, {
+  allowedTags: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'a'],
+  allowedAttributes: {
+    a: ['href', 'target', 'rel'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto'],
+  transformTags: {
+    a: sanitizeHtml.simpleTransform('a', {
+      rel: 'noopener noreferrer',
+      target: '_blank',
+    }, true),
+  },
+});
 
 const sendMailSafely = async (
   label: string,
@@ -120,7 +137,10 @@ export const mailService = {
   },
 
   async sendPasswordReset(email: string, fullName: string, resetUrl: string) {
-    return sendMailSafely('password-reset', `[password-reset] ${email}: ${resetUrl}`, async (activeTransporter) => {
+    const safeFullName = escapeHtml(fullName || 'there');
+    const safeResetUrl = escapeHtml(resetUrl);
+
+    return sendMailSafely('password-reset', `[password-reset] reset link generated for ${email}`, async (activeTransporter) => {
       await activeTransporter.sendMail({
         from: config.smtp.from,
         to: email,
@@ -136,10 +156,10 @@ export const mailService = {
         ].join('\n'),
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-            <p>Hello ${fullName || 'there'},</p>
+            <p>Hello ${safeFullName},</p>
             <p>We received a request to reset your password.</p>
             <p>
-              <a href="${resetUrl}" style="display:inline-block;padding:12px 20px;background:#111827;color:#fff;text-decoration:none;border-radius:4px;">
+              <a href="${safeResetUrl}" style="display:inline-block;padding:12px 20px;background:#111827;color:#fff;text-decoration:none;border-radius:4px;">
                 Reset Password
               </a>
             </p>
@@ -154,10 +174,12 @@ export const mailService = {
   async sendContactReply(email: string, fullName: string, subject: string, message: string) {
     // Strip HTML tags for the plain text version
     const plainText = message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const safeFullName = escapeHtml(fullName || 'there');
+    const safeHtmlMessage = sanitizeEmailHtml(message);
 
     return sendMailSafely(
       'contact-reply',
-      `[contact-reply] ${email} (${fullName || 'customer'}): ${subject}\n${plainText}`,
+      `[contact-reply] reply generated for ${email}`,
       async (activeTransporter) => {
         await activeTransporter.sendMail({
           from: config.smtp.from,
@@ -173,8 +195,8 @@ export const mailService = {
           ].join('\n'),
           html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-              <p>Hello ${fullName || 'there'},</p>
-              <div style="margin: 16px 0;">${message}</div>
+              <p>Hello ${safeFullName},</p>
+              <div style="margin: 16px 0;">${safeHtmlMessage}</div>
               <p>Regards,<br />Support Team</p>
             </div>
           `,
@@ -184,7 +206,10 @@ export const mailService = {
   },
 
   async sendChangePasswordOtp(email: string, fullName: string, otp: string) {
-    return sendMailSafely('change-password-otp', `[change-password-otp] ${email}: ${otp}`, async (activeTransporter) => {
+    const safeFullName = escapeHtml(fullName || 'there');
+    const safeOtp = escapeHtml(otp);
+
+    return sendMailSafely('change-password-otp', `[change-password-otp] OTP generated for ${email}`, async (activeTransporter) => {
       await activeTransporter.sendMail({
         from: config.smtp.from,
         to: email,
@@ -200,9 +225,9 @@ export const mailService = {
         ].join('\n'),
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-            <p>Hello ${fullName || 'there'},</p>
+            <p>Hello ${safeFullName},</p>
             <p>Use the verification code below to confirm your password change request:</p>
-            <p style="font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 16px 0;">${otp}</p>
+            <p style="font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 16px 0;">${safeOtp}</p>
             <p>This OTP expires in 10 minutes.</p>
             <p>If you did not request this action, please secure your account immediately.</p>
           </div>
@@ -212,6 +237,9 @@ export const mailService = {
   },
 
   async sendOrderConfirmation(email: string, fullName: string, orderNumber: string, totalAmount: number) {
+    const safeFullName = escapeHtml(fullName || 'there');
+    const safeOrderNumber = escapeHtml(orderNumber);
+
     return sendMailSafely(
       'order-confirmation',
       `[order-confirmation] ${email}: ${orderNumber}`,
@@ -233,8 +261,8 @@ export const mailService = {
           ].join('\n'),
           html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-              <p>Hello ${fullName || 'there'},</p>
-              <p>Thank you for your order! Your order <strong>#${orderNumber}</strong> has been placed successfully.</p>
+              <p>Hello ${safeFullName},</p>
+              <p>Thank you for your order! Your order <strong>#${safeOrderNumber}</strong> has been placed successfully.</p>
               <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
               <p>We will notify you again once your order is processed and shipped.</p>
               <br/>
