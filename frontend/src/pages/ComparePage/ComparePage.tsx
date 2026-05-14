@@ -1,11 +1,12 @@
 import { useCompareStore } from '../../stores/compareStore';
+import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { X, Star, StarHalf } from 'lucide-react';
+import { ArrowRight, Scale, ShoppingBag, Star, StarHalf, Trash2, X } from 'lucide-react';
 import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import './ComparePage.css';
 
 export default function ComparePage() {
-  const { items, removeFromCompare } = useCompareStore();
+  const { items, removeFromCompare, clearCompare } = useCompareStore();
 
   const renderRating = (rating: number) => {
     const stars = [];
@@ -21,13 +22,78 @@ export default function ComparePage() {
     return stars;
   };
 
+  const compareRows = [
+    {
+      label: 'SKU',
+      render: (item: typeof items[number]) => <span className="compare-muted">{item.sku || 'N/A'}</span>,
+    },
+    {
+      label: 'Rating',
+      render: (item: typeof items[number]) => (
+        <div className="compare-rating" aria-label={`${Number(item.rating || 0).toFixed(1)} out of 5 stars`}>
+          {renderRating(item.rating || 0)}
+          <span>{Number(item.rating || 0).toFixed(1)}</span>
+        </div>
+      ),
+    },
+    {
+      label: 'Price',
+      render: (item: typeof items[number]) => (
+        <div className="compare-price">
+          {item.salePrice ? (
+            <>
+              <span className="old-price">${Number(item.price).toFixed(2)}</span>
+              <span className="new-price">${Number(item.salePrice).toFixed(2)}</span>
+            </>
+          ) : (
+            <span className="new-price">${Number(item.price).toFixed(2)}</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      label: 'Stock',
+      render: (item: typeof items[number]) => (
+        item.stock > 0 ? (
+          <span className="compare-stock is-in">{item.stock} in stock</span>
+        ) : (
+          <span className="compare-stock is-out">Out of stock</span>
+        )
+      ),
+    },
+    {
+      label: 'Action',
+      render: (item: typeof items[number]) => (
+        <Link
+          className={`compare-select-btn${item.stock <= 0 ? ' is-disabled' : ''}`}
+          to={`/product/${item.slug}`}
+          aria-disabled={item.stock <= 0}
+          onClick={(event) => {
+            if (item.stock <= 0) {
+              event.preventDefault();
+            }
+          }}
+        >
+          Select Options
+          <ArrowRight size={14} />
+        </Link>
+      ),
+    },
+  ];
+
   if (items.length === 0) {
     return (
       <div className="compare-page container">
-        <h1 className="page-title">Compare</h1>
-        <div className="empty-compare">
-          <p>No products added in the compare list. You must add some products to compare them.</p>
-          <Link to="/" className="btn-continue">GO TO SHOP</Link>
+        <div className="compare-empty">
+          <div className="compare-empty-icon">
+            <Scale size={28} strokeWidth={1.6} />
+          </div>
+          <h1>Compare Products</h1>
+          <p>Add products to compare price, rating, stock, and key details side by side.</p>
+          <Link to="/category/all" className="compare-primary-link">
+            Start Shopping
+            <ArrowRight size={15} />
+          </Link>
         </div>
       </div>
     );
@@ -35,124 +101,55 @@ export default function ComparePage() {
 
   return (
     <div className="compare-page container">
-      <h1 className="page-title">Compare</h1>
-      
-      <div className="compare-table-wrapper">
-        <table className="compare-table">
-          <tbody>
-            {/* Remove Row */}
-            <tr className="compare-row remove-row">
-              <th className="compare-header"></th>
-              {items.map(item => (
-                <td key={`remove-${item.id}`} className="compare-item">
-                  <button className="remove-btn" onClick={() => removeFromCompare(item.id)}>
-                    <X size={14} /> Remove
-                  </button>
-                </td>
-              ))}
-            </tr>
+      <header className="compare-hero">
+        <div>
+          <h1>Compare Products</h1>
+          <p>{items.length} product{items.length > 1 ? 's' : ''} selected for side-by-side review.</p>
+        </div>
+        <div className="compare-hero-actions">
+          <Link to="/category/all" className="compare-secondary-link">
+            <ShoppingBag size={15} />
+            Add More
+          </Link>
+          <button className="compare-clear-btn" type="button" onClick={clearCompare}>
+            <Trash2 size={15} />
+            Clear All
+          </button>
+        </div>
+      </header>
 
-            {/* Image Row */}
-            <tr className="compare-row image-row">
-              <th className="compare-header">Image</th>
-              {items.map(item => (
-                <td key={`image-${item.id}`} className="compare-item">
-                  <Link to={`/product/${item.slug}`} className="compare-image-link">
-                    <img src={resolveSiteAssetUrl(item.image)} alt={item.name} className="compare-image" />
-                  </Link>
-                </td>
-              ))}
-            </tr>
+      <div className="compare-board" style={{ '--compare-columns': items.length } as CSSProperties}>
+        <div className="compare-board-scroll">
+          <div className="compare-products-row">
+            <div className="compare-feature-label">Products</div>
+            {items.map(item => (
+              <article key={item.id} className="compare-product-card">
+                <button className="compare-remove-icon" type="button" aria-label={`Remove ${item.name}`} onClick={() => removeFromCompare(item.id)}>
+                  <X size={15} />
+                </button>
+                <Link to={`/product/${item.slug}`} className="compare-image-link">
+                  <img src={resolveSiteAssetUrl(item.image)} alt={item.name} className="compare-image" />
+                </Link>
+                <Link to={`/product/${item.slug}`} className="compare-product-name">
+                  {item.name}
+                </Link>
+              </article>
+            ))}
+          </div>
 
-            {/* Name Row */}
-            <tr className="compare-row title-row">
-              <th className="compare-header">Name</th>
-              {items.map(item => (
-                <td key={`name-${item.id}`} className="compare-item">
-                  <Link to={`/product/${item.slug}`} className="compare-product-name">
-                    {item.name}
-                  </Link>
-                </td>
-              ))}
-            </tr>
-
-            {/* SKU Row */}
-            <tr className="compare-row sku-row">
-              <th className="compare-header">SKU</th>
-              {items.map(item => (
-                <td key={`sku-${item.id}`} className="compare-item">
-                  <span className="compare-sku">{item.sku || 'N/A'}</span>
-                </td>
-              ))}
-            </tr>
-
-            {/* Rating Row */}
-            <tr className="compare-row rating-row">
-              <th className="compare-header">Rating</th>
-              {items.map(item => (
-                <td key={`rating-${item.id}`} className="compare-item">
-                  <div className="compare-rating">
-                    {renderRating(item.rating || 0)}
+          <div className="compare-spec-list">
+            {compareRows.map((row) => (
+              <div key={row.label} className="compare-spec-row">
+                <div className="compare-feature-label">{row.label}</div>
+                {items.map(item => (
+                  <div key={`${row.label}-${item.id}`} className="compare-spec-cell">
+                    {row.render(item)}
                   </div>
-                </td>
-              ))}
-            </tr>
-
-            {/* Price Row */}
-            <tr className="compare-row price-row">
-              <th className="compare-header">Price</th>
-              {items.map(item => (
-                <td key={`price-${item.id}`} className="compare-item">
-                  <div className="compare-price">
-                    {item.salePrice ? (
-                      <>
-                        <span className="old-price">${Number(item.price).toFixed(2)}</span>
-                        <span className="new-price">${Number(item.salePrice).toFixed(2)}</span>
-                      </>
-                    ) : (
-                      <span className="new-price">${Number(item.price).toFixed(2)}</span>
-                    )}
-                  </div>
-                </td>
-              ))}
-            </tr>
-
-            {/* Stock Row */}
-            <tr className="compare-row stock-row">
-              <th className="compare-header">Stock</th>
-              {items.map(item => (
-                <td key={`stock-${item.id}`} className="compare-item">
-                  {item.stock > 0 ? (
-                    <span className="stock-in">{item.stock} in stock</span>
-                  ) : (
-                    <span className="stock-out">Out of stock</span>
-                  )}
-                </td>
-              ))}
-            </tr>
-
-            {/* Action Row */}
-            <tr className="compare-row action-row">
-              <th className="compare-header"></th>
-              {items.map(item => (
-                <td key={`action-${item.id}`} className="compare-item">
-                  <Link
-                    className="add-to-cart-btn"
-                    to={`/product/${item.slug}`}
-                    aria-disabled={item.stock <= 0}
-                    onClick={(event) => {
-                      if (item.stock <= 0) {
-                        event.preventDefault();
-                      }
-                    }}
-                  >
-                    Select Options
-                  </Link>
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

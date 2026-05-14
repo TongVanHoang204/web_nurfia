@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { User, Package, Heart, MapPin, LogOut, ShieldCheck } from 'lucide-react';
+import { CalendarDays, CreditCard, Eye, Heart, LogOut, MapPin, Package, PackageCheck, RefreshCw, ShieldCheck, User, XCircle } from 'lucide-react';
 import api from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import { useWishlistStore } from '../../stores/wishlistStore';
@@ -16,6 +16,21 @@ const getPaymentLabel = (method: string) => {
 };
 
 const canCancelOrder = (order: any) => ['PENDING', 'CONFIRMED'].includes(order.status) && order.paymentStatus !== 'PAID';
+
+const orderSteps = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED'];
+
+const getOrderStepIndex = (status: string) => {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'CANCELLED') return -1;
+  const index = orderSteps.indexOf(normalized);
+  return index >= 0 ? index : 0;
+};
+
+const formatOrderDate = (value: string) => new Date(value).toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
 
 export default function AccountPage() {
   const { user, logout, isAuthenticated, isHydrating } = useAuthStore();
@@ -297,33 +312,75 @@ export function OrdersSection() {
   if (isLoading) return <div className="loading-page"><div className="spinner" /></div>;
 
   return (
-    <div>
-      <h2 className="account-section-title">Order History</h2>
-      {orders.length === 0 ? <p className="no-data">No orders yet.</p> : (
+    <div className="account-orders-section">
+      <div className="account-orders-head">
+        <div>
+          <h2 className="account-section-title">Order History</h2>
+          <p>Track recent purchases, payment status, and reorder saved items from one place.</p>
+        </div>
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="orders-empty-state">
+          <div className="orders-empty-icon">
+            <PackageCheck size={30} strokeWidth={1.6} />
+          </div>
+          <h3>No orders yet</h3>
+          <p>Your order history will appear here after checkout.</p>
+          <Link to="/category/all" className="btn btn-primary">Start Shopping</Link>
+        </div>
+      ) : (
         <div className="orders-list">
-          {orders.map((order) => (
-            <div key={order.id} className="order-card">
+          {orders.map((order) => {
+            const statusStepIndex = getOrderStepIndex(order.status);
+            const isCancelled = String(order.status).toUpperCase() === 'CANCELLED';
+            const orderItems = Array.isArray(order.items) ? order.items : [];
+            const visibleItems = orderItems.slice(0, 3);
+            const remainingItems = Math.max(0, orderItems.length - visibleItems.length);
+
+            return (
+            <article key={order.id} className="order-card">
               <div className="order-card-header">
                 <div>
-                  <strong>#{order.orderNumber}</strong>
+                  <span className="order-label">Order</span>
+                  <strong className="order-number">#{order.orderNumber}</strong>
                   <span className={`order-status status-${String(order.status).toLowerCase()}`}>{order.status}</span>
                 </div>
                 <div className="order-card-actions">
-                  <span className="order-date">{new Date(order.createdAt).toLocaleDateString()}</span>
-                  <Link to={`/order-confirmation/${order.id}`} className="btn btn-outline btn-view-order">View Order</Link>
+                  <span className="order-date"><CalendarDays size={14} /> {formatOrderDate(order.createdAt)}</span>
+                  <Link to={`/order-confirmation/${order.id}`} className="btn btn-outline btn-view-order"><Eye size={14} /> View Details</Link>
                 </div>
               </div>
+              <div className={`order-progress ${isCancelled ? 'is-cancelled' : ''}`}>
+                {isCancelled ? (
+                  <div className="order-cancelled-note">
+                    <XCircle size={16} />
+                    This order has been cancelled.
+                  </div>
+                ) : (
+                  orderSteps.map((step, index) => (
+                    <div key={step} className={`order-progress-step${index <= statusStepIndex ? ' is-complete' : ''}`}>
+                      <span>{index + 1}</span>
+                      <small>{step.toLowerCase()}</small>
+                    </div>
+                  ))
+                )}
+              </div>
               <div className="order-card-items">
-                {order.items.map((item: any) => (
+                {visibleItems.map((item: any) => (
                   <div key={item.id} className="order-item-row">
-                    <span>{item.productName} × {item.quantity}</span>
-                    <span>${Number(item.totalPrice).toFixed(2)}</span>
+                    <span>{item.productName}</span>
+                    <small>Qty {item.quantity}</small>
+                    <strong>${Number(item.totalPrice).toFixed(2)}</strong>
                   </div>
                 ))}
+                {remainingItems > 0 && (
+                  <div className="order-more-items">+ {remainingItems} more item{remainingItems > 1 ? 's' : ''}</div>
+                )}
               </div>
               <div className="order-card-footer">
-                <span>Total: <strong>${Number(order.totalAmount).toFixed(2)}</strong></span>
-                <span>Payment: {getPaymentLabel(order.paymentMethod)}</span>
+                <span><CreditCard size={14} /> {getPaymentLabel(order.paymentMethod)}</span>
+                <span className="order-total">Total <strong>${Number(order.totalAmount).toFixed(2)}</strong></span>
               </div>
               <div className="order-card-cta-row">
                 {canCancelOrder(order) && (
@@ -333,6 +390,7 @@ export function OrdersSection() {
                     disabled={activeOrderId === order.id}
                     onClick={() => handleCancelOrder(order.id)}
                   >
+                    <XCircle size={14} />
                     {activeOrderId === order.id ? 'Cancelling...' : 'Cancel Order'}
                   </button>
                 )}
@@ -342,11 +400,13 @@ export function OrdersSection() {
                   disabled={activeOrderId === order.id}
                   onClick={() => handleReorder(order.id)}
                 >
+                  <RefreshCw size={14} />
                   {activeOrderId === order.id ? 'Working...' : 'Buy Again'}
                 </button>
               </div>
-            </div>
-          ))}
+            </article>
+          );
+          })}
         </div>
       )}
     </div>
