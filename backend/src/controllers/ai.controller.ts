@@ -5,6 +5,79 @@ import { AuthRequest } from '../middlewares/auth.js';
 
 const FORBIDDEN_FORMAT_RESPONSE = 'I cannot answer using JSON, code, tables, or lists, and I cannot print full cart, order, or customer data. I can summarize briefly in plain sentences and help you choose the next shopping step.';
 
+type AdminGenerateTarget =
+  | 'PRODUCT_SHORT_DESCRIPTION'
+  | 'PRODUCT_FULL_DESCRIPTION'
+  | 'BLOG_EXCERPT'
+  | 'BLOG_CONTENT'
+  | 'POPUP_MESSAGE';
+
+const adminTargetInstructions: Record<AdminGenerateTarget, { label: string; format: 'plain' | 'html'; maxTokens: number; instruction: string }> = {
+  PRODUCT_SHORT_DESCRIPTION: {
+    label: 'Product short description',
+    format: 'plain',
+    maxTokens: 180,
+    instruction: 'Write a concise fashion ecommerce product short description in 1-2 polished sentences. Mention useful selling points without hype.',
+  },
+  PRODUCT_FULL_DESCRIPTION: {
+    label: 'Product full description',
+    format: 'html',
+    maxTokens: 700,
+    instruction: 'Write a complete fashion ecommerce product description with 3-5 short paragraphs. Include styling, material/feel if inferable, fit/use case, and care/value notes without inventing exact specs.',
+  },
+  BLOG_EXCERPT: {
+    label: 'Blog excerpt',
+    format: 'html',
+    maxTokens: 180,
+    instruction: 'Write a short editorial blog excerpt in 1 concise paragraph that previews the article and encourages reading.',
+  },
+  BLOG_CONTENT: {
+    label: 'Blog content',
+    format: 'html',
+    maxTokens: 1200,
+    instruction: 'Write a polished ecommerce fashion blog article. Use a short intro, useful section headings, concise paragraphs, and practical styling or shopping advice.',
+  },
+  POPUP_MESSAGE: {
+    label: 'Homepage popup message',
+    format: 'plain',
+    maxTokens: 120,
+    instruction: 'Write a clear homepage popup message in 1-2 short sentences. Match the popup title/type, keep it promotional or announcement-focused, and avoid an offer code unless provided.',
+  },
+};
+
+const stripHtml = (value: string) => value
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/&nbsp;/gi, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const cleanContextValue = (value: unknown) => {
+  if (value === null || value === undefined) return '';
+  const raw = typeof value === 'string' ? value : JSON.stringify(value);
+  return stripHtml(String(raw))
+    .replace(/[\r\n`\[\]{}]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 800);
+};
+
+const buildAdminContext = (context: Record<string, unknown>) => Object.entries(context)
+  .map(([key, value]) => {
+    const cleanValue = cleanContextValue(value);
+    return cleanValue ? `${key}: ${cleanValue}` : '';
+  })
+  .filter(Boolean)
+  .join('\n');
+
+const extractAiText = (result: any) => String(result?.choices?.[0]?.message?.content || '').trim();
+
+const getAiConfig = () => {
+  const apiKey = process.env.OPENROUTER_API_KEY || process.env.NVIDIA_API_KEY;
+  const apiUrl = process.env.OPENROUTER_API_URL || process.env.NVIDIA_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
+  const model = process.env.OPENROUTER_MODEL || process.env.NVIDIA_MODEL || 'google/gemini-2.5-flash-free';
+  return { apiKey, apiUrl, model };
+};
+
 const asksForForbiddenFormat = (message: string) => {
   const normalized = message.toLowerCase();
 
@@ -71,9 +144,7 @@ export const aiController = {
         return;
       }
 
-      const apiKey = process.env.OPENROUTER_API_KEY || process.env.NVIDIA_API_KEY;
-      const apiUrl = process.env.OPENROUTER_API_URL || process.env.NVIDIA_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
-      const model = process.env.OPENROUTER_MODEL || process.env.NVIDIA_MODEL || 'google/gemini-2.5-flash-free'; 
+      const { apiKey, apiUrl, model } = getAiConfig();
 
       if (!apiKey) {
         throw new AppError('AI Service is not configured properly.', 500);
@@ -252,6 +323,103 @@ FORMATTING:
       res.json({
         success: true,
         data: aiResponse
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  generateAdminContent: async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const { target, context, prompt } = req.body as { target: AdminGenerateTarget; context: Record<string, unknown>; prompt?: string };
+      const targetConfig = adminTargetInstructions[target];
+
+      if (!targetConfig) {
+        throw new AppError('Unsupported AI generator target.', 400);
+      }
+
+      const { apiKey, apiUrl, model } = getAiConfig();
+      if (!apiKey) {
+        throw new AppError('AI Service is not configured properly.', 500);
+      }
+
+      const contextText = buildAdminContext(context || {});
+      const customPrompt = cleanContextValue(prompt || '');
+      const formatInstruction = targetConfig.format === 'html'
+        ? 'Return only a clean HTML fragment using allowed tags such as <p>, <h2>, <h3>, <strong>, <em>, <ul>, <ol>, and <li>. Do not wrap it in Markdown or code fences.'
+        : 'Return only plain text. Do not include Markdown, bullets, numbering, labels, JSON, or code fences.';
+
+      const messages = [
+        {
+          role: 'system',
+          content: `You generate admin content for Nurfia, a premium fashion ecommerce store.
+Write commercially useful, polished English copy that can be pasted directly into an admin form.
+Do not invent exact material, dimensions, discounts, legal claims, stock status, shipping promises, or medical/body claims unless they are present in the context.
+Keep the tone refined, clear, and concise.
+${formatInstruction}`,
+        },
+        {
+          role: 'user',
+          content: `${targetConfig.label}
+
+Instruction:
+${targetConfig.instruction}
+
+Admin prompt:
+${customPrompt || 'No extra prompt. Use the default instruction above.'}
+
+Available context:
+${contextText || 'No context provided. Use a neutral fashion ecommerce tone.'}`,
+        },
+      ];
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          max_tokens: targetConfig.maxTokens,
+          temperature: 0.65,
+          top_p: 0.9,
+          stream: false,
+        }),
+      }).finally(() => clearTimeout(timeout));
+
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        console.error('[Admin AI Parse Error]', responseText);
+        throw new AppError('AI service returned an invalid response.', 500);
+      }
+
+      if (!response.ok) {
+        console.error('[Admin AI Error]', result);
+        throw new AppError(result.error?.message || 'AI service is currently unavailable.', response.status);
+      }
+
+      let text = extractAiText(result);
+      text = text.replace(/^```(?:html|text)?/i, '').replace(/```$/i, '').trim();
+      if (!text) {
+        throw new AppError('AI service returned an empty response.', 502);
+      }
+
+      res.json({
+        success: true,
+        data: {
+          target,
+          format: targetConfig.format,
+          text,
+        },
       });
     } catch (err) {
       next(err);

@@ -204,35 +204,6 @@
   object-position: center;
 }
 
-.admin-popups-notice-preview {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--color-border);
-  background: #fafafa;
-  color: var(--color-text);
-}
-
-.admin-popups-notice-preview svg {
-  flex: 0 0 auto;
-}
-
-.admin-popups-notice-preview div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.admin-popups-notice-preview strong {
-  font-size: 13px;
-}
-
-.admin-popups-notice-preview span {
-  font-size: 12px;
-  color: var(--color-text-light);
-}
-
 .admin-popups-switches {
   display: flex;
   align-items: center;

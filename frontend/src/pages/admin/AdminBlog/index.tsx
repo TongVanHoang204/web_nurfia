@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, CheckCircle, XCircle, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
+import AdminAiGeneratorButton from '../../../components/AdminAiGeneratorButton/AdminAiGeneratorButton';
 import { getImageUrl } from '../../../utils/url';
 import './AdminBlog.css';
 
@@ -126,6 +127,15 @@ export default function AdminBlog() {
     }
   };
 
+  const blogAiContext = {
+    title: form.title,
+    slug: form.slug,
+    category: form.category,
+    author: form.author,
+    excerpt: form.excerpt,
+    content: form.content,
+  };
+
   return (
     <div className="admin-blog-page">
       <div className="admin-page-header">
@@ -240,7 +250,15 @@ export default function AdminBlog() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="excerpt">Excerpt</label>
+                <div className="admin-ai-field-header">
+                  <label htmlFor="excerpt">Excerpt</label>
+                  <AdminAiGeneratorButton
+                    target="BLOG_EXCERPT"
+                    context={blogAiContext}
+                    onGenerated={(text) => setForm((prev) => ({ ...prev, excerpt: text }))}
+                    disabled={!form.title.trim()}
+                  />
+                </div>
                 <WordEditor
                   id="excerpt"
                   ariaLabel="Excerpt"
@@ -252,7 +270,15 @@ export default function AdminBlog() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="content">Content</label>
+                <div className="admin-ai-field-header">
+                  <label htmlFor="content">Content</label>
+                  <AdminAiGeneratorButton
+                    target="BLOG_CONTENT"
+                    context={blogAiContext}
+                    onGenerated={(text) => setForm((prev) => ({ ...prev, content: text }))}
+                    disabled={!form.title.trim()}
+                  />
+                </div>
                 <WordEditor
                   id="content"
                   ariaLabel="Content"

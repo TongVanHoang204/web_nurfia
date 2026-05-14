@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, Search, Zap, ChevronDown, ChevronUp, Upload } f
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
+import AdminAiGeneratorButton from '../../../components/AdminAiGeneratorButton/AdminAiGeneratorButton';
 import { getImageUrl } from '../../../utils/url';
 import './AdminProducts.css';
 
@@ -494,6 +495,19 @@ export default function AdminProducts() {
     } catch { addToast('Delete failed', 'error'); }
   };
 
+  const selectedCategory = categories.find((category: any) => String(category.id) === String(formData.categoryId));
+  const selectedBrand = brands.find((brand: any) => String(brand.id) === String(formData.brandId));
+  const productAiContext = {
+    name: formData.name,
+    sku: formData.sku,
+    price: formData.price,
+    salePrice: formData.salePrice,
+    category: selectedCategory?.name || '',
+    brand: selectedBrand?.name || '',
+    shortDescription: formData.shortDescription,
+    fullDescription: formData.description,
+  };
+
   return (
     <div className="admin-products-page">
       <header className="admin-products-header">
@@ -641,12 +655,28 @@ export default function AdminProducts() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="product-short-desc">Short Description</label>
+                <div className="admin-ai-field-header">
+                  <label htmlFor="product-short-desc">Short Description</label>
+                  <AdminAiGeneratorButton
+                    target="PRODUCT_SHORT_DESCRIPTION"
+                    context={productAiContext}
+                    onGenerated={(text) => setFormData({ ...formData, shortDescription: text })}
+                    disabled={!formData.name.trim()}
+                  />
+                </div>
                 <textarea id="product-short-desc" rows={3} value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} placeholder="Brief summary of the product..." title="Short Description" />
               </div>
 
               <div className="admin-form-group">
-                <label>Full Description</label>
+                <div className="admin-ai-field-header">
+                  <label>Full Description</label>
+                  <AdminAiGeneratorButton
+                    target="PRODUCT_FULL_DESCRIPTION"
+                    context={productAiContext}
+                    onGenerated={(text) => setFormData({ ...formData, description: text })}
+                    disabled={!formData.name.trim()}
+                  />
+                </div>
                 <WordEditor value={formData.description} onChange={v => setFormData({...formData, description: v})} />
               </div>
 

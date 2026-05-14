@@ -3,6 +3,7 @@ import { Bell, Edit2, Megaphone, Plus, Trash2, Upload, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
+import AdminAiGeneratorButton from '../../../components/AdminAiGeneratorButton/AdminAiGeneratorButton';
 import './AdminPopups.css';
 
 interface HomePopup {
@@ -174,6 +175,16 @@ export default function AdminPopups() {
     });
   };
 
+  const popupAiContext = {
+    popupType: formData.popupType,
+    title: formData.title,
+    subtitle: formData.subtitle,
+    currentMessage: formData.message,
+    offerCode: formData.offerCode,
+    buttonText: formData.buttonText,
+    linkUrl: formData.linkUrl,
+  };
+
   return (
     <div className="admin-popups-page">
       <div className="admin-page-header">
@@ -273,7 +284,15 @@ export default function AdminPopups() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="popup-message">Message</label>
+                <div className="admin-ai-field-header">
+                  <label htmlFor="popup-message">Message</label>
+                  <AdminAiGeneratorButton
+                    target="POPUP_MESSAGE"
+                    context={popupAiContext}
+                    onGenerated={(text) => setFormData({ ...formData, message: text })}
+                    disabled={!formData.title.trim()}
+                  />
+                </div>
                 <textarea id="popup-message" rows={4} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} />
               </div>
 
@@ -298,16 +317,6 @@ export default function AdminPopups() {
                   </div>
                 )}
               </div>
-
-              {formData.popupType === 'NOTICE' && (
-                <div className="admin-popups-notice-preview">
-                  <Bell size={20} />
-                  <div>
-                    <strong>Notification layout</strong>
-                    <span>This popup uses a centered announcement design and does not display an offer code.</span>
-                  </div>
-                </div>
-              )}
 
               <div className="admin-form-row">
                 {formData.popupType === 'OFFER' && (
