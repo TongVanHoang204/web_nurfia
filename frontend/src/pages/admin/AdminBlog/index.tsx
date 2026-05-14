@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, CheckCircle, XCircle, X } from 'lucide-react';
+import { Plus, Edit, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
 import AdminAiGeneratorButton from '../../../components/AdminAiGeneratorButton/AdminAiGeneratorButton';
+import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import { getImageUrl } from '../../../utils/url';
 import './AdminBlog.css';
 
@@ -30,6 +31,7 @@ export default function AdminBlog() {
   const [editingPost, setEditingPost] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { addToast } = useUIStore();
+  const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
   const [form, setForm] = useState({
     title: '', slug: '', excerpt: '', content: '', image: '', author: '', category: '', isPublished: true
@@ -116,14 +118,20 @@ export default function AdminBlog() {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        await api.delete(`/admin/blog/${id}`);
-        addToast('Blog post deleted', 'success');
-        fetchPosts(pagination.page);
-      } catch (err) {
-        addToast('Failed to delete post', 'error');
-      }
+    const shouldDelete = await confirm({
+      title: 'Delete blog post',
+      message: 'This post will be permanently removed and cannot be recovered.',
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
+
+    try {
+      await api.delete(`/admin/blog/${id}`);
+      addToast('Blog post deleted', 'success');
+      fetchPosts(pagination.page);
+    } catch (err) {
+      addToast('Failed to delete post', 'error');
     }
   };
 
@@ -151,7 +159,7 @@ export default function AdminBlog() {
           <div className="admin-blog-empty">No blog posts found.</div>
         ) : (
           <div className="admin-blog-table-wrap">
-            <table className="admin-table">
+            <table className="admin-table admin-blog-table">
               <thead>
                 <tr>
                   <th className="admin-blog-th-image">Image</th>
@@ -165,18 +173,22 @@ export default function AdminBlog() {
               <tbody>
                 {posts.map(post => (
                   <tr key={post.id}>
-                    <td>
+                    <td className="admin-blog-image-cell">
                       {post.image ? <img src={getImageUrl(post.image)} alt="Blog thumbnail" className="admin-blog-img" /> : <div className="admin-blog-img-placeholder" />}
                     </td>
-                    <td>
+                    <td className="admin-blog-title-cell">
                       <div className="admin-blog-title">{post.title}</div>
                       <div className="admin-blog-slug">/{post.slug}</div>
                     </td>
-                    <td>{post.category || 'â€”'}</td>
                     <td>
-                      {post.isPublished ? <CheckCircle size={18} color="#10b981" /> : <XCircle size={18} color="#ef4444" />}
+                      <span className="admin-blog-category">{post.category || 'Uncategorized'}</span>
                     </td>
-                    <td>{new Date(post.publishedAt).toLocaleDateString()}</td>
+                    <td>
+                      <span className={`admin-blog-status-badge ${post.isPublished ? 'is-published' : 'is-draft'}`}>
+                        {post.isPublished ? 'Published' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="admin-blog-date">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Not scheduled'}</td>
                     <td className="text-right">
                       <div className="admin-table-actions admin-blog-actions">
                         <button className="admin-action-btn" title="Edit" aria-label="Edit" onClick={() => openModal(post)}><Edit size={16} /></button>
@@ -277,6 +289,8 @@ export default function AdminBlog() {
                     context={blogAiContext}
                     onGenerated={(text) => setForm((prev) => ({ ...prev, content: text }))}
                     disabled={!form.title.trim()}
+                    showPrompt
+                    promptPlaceholder="Topic angle, outline, tone..."
                   />
                 </div>
                 <WordEditor
@@ -304,6 +318,8 @@ export default function AdminBlog() {
           </div>
         </div>
       )}
+
+      {confirmDialog}
     </div>
   );
 }

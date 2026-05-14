@@ -94,11 +94,11 @@ const activeDateWhere = () => {
 export const popupController = {
   getActiveHomePopup: async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const popup = await prisma.homePopup.findFirst({
+      const popups = await prisma.homePopup.findMany({
         where: activeDateWhere(),
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
       });
-      res.json({ success: true, data: popup });
+      res.json({ success: true, data: popups });
     } catch (err) { next(err); }
   },
 

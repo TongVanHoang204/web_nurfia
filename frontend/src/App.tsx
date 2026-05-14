@@ -6,6 +6,7 @@ import CartDrawer from './components/CartDrawer/CartDrawer';
 import ToastContainer from './components/Toast/ToastContainer';
 import ConfirmModal from './components/ConfirmModal/ConfirmModal';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
+import PageLoader from './components/PageLoader/PageLoader';
 import { useAuthStore } from './stores/authStore';
 import { useCartStore } from './stores/cartStore';
 import { useCompareStore } from './stores/compareStore';
@@ -55,10 +56,6 @@ const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications')
 
 // Account sub-pages
 import AccountPage, { ProfileSection, OrdersSection, WishlistSection, AddressesSection } from './pages/AccountPage/AccountPage';
-
-function PageLoader() {
-  return <div className="loading-page"><div className="spinner" /></div>;
-}
 
 function StoreLayout() {
   const location = useLocation();

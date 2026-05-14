@@ -8,6 +8,8 @@ import {
   MoreVertical,
   Settings,
   ShoppingBag,
+  Sparkles,
+  Target,
   TrendingUp,
   Users,
 } from 'lucide-react';
@@ -27,9 +29,10 @@ import {
 } from 'recharts';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
+import PageLoader from '../../../components/PageLoader/PageLoader';
 import './AdminReports.css';
 
-const COLORS = ['#8b5cf6', '#0ea5e9', '#10b981', '#f43f5e', '#f59e0b', '#6366f1'];
+const COLORS = ['#c8a97e', '#000000', '#2e8b57', '#c41e3a', '#666666', '#999999'];
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pending',
@@ -210,7 +213,7 @@ const createPresetRange = (days: number) => {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'VND',
+    currency: 'USD',
     minimumFractionDigits: 0,
   }).format(value || 0);
 
@@ -352,7 +355,7 @@ function MetricCard({
                   fill={`url(#${gradientId})`}
                   fillOpacity={1}
                   dot={false}
-                  activeDot={{ r: 4, strokeWidth: 2, stroke: '#fff', fill: gradient[0] }}
+                  activeDot={{ r: 4, strokeWidth: 2, stroke: '#ffffff', fill: gradient[0] }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -581,13 +584,71 @@ export default function AdminReports() {
   const conversionRate = Math.min(100, Math.max(0, Number(data.goals.conversionRate || 0)));
   const isCustomRangeActive = filters.mode === 'custom';
   const todayInput = toInputDate(new Date());
+  const aiInsights = useMemo(() => {
+    const bestRevenueDay = [...data.trafficSeries].sort((left, right) => Number(right.revenue || 0) - Number(left.revenue || 0))[0];
+    const topProduct = data.topProducts[0];
+    const topCategory = data.salesByCategory[0];
+    const cancelledOrders = data.statusDistribution.find((item) => item.status === 'CANCELLED')?.value || 0;
+    const totalTrackedStatuses = data.statusDistribution.reduce((sum, item) => sum + Number(item.value || 0), 0);
+    const cancelledRate = totalTrackedStatuses > 0 ? (cancelledOrders / totalTrackedStatuses) * 100 : 0;
+    const revenueTrend = Number(data.kpis.netRevenue.trend || 0);
+    const ordersGap = Math.max(ordersTarget - Number(data.goals.orders.current || 0), 0);
+
+    const headline = revenueTrend >= 0
+      ? `Revenue is trending up ${revenueTrend.toFixed(1)}% for this range.`
+      : `Revenue is down ${Math.abs(revenueTrend).toFixed(1)}% for this range.`;
+
+    return [
+      {
+        label: 'Performance read',
+        title: headline,
+        detail: `Average revenue is ${formatCurrency(averageRevenuePerDay)} per day across ${formatNumber(data.overview.orders)} orders.`,
+        tone: revenueTrend >= 0 ? 'positive' : 'warning',
+      },
+      {
+        label: 'Best opportunity',
+        title: topProduct ? `${topProduct.name} is leading product revenue.` : 'No leading product yet.',
+        detail: topProduct
+          ? `${formatNumber(topProduct.units)} units sold, generating ${formatCurrency(topProduct.revenue)}. Consider featuring it in campaigns.`
+          : 'Add more completed orders to unlock product-level insight.',
+        tone: 'neutral',
+      },
+      {
+        label: 'Category signal',
+        title: topCategory ? `${topCategory.name} is the strongest category.` : 'Category sales are not available yet.',
+        detail: topCategory
+          ? `${formatCurrency(topCategory.revenue)} revenue from ${formatNumber(topCategory.units)} units. Review stock and merchandising for this category.`
+          : 'Category insight will appear when order items include category data.',
+        tone: 'neutral',
+      },
+      {
+        label: 'Action focus',
+        title: revenueProgress >= 80 ? 'Revenue goal is close to completion.' : 'Revenue goal needs more lift.',
+        detail: `${revenueProgress}% revenue target reached. ${ordersGap > 0 ? `${formatNumber(ordersGap)} orders remain toward the order goal.` : 'Order goal is already on track.'}`,
+        tone: revenueProgress >= 80 ? 'positive' : 'warning',
+      },
+      {
+        label: 'Risk watch',
+        title: cancelledRate > 12 ? 'Cancellation rate needs attention.' : 'Order risk looks controlled.',
+        detail: `${cancelledRate.toFixed(1)}% of tracked orders are cancelled.${bestRevenueDay ? ` Best revenue day: ${toChartDateFull(bestRevenueDay.date)}.` : ''}`,
+        tone: cancelledRate > 12 ? 'danger' : 'positive',
+      },
+    ];
+  }, [
+    averageRevenuePerDay,
+    data.goals.orders.current,
+    data.kpis.netRevenue.trend,
+    data.overview.orders,
+    data.salesByCategory,
+    data.statusDistribution,
+    data.topProducts,
+    data.trafficSeries,
+    ordersTarget,
+    revenueProgress,
+  ]);
 
   if (loading) {
-    return (
-      <div className="reports-analytics-loading">
-        <Activity className="reports-analytics-loading-icon" />
-      </div>
-    );
+    return <PageLoader fullScreen={false} />;
   }
 
   return (
@@ -654,6 +715,33 @@ export default function AdminReports() {
         </div>
       </div>
 
+      <section className="reports-analytics-ai-panel">
+        <div className="reports-analytics-ai-head">
+          <div>
+            <span className="reports-analytics-ai-badge">
+              <Sparkles size={14} />
+              AI Insight
+            </span>
+            <h2>Business recommendations</h2>
+            <p>Auto-generated from the selected report range.</p>
+          </div>
+          <div className="reports-analytics-ai-score">
+            <Target size={16} />
+            <span>{revenueProgress}% revenue goal</span>
+          </div>
+        </div>
+
+        <div className="reports-analytics-ai-grid">
+          {aiInsights.map((insight) => (
+            <article key={insight.label} className={`reports-analytics-ai-card ${insight.tone}`}>
+              <span>{insight.label}</span>
+              <h3>{insight.title}</h3>
+              <p>{insight.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <div className="reports-analytics-kpi-grid">
         <div className="reports-analytics-kpi-main">
           <MetricCard
@@ -662,7 +750,7 @@ export default function AdminReports() {
             icon={FileText}
             trend={summary.trends.newCustomers}
             iconClass="blue"
-            gradient={['#3b82f6', '#93c5fd']}
+            gradient={['#c8a97e', '#eadcc9']}
             sparklineData={sparklineSeries.subscriptions}
             gradientId="analytics-gradient-subscriptions"
           />
@@ -672,7 +760,7 @@ export default function AdminReports() {
             icon={Users}
             trend={summary.trends.activeCustomers}
             iconClass="violet"
-            gradient={['#8b5cf6', '#c4b5fd']}
+            gradient={['#000000', '#999999']}
             sparklineData={sparklineSeries.activeCustomers}
             gradientId="analytics-gradient-active-customers"
           />
@@ -682,7 +770,7 @@ export default function AdminReports() {
             icon={TrendingUp}
             trend={summary.trends.revenue}
             iconClass="emerald"
-            gradient={['#10b981', '#6ee7b7']}
+            gradient={['#2e8b57', '#a8d9bd']}
             sparklineData={sparklineSeries.revenue}
             gradientId="analytics-gradient-revenue"
           />
@@ -748,22 +836,22 @@ export default function AdminReports() {
               <AreaChart data={revenueDataList} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
                 <defs>
                   <linearGradient id="analytics-revenue-main-gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity={0.28} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#c8a97e" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="#c8a97e" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
                 <XAxis
                   dataKey="date"
                   tickFormatter={(str) => toChartDate(String(str))}
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tick={{ fontSize: 11, fill: '#999999' }}
                   axisLine={false}
                   tickLine={false}
                   dy={10}
                   minTickGap={24}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tick={{ fontSize: 11, fill: '#999999' }}
                   tickFormatter={(val) => `${Number(val) >= 1000000 ? `${(Number(val) / 1000000).toFixed(0)}M` : val}`}
                   axisLine={false}
                   tickLine={false}
@@ -780,11 +868,11 @@ export default function AdminReports() {
                   type="monotone"
                   dataKey="revenue"
                   name="revenue"
-                  stroke="#6366f1"
+                  stroke="#c8a97e"
                   fill="url(#analytics-revenue-main-gradient)"
                   strokeWidth={3}
                   dot={false}
-                  activeDot={{ r: 5, strokeWidth: 0, fill: '#6366f1' }}
+                  activeDot={{ r: 5, strokeWidth: 0, fill: '#c8a97e' }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -807,15 +895,15 @@ export default function AdminReports() {
           <div className="reports-analytics-chart chart-lg">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={charts.categories} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tick={{ fontSize: 11, fill: '#999999' }}
                   axisLine={false}
                   tickLine={false}
                   dy={10}
                 />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#999999' }} axisLine={false} tickLine={false} />
                 <RechartsTooltip
                   formatter={(value) => [formatCurrency(Number(value || 0)), 'Revenue']}
                   content={<CustomTooltip />}
@@ -928,17 +1016,17 @@ export default function AdminReports() {
           <div className="reports-analytics-chart chart-xl">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueDataList} margin={{ top: 20, right: 0, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
                 <XAxis
                   dataKey="date"
                   tickFormatter={(str) => toChartDate(String(str))}
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tick={{ fontSize: 11, fill: '#999999' }}
                   axisLine={false}
                   tickLine={false}
                   dy={10}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tick={{ fontSize: 11, fill: '#999999' }}
                   tickFormatter={(val) =>
                     activeTab === 'Income'
                       ? `${Number(val) >= 1000000 ? `${(Number(val) / 1000000).toFixed(0)}M` : val}`
@@ -956,7 +1044,7 @@ export default function AdminReports() {
                 />
                 <Bar
                   dataKey={activeTab === 'Income' ? 'revenue' : 'orders'}
-                  fill={activeTab === 'Income' ? '#8b5cf6' : '#0ea5e9'}
+                  fill={activeTab === 'Income' ? '#c8a97e' : '#000000'}
                   radius={[8, 8, 8, 8]}
                   barSize={12}
                 />

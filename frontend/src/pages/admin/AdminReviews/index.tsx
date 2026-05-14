@@ -4,6 +4,7 @@ import { Check, Eye, Filter, Search, Star, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
+import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import './AdminReviews.css';
 
 type ReviewUser = {
@@ -101,6 +102,7 @@ export default function AdminReviews() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [selectedReview, setSelectedReview] = useState<AdminReview | null>(null);
   const { addToast } = useUIStore();
+  const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
   const fetchReviews = async (page = 1, keyword = search) => {
     setIsLoading(true);
@@ -186,7 +188,13 @@ export default function AdminReviews() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this review?')) return;
+    const shouldDelete = await confirm({
+      title: 'Delete review',
+      message: 'This review will be permanently removed and cannot be recovered.',
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
     try {
       await api.delete(`/admin/reviews/${id}`);
       addToast('Review deleted successfully', 'success');
@@ -239,9 +247,13 @@ export default function AdminReviews() {
       return;
     }
 
-    if (!confirm(`Delete ${selectedIds.length} selected review(s)? This action cannot be undone.`)) {
-      return;
-    }
+    const shouldDelete = await confirm({
+      title: 'Delete selected reviews',
+      message: `${selectedIds.length} selected review(s) will be permanently removed and cannot be recovered.`,
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
 
     setIsBulkLoading(true);
     try {
@@ -560,6 +572,7 @@ export default function AdminReviews() {
           </div>
         </div>
       )}
+      {confirmDialog}
     </div>
   );
 }

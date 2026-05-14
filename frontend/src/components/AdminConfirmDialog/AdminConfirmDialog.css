@@ -1,0 +1,82 @@
+.admin-confirm-overlay {
+  z-index: 9500;
+}
+
+.admin-confirm-dialog {
+  max-width: 460px;
+}
+
+.admin-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 32px 0;
+}
+
+.admin-confirm-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  color: var(--color-black);
+  background: var(--color-bg-alt);
+}
+
+.admin-confirm-icon.is-danger {
+  color: var(--color-error);
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.admin-confirm-body {
+  padding: 18px 32px 24px;
+}
+
+.admin-confirm-body h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--color-black);
+  line-height: 1.15;
+}
+
+.admin-confirm-body p {
+  margin: 10px 0 0;
+  color: var(--color-text-light);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.admin-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 32px 28px;
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .admin-confirm-dialog {
+    max-width: 100%;
+  }
+
+  .admin-confirm-header,
+  .admin-confirm-body,
+  .admin-confirm-actions {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .admin-confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-confirm-actions .admin-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}

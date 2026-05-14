@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -80,6 +80,8 @@ export default function HomePage() {
   const [activeTab1, setActiveTab1] = useState<'women' | 'dresses' | 'men' | 'tshirts'>('women');
   const [activeTab2, setActiveTab2] = useState<'featured' | 'new' | 'bestsellers'>('new');
   const [isLoading, setIsLoading] = useState(true);
+  const [homePopups, setHomePopups] = useState<HomePopup[]>([]);
+  const [activePopupIndex, setActivePopupIndex] = useState(0);
   const [activePopup, setActivePopup] = useState<HomePopup | null>(null);
   const [showPromoPopup, setShowPromoPopup] = useState(false);
   const [promoImageFailed, setPromoImageFailed] = useState(false);
@@ -143,13 +145,16 @@ export default function HomePage() {
     const fetchHomePopup = async () => {
       try {
         const { data } = await api.get('/popups/homepage');
-        const popup = data.data as HomePopup | null;
+        const payload = data.data as HomePopup[] | HomePopup | null;
+        const popups = (Array.isArray(payload) ? payload : payload ? [payload] : [])
+          .filter((popup) => !(popup.showOnceSession && sessionStorage.getItem(`${HOME_PROMO_POPUP_KEY}_${popup.id}`) === 'true'));
+        const popup = popups[0];
         if (!isMounted || !popup) return;
 
+        setHomePopups(popups);
+        setActivePopupIndex(0);
         setActivePopup(popup);
         setPromoImageFailed(false);
-        const storageKey = `${HOME_PROMO_POPUP_KEY}_${popup.id}`;
-        if (popup.showOnceSession && sessionStorage.getItem(storageKey) === 'true') return;
 
         timer = window.setTimeout(() => {
           if (isMounted) setShowPromoPopup(true);
@@ -171,6 +176,18 @@ export default function HomePage() {
     if (activePopup?.showOnceSession) {
       sessionStorage.setItem(`${HOME_PROMO_POPUP_KEY}_${activePopup.id}`, 'true');
     }
+    const nextPopupIndex = activePopupIndex + 1;
+    const nextPopup = homePopups[nextPopupIndex] || null;
+
+    if (nextPopup) {
+      setShowPromoPopup(false);
+      setActivePopupIndex(nextPopupIndex);
+      setActivePopup(nextPopup);
+      setPromoImageFailed(false);
+      window.setTimeout(() => setShowPromoPopup(true), 160);
+      return;
+    }
+
     setShowPromoPopup(false);
   };
 
@@ -215,11 +232,6 @@ export default function HomePage() {
               </div>
             )}
             <div className="home-promo-content">
-              {activePopupType === 'NOTICE' && (
-                <div className="home-promo-notice-icon" aria-hidden="true">
-                  <Bell size={22} strokeWidth={1.8} />
-                </div>
-              )}
               {activePopup.subtitle && <span className="home-promo-kicker">{activePopup.subtitle}</span>}
               <h2 id="home-promo-title" className="home-promo-title">{activePopup.title}</h2>
               {activePopup.message && <p className="home-promo-text">{activePopup.message}</p>}

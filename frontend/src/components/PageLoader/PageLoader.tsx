@@ -13,6 +13,7 @@ export default function PageLoader({ fullScreen = true }: PageLoaderProps) {
           src="/assets/running-cat.lottie"
           loop
           autoplay
+          className="running-cat-loader"
         />
       </div>
     </div>

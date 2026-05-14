@@ -4,6 +4,7 @@ import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
 import AdminAiGeneratorButton from '../../../components/AdminAiGeneratorButton/AdminAiGeneratorButton';
+import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import { getImageUrl } from '../../../utils/url';
 import './AdminProducts.css';
 
@@ -16,6 +17,7 @@ export default function AdminProducts() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const { addToast } = useUIStore();
+  const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,7 +51,13 @@ export default function AdminProducts() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return addToast('Please select at least one product to delete', 'error');
-    if (!confirm(`Delete ${selectedIds.length} selected products?`)) return;
+    const shouldDelete = await confirm({
+      title: 'Delete selected products',
+      message: `${selectedIds.length} selected product(s) will be permanently removed.`,
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
     
     try {
       await Promise.all(selectedIds.map(id => api.delete(`/admin/products/${id}`)));
@@ -487,7 +495,13 @@ export default function AdminProducts() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this product?')) return;
+    const shouldDelete = await confirm({
+      title: 'Delete product',
+      message: 'This product will be permanently removed from the catalog.',
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
     try {
       await api.delete(`/admin/products/${id}`);
       addToast('Deleted', 'success');
@@ -675,6 +689,8 @@ export default function AdminProducts() {
                     context={productAiContext}
                     onGenerated={(text) => setFormData({ ...formData, description: text })}
                     disabled={!formData.name.trim()}
+                    showPrompt
+                    promptPlaceholder="Tone, details, SEO keywords..."
                   />
                 </div>
                 <WordEditor value={formData.description} onChange={v => setFormData({...formData, description: v})} />
@@ -856,6 +872,7 @@ export default function AdminProducts() {
           </div>
         </div>
       )}
+      {confirmDialog}
     </div>
   );
 }

@@ -10,32 +10,59 @@
   margin-bottom: 0;
 }
 
+.admin-ai-generator {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
 .admin-ai-generate-control {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) auto;
   gap: 8px;
   align-items: center;
   min-width: 0;
 }
 
+.admin-ai-generate-control.has-prompt {
+  grid-template-columns: minmax(220px, 1fr) auto;
+}
+
+.admin-ai-generate-control.no-prompt {
+  grid-template-columns: auto;
+  justify-content: flex-end;
+}
+
 .admin-ai-prompt-input {
   width: 100%;
-  height: 32px;
+  height: 36px;
   min-width: 0;
-  padding: 0 10px;
+  padding: 0 12px;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: #fafafa;
   color: var(--color-text);
-  font-size: 12px;
+  font-size: 13px;
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-ai-prompt-input:focus {
+  outline: none;
+  border-color: var(--color-black);
+  background: var(--color-white);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.admin-ai-prompt-input::placeholder {
+  color: var(--color-text-muted);
 }
 
 .admin-ai-generate-button {
-  height: 32px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 1px solid var(--color-border);
   background: var(--color-white);
   color: var(--color-black);
@@ -59,6 +86,22 @@
   opacity: 0.55;
 }
 
+.admin-ai-helper {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.admin-ai-helper svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--color-accent);
+}
+
 @media (max-width: 768px) {
   .admin-ai-field-header {
     grid-template-columns: 1fr;
@@ -67,5 +110,14 @@
 
   .admin-ai-generate-control {
     grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .admin-ai-generate-control.no-prompt {
+    justify-content: stretch;
+  }
+
+  .admin-ai-generate-button {
+    width: 100%;
   }
 }

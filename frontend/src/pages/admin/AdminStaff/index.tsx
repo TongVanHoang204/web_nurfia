@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Check, Filter, Pencil, Plus, Search, Shield, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
+import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import './AdminStaff.css';
 
 const PERMISSION_OPTIONS = [
@@ -160,6 +161,7 @@ export default function AdminStaff() {
   });
 
   const { addToast } = useUIStore();
+  const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
   const fetchStaffs = (
     page = 1,
@@ -274,13 +276,40 @@ export default function AdminStaff() {
        addToast('Cannot delete an ADMIN account', 'error');
        return;
     }
-    if (!window.confirm('Delete this staff member?')) return;
+    const shouldDelete = await confirm({
+      title: 'Delete staff account',
+      message: 'This staff account will be permanently removed.',
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
     try {
       await api.delete(`/admin/staffs/${id}`);
       addToast('Deleted', 'success');
       fetchStaffs(pagination.page);
     } catch (err: any) {
       addToast(err.response?.data?.message || 'Deletion failed', 'error');
+    }
+  };
+
+  const handleToggleActive = async (staff: StaffMember) => {
+    const nextActive = !staff.isActive;
+    if (!nextActive) {
+      const shouldDisable = await confirm({
+        title: 'Disable staff account',
+        message: 'This staff member will no longer be able to access the admin area until re-enabled.',
+        confirmText: 'Disable',
+        tone: 'danger',
+      });
+      if (!shouldDisable) return;
+    }
+
+    try {
+      await api.put(`/admin/staffs/${staff.id}`, { isActive: nextActive });
+      addToast(`Account ${nextActive ? 'activated' : 'deactivated'}`, 'success');
+      fetchStaffs(pagination.page);
+    } catch (error: any) {
+      addToast(error.response?.data?.message || 'Failed to update account status', 'error');
     }
   };
 
@@ -533,10 +562,7 @@ export default function AdminStaff() {
                         className="admin-btn admin-btn-outline admin-btn-sm"
                         disabled={isAdminAccount}
                         title={isAdminAccount ? 'Admin accounts are read-only in this screen' : undefined}
-                        onClick={() => api.put(`/admin/staffs/${staff.id}`, { isActive: !staff.isActive }).then(() => {
-                          addToast(`Account ${!staff.isActive ? 'activated' : 'deactivated'}`, 'success');
-                          fetchStaffs(pagination.page);
-                        }).catch((error: any) => addToast(error.response?.data?.message || 'Failed to update account status', 'error'))}
+                        onClick={() => handleToggleActive(staff)}
                       >
                         {staff.isActive ? <><X size={13} /> Disable</> : <><Check size={13} /> Enable</>}
                       </button>
@@ -697,6 +723,7 @@ export default function AdminStaff() {
           </div>
         </div>
       )}
+      {confirmDialog}
     </div>
   );
 }

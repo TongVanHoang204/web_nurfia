@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap } from 'lucide-react';
+import { Info, Zap } from 'lucide-react';
 import api from '../../api/client';
 import { useUIStore } from '../../stores/uiStore';
 import './AdminAiGeneratorButton.css';
@@ -16,6 +16,8 @@ type AdminAiGeneratorButtonProps = {
   context: Record<string, unknown>;
   onGenerated: (text: string) => void;
   disabled?: boolean;
+  showPrompt?: boolean;
+  promptPlaceholder?: string;
 };
 
 export default function AdminAiGeneratorButton({
@@ -23,6 +25,8 @@ export default function AdminAiGeneratorButton({
   context,
   onGenerated,
   disabled = false,
+  showPrompt = false,
+  promptPlaceholder = 'Add direction for AI...',
 }: AdminAiGeneratorButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [prompt, setPrompt] = useState('');
@@ -51,25 +55,37 @@ export default function AdminAiGeneratorButton({
   };
 
   return (
-    <div className="admin-ai-generate-control">
-      <input
-        type="text"
-        className="admin-ai-prompt-input"
-        value={prompt}
-        onChange={(event) => setPrompt(event.target.value)}
-        placeholder="Prompt for AI..."
-        aria-label="Prompt for AI generation"
-        disabled={disabled || isGenerating}
-      />
-      <button
-        type="button"
-        className="admin-ai-generate-button"
-        onClick={handleGenerate}
-        disabled={disabled || isGenerating}
-      >
-        <Zap size={13} />
-        {isGenerating ? 'Generating...' : 'AI Generate'}
-      </button>
+    <div className="admin-ai-generator">
+      <div className={`admin-ai-generate-control${showPrompt ? ' has-prompt' : ' no-prompt'}`}>
+        {showPrompt && (
+          <input
+            type="text"
+            className="admin-ai-prompt-input"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            placeholder={promptPlaceholder}
+            aria-label="Prompt for AI generation"
+            disabled={disabled || isGenerating}
+          />
+        )}
+        <button
+          type="button"
+          className="admin-ai-generate-button"
+          onClick={handleGenerate}
+          disabled={disabled || isGenerating}
+        >
+          <Zap size={13} />
+          {isGenerating ? 'Generating...' : 'AI Generate'}
+        </button>
+      </div>
+      <p className="admin-ai-helper">
+        <Info size={12} />
+        <span>
+          {showPrompt
+            ? 'Optional prompt refines long content. AI also uses the current form values.'
+            : 'AI uses the current form values. Fill the main title first.'}
+        </span>
+      </p>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { CheckCircle, Mail, MailOpen, Reply, Search, Trash2, X } from 'lucide-re
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
+import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import './AdminContacts.css';
 
 type ContactMessage = {
@@ -33,6 +34,23 @@ type StatusFilter = 'ALL' | 'READ' | 'UNREAD';
 
 const PAGE_LIMIT = 12;
 
+const getPageNumbers = (current: number, total: number) => {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
+
+  const pages: number[] = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+
+  if (start > 2) pages.push(-1);
+  for (let page = start; page <= end; page += 1) {
+    pages.push(page);
+  }
+  if (end < total - 1) pages.push(-2);
+  pages.push(total);
+
+  return pages;
+};
+
 const formatDate = (value: string) => new Date(value).toLocaleString('en-US', {
   month: 'short',
   day: 'numeric',
@@ -55,10 +73,12 @@ export default function AdminContacts() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isReplying, setIsReplying] = useState(false);
   const [replyForm, setReplyForm] = useState({ subject: '', message: '' });
   const { addToast } = useUIStore();
+  const { confirm, dialog: confirmDialog } = useAdminConfirm();
 
   const fetchMessages = async (page = 1, keyword = search, status = statusFilter) => {
     try {
@@ -73,6 +93,7 @@ export default function AdminContacts() {
       setMessages(data.data || []);
       setPagination(data.pagination || { page: 1, limit: PAGE_LIMIT, total: 0, totalPages: 1 });
       setStats(data.stats || { totalUnread: 0, totalRead: 0, filteredTotal: 0 });
+      setSelectedIds([]);
     } catch {
       addToast('Failed to load messages', 'error');
     } finally {
@@ -109,18 +130,70 @@ export default function AdminContacts() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Delete this message? It cannot be recovered.')) return;
+    const shouldDelete = await confirm({
+      title: 'Delete message',
+      message: 'This message will be permanently removed and cannot be recovered.',
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
 
     try {
       await api.delete(`/admin/contacts/${id}`);
       addToast('Message deleted', 'success');
       const targetPage = pagination.page > 1 && messages.length === 1 ? pagination.page - 1 : pagination.page;
       fetchMessages(targetPage);
+      setSelectedIds((current) => current.filter((messageId) => messageId !== id));
       if (selectedMessage?.id === id) {
         setSelectedMessage(null);
       }
     } catch {
       addToast('Failed to delete message', 'error');
+    }
+  };
+
+  const toggleSelected = (messageId: number) => {
+    setSelectedIds((current) => current.includes(messageId)
+      ? current.filter((id) => id !== messageId)
+      : [...current, messageId]);
+  };
+
+  const toggleSelectAllVisible = () => {
+    const currentPageIds = messages.map((message) => message.id);
+    const allSelected = currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
+
+    if (allSelected) {
+      setSelectedIds((current) => current.filter((id) => !currentPageIds.includes(id)));
+      return;
+    }
+
+    setSelectedIds((current) => Array.from(new Set([...current, ...currentPageIds])));
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) {
+      addToast('Please select at least one message', 'info');
+      return;
+    }
+
+    const shouldDelete = await confirm({
+      title: 'Delete selected messages',
+      message: `${selectedIds.length} selected message(s) will be permanently removed and cannot be recovered.`,
+      confirmText: 'Delete',
+      tone: 'danger',
+    });
+    if (!shouldDelete) return;
+
+    try {
+      await Promise.all(selectedIds.map((id) => api.delete(`/admin/contacts/${id}`)));
+      addToast('Selected messages deleted', 'success');
+      setSelectedMessage((current) => (current && selectedIds.includes(current.id) ? null : current));
+      const remainingOnPage = messages.filter((message) => !selectedIds.includes(message.id)).length;
+      const targetPage = pagination.page > 1 && remainingOnPage === 0 ? pagination.page - 1 : pagination.page;
+      setSelectedIds([]);
+      fetchMessages(targetPage);
+    } catch {
+      addToast('Failed to delete selected messages', 'error');
     }
   };
 
@@ -160,6 +233,8 @@ export default function AdminContacts() {
   };
 
   const totalPages = useMemo(() => Math.max(1, pagination.totalPages || 1), [pagination.totalPages]);
+  const pageNumbers = useMemo(() => getPageNumbers(pagination.page, totalPages), [pagination.page, totalPages]);
+  const allVisibleSelected = messages.length > 0 && messages.every((message) => selectedIds.includes(message.id));
 
   return (
     <div className="contacts-admin-page">
@@ -217,45 +292,79 @@ export default function AdminContacts() {
         ) : messages.length === 0 ? (
           <p className="contacts-empty-state">No contact messages found for this filter set.</p>
         ) : (
-          <div className="contacts-list">
-            {messages.map((message) => (
-              <article key={message.id} className={`contacts-row-card ${message.isRead ? '' : 'is-unread'}`}>
-                <div className="contacts-row-main">
-                  <div className="contacts-sender">
-                    <strong>{message.name}</strong>
-                    <span>{message.email}</span>
-                  </div>
+          <>
+            <div className="contacts-bulk-bar">
+              <label className="contacts-select-all">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={toggleSelectAllVisible}
+                  aria-label="Select all visible messages"
+                />
+                <span>{selectedIds.length > 0 ? `${selectedIds.length} selected` : 'Select all'}</span>
+              </label>
 
-                  <div className="contacts-message">
-                    <strong>{message.subject}</strong>
-                    <p>{message.message || 'No message body provided.'}</p>
-                  </div>
+              <button
+                type="button"
+                className="admin-btn admin-btn-danger admin-btn-sm"
+                onClick={handleBulkDelete}
+                disabled={selectedIds.length === 0}
+              >
+                <Trash2 size={13} /> Delete Selected
+              </button>
+            </div>
 
-                  <div className="contacts-meta">
-                    <span className={`contacts-status-pill ${message.isRead ? '' : 'is-unread'}`}>
-                      {message.isRead ? <MailOpen size={14} /> : <Mail size={14} />}
-                      {message.isRead ? 'Read' : 'Unread'}
-                    </span>
-                    <span>{formatDate(message.createdAt)}</span>
-                  </div>
-                </div>
+            <div className="contacts-list">
+              {messages.map((message) => (
+                <article key={message.id} className={`contacts-row-card ${message.isRead ? '' : 'is-unread'} ${selectedIds.includes(message.id) ? 'is-selected' : ''}`}>
+                  <label className="contacts-row-check">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(message.id)}
+                      onChange={() => toggleSelected(message.id)}
+                      aria-label={`Select message from ${message.name}`}
+                    />
+                  </label>
 
-                <div className="contacts-row-actions">
-                  {!message.isRead && (
-                    <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => handleMarkRead(message.id)}>
-                      <CheckCircle size={14} /> Mark Read
-                    </button>
-                  )}
-                  <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openReplyModal(message)}>
-                    <Reply size={14} /> Reply
-                  </button>
-                  <button type="button" className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(message.id)}>
-                    <Trash2 size={14} /> Delete
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+                  <div className="contacts-row-content">
+                    <div className="contacts-row-main">
+                      <div className="contacts-sender">
+                        <strong>{message.name}</strong>
+                        <span>{message.email}</span>
+                      </div>
+
+                      <div className="contacts-message">
+                        <strong>{message.subject}</strong>
+                        <p>{message.message || 'No message body provided.'}</p>
+                      </div>
+
+                      <div className="contacts-meta">
+                        <span className={`contacts-status-pill ${message.isRead ? '' : 'is-unread'}`}>
+                          {message.isRead ? <MailOpen size={14} /> : <Mail size={14} />}
+                          {message.isRead ? 'Read' : 'Unread'}
+                        </span>
+                        <span>{formatDate(message.createdAt)}</span>
+                      </div>
+                    </div>
+
+                    <div className="contacts-row-actions">
+                      {!message.isRead && (
+                        <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => handleMarkRead(message.id)}>
+                          <CheckCircle size={14} /> Mark Read
+                        </button>
+                      )}
+                      <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openReplyModal(message)}>
+                        <Reply size={14} /> Reply
+                      </button>
+                      <button type="button" className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(message.id)}>
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
         )}
 
         {pagination.total > 0 && (
@@ -267,6 +376,18 @@ export default function AdminContacts() {
               <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={pagination.page <= 1} onClick={() => fetchMessages(pagination.page - 1)}>
                 Previous
               </button>
+              {pageNumbers.map((page, index) => page < 0 ? (
+                <span key={`ellipsis-${index}`} className="contacts-page-ellipsis">...</span>
+              ) : (
+                <button
+                  key={page}
+                  type="button"
+                  className={`contacts-page-btn ${page === pagination.page ? 'is-active' : ''}`}
+                  onClick={() => fetchMessages(page)}
+                >
+                  {page}
+                </button>
+              ))}
               <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={pagination.page >= totalPages} onClick={() => fetchMessages(pagination.page + 1)}>
                 Next
               </button>
@@ -326,6 +447,8 @@ export default function AdminContacts() {
           </div>
         </div>
       )}
+
+      {confirmDialog}
     </div>
   );
 }

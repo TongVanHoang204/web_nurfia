@@ -72,9 +72,41 @@
   gap: 14px;
 }
 
+.contacts-bulk-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.contacts-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.contacts-select-all input,
+.contacts-row-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-black);
+  cursor: pointer;
+}
+
 .contacts-row-card {
   display: grid;
-  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
   padding: 18px;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 18px;
@@ -84,6 +116,21 @@
 .contacts-row-card.is-unread {
   border-color: rgba(245, 158, 11, 0.35);
   box-shadow: 0 14px 38px rgba(245, 158, 11, 0.08);
+}
+
+.contacts-row-card.is-selected {
+  border-color: var(--color-black);
+  background: #fdfaf5;
+}
+
+.contacts-row-check {
+  padding-top: 4px;
+}
+
+.contacts-row-content {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
 }
 
 .contacts-row-main {
@@ -172,6 +219,42 @@
 .contacts-pagination-actions {
   display: flex;
   gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.contacts-page-btn {
+  min-width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.contacts-page-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.contacts-page-btn.is-active {
+  border-color: var(--color-black);
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.contacts-page-ellipsis {
+  min-width: 24px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-weight: 700;
 }
 
 .contacts-reply-modal {
@@ -257,6 +340,31 @@
 @media (max-width: 640px) {
   .contacts-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .contacts-bulk-bar {
+    align-items: stretch;
+  }
+
+  .contacts-bulk-bar .admin-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .contacts-row-card {
+    grid-template-columns: 1fr;
+  }
+
+  .contacts-row-check {
+    padding-top: 0;
+  }
+
+  .contacts-pagination {
+    align-items: stretch;
+  }
+
+  .contacts-pagination-actions {
+    justify-content: flex-start;
   }
 
   .contacts-reply-form {

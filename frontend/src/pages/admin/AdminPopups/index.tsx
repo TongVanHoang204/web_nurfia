@@ -190,7 +190,6 @@ export default function AdminPopups() {
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Homepage Popups</h1>
-          <p className="admin-popups-subtitle">Manage homepage announcement and offer popups without editing code.</p>
         </div>
         <button onClick={openAddModal} className="admin-btn admin-btn-primary">
           <Plus size={16} /> Add Popup
