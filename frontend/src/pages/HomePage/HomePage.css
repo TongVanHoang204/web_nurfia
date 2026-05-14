@@ -74,6 +74,45 @@
   border-color: var(--color-black);
 }
 
+.home-promo-navigation {
+  position: absolute;
+  right: 64px;
+  bottom: 28px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--color-border);
+}
+
+.home-promo-navigation button {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-black);
+  transition: all var(--transition-fast);
+}
+
+.home-promo-navigation button:hover {
+  background: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.home-promo-navigation span {
+  min-width: 42px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 .home-promo-image {
   height: 100%;
   min-height: 560px;
@@ -175,6 +214,28 @@
 
 .home-promo-cta {
   width: fit-content;
+}
+
+.home-promo-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 30px;
+}
+
+.home-promo-dots button {
+  width: 28px;
+  height: 2px;
+  padding: 0;
+  border: 0;
+  background: var(--color-border);
+  transition: background var(--transition-fast), width var(--transition-fast);
+}
+
+.home-promo-dots button.is-active,
+.home-promo-dots button:hover {
+  width: 42px;
+  background: var(--color-black);
 }
 
 .home-promo-panel-notice .home-promo-cta {
@@ -887,6 +948,12 @@
 
   .home-promo-title {
     font-size: 32px;
+  }
+
+  .home-promo-navigation {
+    right: 70px;
+    bottom: auto;
+    top: 14px;
   }
 
   .home-promo-panel-notice .home-promo-title {

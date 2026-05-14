@@ -33,19 +33,23 @@ const getTransporter = async (): Promise<nodemailer.Transporter | null> => {
   }
 
   if (!transporter) {
+    const timeoutMs = config.smtp.connectionTimeout;
+
     transporter = nodemailer.createTransport({
       host: resolvedSmtpHost,
       port: config.smtp.port,
-      secure: config.smtp.port === 465,
-      pool: {
-        maxConnections: 5,
-        maxMessages: 100,
-        rateDelta: 2000,
-        rateLimit: 20, // ms between messages
+      secure: config.smtp.secure || config.smtp.port === 465,
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      rateDelta: 2000,
+      rateLimit: 20,
+      connectionTimeout: timeoutMs,
+      greetingTimeout: timeoutMs,
+      socketTimeout: timeoutMs,
+      tls: {
+        servername: config.smtp.host,
       },
-      connectionTimeout: 30000, // 30s timeout (was 10s, Render needs more time)
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
       auth: {
         user: config.smtp.user,
         pass: config.smtp.pass,
@@ -108,6 +112,7 @@ const sendMailSafely = async (
       console.info(`[mail:${label}] Delivered successfully${messageId ? `: ${messageId}` : ''}`);
       return { delivered: true };
     } catch (error) {
+      transporter = null;
       lastError = error;
       const message = getErrorMessage(error);
       console.warn(`[mail:${label}] Attempt ${attempt + 1}/${maxRetries + 1} failed: ${message}`);

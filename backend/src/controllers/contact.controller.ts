@@ -218,10 +218,17 @@ export const contactController = {
         subject,
         messageBody,
       );
+      const repliedAt = new Date();
 
       await prisma.contactMessage.update({
         where: { id: message.id },
-        data: { isRead: true },
+        data: {
+          isRead: true,
+          replySubject: subject,
+          replyMessage: messageBody,
+          replyDelivered: mailResult.delivered,
+          repliedAt,
+        },
       });
 
       if (req.userId) {
@@ -240,6 +247,9 @@ export const contactController = {
           : mailResult.error || 'Mail delivery failed. The action was logged but the email was not sent.',
         data: {
           delivered: mailResult.delivered,
+          replySubject: subject,
+          replyMessage: messageBody,
+          repliedAt: repliedAt.toISOString(),
         },
       });
     } catch (err) { next(err); }

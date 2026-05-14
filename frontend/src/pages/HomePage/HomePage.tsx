@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -176,19 +176,21 @@ export default function HomePage() {
     if (activePopup?.showOnceSession) {
       sessionStorage.setItem(`${HOME_PROMO_POPUP_KEY}_${activePopup.id}`, 'true');
     }
-    const nextPopupIndex = activePopupIndex + 1;
-    const nextPopup = homePopups[nextPopupIndex] || null;
-
-    if (nextPopup) {
-      setShowPromoPopup(false);
-      setActivePopupIndex(nextPopupIndex);
-      setActivePopup(nextPopup);
-      setPromoImageFailed(false);
-      window.setTimeout(() => setShowPromoPopup(true), 160);
-      return;
-    }
 
     setShowPromoPopup(false);
+  };
+
+  const goToPromoPopup = (direction: 'previous' | 'next') => {
+    if (homePopups.length <= 1) return;
+
+    const nextIndex = direction === 'next'
+      ? (activePopupIndex + 1) % homePopups.length
+      : (activePopupIndex - 1 + homePopups.length) % homePopups.length;
+    const nextPopup = homePopups[nextIndex];
+
+    setActivePopupIndex(nextIndex);
+    setActivePopup(nextPopup);
+    setPromoImageFailed(false);
   };
 
   const getProductsForTab1 = (tab: 'women' | 'dresses' | 'men' | 'tshirts') => {
@@ -222,6 +224,17 @@ export default function HomePage() {
             <button className="home-promo-close" type="button" aria-label="Close promotion popup" onClick={closePromoPopup}>
               <X size={18} strokeWidth={1.8} />
             </button>
+            {homePopups.length > 1 && (
+              <div className="home-promo-navigation" aria-label="Homepage popup navigation">
+                <button type="button" aria-label="Previous popup" onClick={() => goToPromoPopup('previous')}>
+                  <ChevronLeft size={18} strokeWidth={1.8} />
+                </button>
+                <span>{activePopupIndex + 1} / {homePopups.length}</span>
+                <button type="button" aria-label="Next popup" onClick={() => goToPromoPopup('next')}>
+                  <ChevronRight size={18} strokeWidth={1.8} />
+                </button>
+              </div>
+            )}
             {shouldShowPopupImage && (
               <div className="home-promo-image">
                 <img
@@ -245,6 +258,24 @@ export default function HomePage() {
                 <Link to={activePopup.linkUrl} className="btn btn-primary home-promo-cta" onClick={closePromoPopup}>
                   {activePopup.buttonText || 'Shop now'}
                 </Link>
+              )}
+              {homePopups.length > 1 && (
+                <div className="home-promo-dots" aria-label="Popup slides">
+                  {homePopups.map((popup, index) => (
+                    <button
+                      key={popup.id}
+                      type="button"
+                      className={index === activePopupIndex ? 'is-active' : ''}
+                      aria-label={`Show popup ${index + 1}`}
+                      aria-current={index === activePopupIndex ? 'true' : undefined}
+                      onClick={() => {
+                        setActivePopupIndex(index);
+                        setActivePopup(popup);
+                        setPromoImageFailed(false);
+                      }}
+                    />
+                  ))}
+                </div>
               )}
             </div>
           </div>

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
-import { CheckCircle, Mail, MailOpen, Reply, Search, Trash2, X } from 'lucide-react';
+import { CheckCircle, Eye, Mail, MailOpen, Reply, Search, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import WordEditor from '../../../components/WordEditor/WordEditor';
 import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
+import { sanitizeRichHtml } from '../../../utils/sanitizeHtml';
 import './AdminContacts.css';
 
 type ContactMessage = {
@@ -14,6 +15,10 @@ type ContactMessage = {
   subject: string;
   message: string;
   isRead: boolean;
+  replySubject?: string | null;
+  replyMessage?: string | null;
+  replyDelivered?: boolean | null;
+  repliedAt?: string | null;
   createdAt: string;
 };
 
@@ -33,6 +38,7 @@ type Stats = {
 type StatusFilter = 'ALL' | 'READ' | 'UNREAD';
 
 const PAGE_LIMIT = 12;
+const LONG_MESSAGE_LENGTH = 140;
 
 const getPageNumbers = (current: number, total: number) => {
   if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
@@ -65,6 +71,12 @@ const getRichTextPlainValue = (value: string) => value
   .replace(/\s+/g, ' ')
   .trim();
 
+const isLongMessage = (value: string) => {
+  const normalized = String(value || '').trim();
+  if (normalized.length > LONG_MESSAGE_LENGTH) return true;
+  return normalized.split(/\r?\n/).length > 2;
+};
+
 export default function AdminContacts() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: PAGE_LIMIT, total: 0, totalPages: 1 });
@@ -75,6 +87,7 @@ export default function AdminContacts() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [detailMessage, setDetailMessage] = useState<ContactMessage | null>(null);
   const [isReplying, setIsReplying] = useState(false);
   const [replyForm, setReplyForm] = useState({ subject: '', message: '' });
   const { addToast } = useUIStore();
@@ -147,6 +160,9 @@ export default function AdminContacts() {
       if (selectedMessage?.id === id) {
         setSelectedMessage(null);
       }
+      if (detailMessage?.id === id) {
+        setDetailMessage(null);
+      }
     } catch {
       addToast('Failed to delete message', 'error');
     }
@@ -188,6 +204,7 @@ export default function AdminContacts() {
       await Promise.all(selectedIds.map((id) => api.delete(`/admin/contacts/${id}`)));
       addToast('Selected messages deleted', 'success');
       setSelectedMessage((current) => (current && selectedIds.includes(current.id) ? null : current));
+      setDetailMessage((current) => (current && selectedIds.includes(current.id) ? null : current));
       const remainingOnPage = messages.filter((message) => !selectedIds.includes(message.id)).length;
       const targetPage = pagination.page > 1 && remainingOnPage === 0 ? pagination.page - 1 : pagination.page;
       setSelectedIds([]);
@@ -223,6 +240,18 @@ export default function AdminContacts() {
     try {
       const { data } = await api.post(`/admin/contacts/${selectedMessage.id}/reply`, replyForm);
       addToast(data.message || 'Reply sent successfully', data.data?.delivered ? 'success' : 'info');
+      setMessages((current) => current.map((message) => (
+        message.id === selectedMessage.id
+          ? {
+            ...message,
+            isRead: true,
+            replySubject: data.data?.replySubject || replyForm.subject,
+            replyMessage: data.data?.replyMessage || replyForm.message,
+            replyDelivered: Boolean(data.data?.delivered),
+            repliedAt: data.data?.repliedAt || new Date().toISOString(),
+          }
+          : message
+      )));
       closeReplyModal();
       fetchMessages(pagination.page);
     } catch (err: any) {
@@ -347,7 +376,29 @@ export default function AdminContacts() {
                       </div>
                     </div>
 
+                    {message.repliedAt && message.replyMessage && (
+                      <div className="contacts-reply-history">
+                        <div className="contacts-reply-history-head">
+                          <span>Staff reply</span>
+                          <strong className={message.replyDelivered ? 'is-delivered' : 'is-failed'}>
+                            {message.replyDelivered ? 'Delivered' : 'Not delivered'}
+                          </strong>
+                          <time>{formatDate(message.repliedAt)}</time>
+                        </div>
+                        <h4>{message.replySubject || `Re: ${message.subject}`}</h4>
+                        <div
+                          className="contacts-reply-history-body"
+                          dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(message.replyMessage) }}
+                        />
+                      </div>
+                    )}
+
                     <div className="contacts-row-actions">
+                      {isLongMessage(message.message) && (
+                        <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setDetailMessage(message)}>
+                          <Eye size={14} /> View Detail
+                        </button>
+                      )}
                       {!message.isRead && (
                         <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => handleMarkRead(message.id)}>
                           <CheckCircle size={14} /> Mark Read
@@ -444,6 +495,81 @@ export default function AdminContacts() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {detailMessage && (
+        <div className="admin-modal-overlay" onClick={() => setDetailMessage(null)}>
+          <div className="admin-modal-content contacts-detail-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h2 className="admin-modal-title">Message Detail</h2>
+                <p className="admin-modal-subtitle">{detailMessage.email}</p>
+              </div>
+              <button onClick={() => setDetailMessage(null)} className="admin-modal-close" aria-label="Close" title="Close"><X size={20} /></button>
+            </div>
+
+            <div className="contacts-detail-body">
+              <div className="contacts-detail-meta-grid">
+                <div>
+                  <span>Sender</span>
+                  <strong>{detailMessage.name}</strong>
+                </div>
+                <div>
+                  <span>Status</span>
+                  <strong>{detailMessage.isRead ? 'Read' : 'Unread'}</strong>
+                </div>
+                <div>
+                  <span>Received</span>
+                  <strong>{formatDate(detailMessage.createdAt)}</strong>
+                </div>
+              </div>
+
+              <section className="contacts-detail-section">
+                <span>Subject</span>
+                <h3>{detailMessage.subject}</h3>
+              </section>
+
+              <section className="contacts-detail-section">
+                <span>Message</span>
+                <p className="contacts-detail-message">{detailMessage.message || 'No message body provided.'}</p>
+              </section>
+
+              {detailMessage.repliedAt && detailMessage.replyMessage && (
+                <section className="contacts-detail-section">
+                  <span>Staff reply</span>
+                  <div className="contacts-reply-history is-detail">
+                    <div className="contacts-reply-history-head">
+                      <strong className={detailMessage.replyDelivered ? 'is-delivered' : 'is-failed'}>
+                        {detailMessage.replyDelivered ? 'Delivered' : 'Not delivered'}
+                      </strong>
+                      <time>{formatDate(detailMessage.repliedAt)}</time>
+                    </div>
+                    <h4>{detailMessage.replySubject || `Re: ${detailMessage.subject}`}</h4>
+                    <div
+                      className="contacts-reply-history-body"
+                      dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(detailMessage.replyMessage) }}
+                    />
+                  </div>
+                </section>
+              )}
+            </div>
+
+            <div className="admin-modal-actions">
+              <button type="button" className="admin-btn admin-btn-outline" onClick={() => setDetailMessage(null)}>Close</button>
+              <button
+                type="button"
+                className="admin-btn admin-btn-primary"
+                onClick={() => {
+                  const message = detailMessage;
+                  setDetailMessage(null);
+                  openReplyModal(message);
+                }}
+              >
+                <Reply size={14} /> Reply
+              </button>
+            </div>
           </div>
         </div>
       )}
