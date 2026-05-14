@@ -267,6 +267,7 @@ export const updateBannerSchema = bannerBaseSchema.partial().refine(
 );
 
 const popupShape = z.object({
+  popupType: z.enum(['OFFER', 'NOTICE']).optional().default('OFFER'),
   title: z.string().trim().min(1).max(200),
   subtitle: optionalNullableString(255),
   message: optionalNullableString(5000),

@@ -43,6 +43,7 @@ const nullableDate = (value: unknown) => {
 const buildPopupData = (body: Record<string, unknown>, partial = false) => {
   const data: Record<string, unknown> = {};
 
+  if (!partial || body.popupType !== undefined) data.popupType = String(body.popupType || 'OFFER').trim().toUpperCase();
   if (!partial || body.title !== undefined) data.title = String(body.title || '').trim();
   if (!partial || body.subtitle !== undefined) data.subtitle = nullableString(body.subtitle);
   if (!partial || body.message !== undefined) data.message = nullableString(body.message);
@@ -59,6 +60,9 @@ const buildPopupData = (body: Record<string, unknown>, partial = false) => {
 
   if (data.title === '') {
     throw new AppError('Popup title is required.', 400);
+  }
+  if (data.popupType !== undefined && data.popupType !== 'OFFER' && data.popupType !== 'NOTICE') {
+    throw new AppError('Popup type must be OFFER or NOTICE.', 400);
   }
   if (data.imageUrl === null && body.imageUrl) {
     throw new AppError('Popup image URL must be an absolute http/https URL or an upload/asset path.', 400);

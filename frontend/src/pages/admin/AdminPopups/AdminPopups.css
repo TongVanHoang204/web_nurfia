@@ -41,6 +41,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 18%;
 }
 
 .admin-popup-no-image {
@@ -137,6 +138,35 @@
   max-width: 720px;
 }
 
+.admin-popup-type-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-popup-type-toggle button {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text-light);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+}
+
+.admin-popup-type-toggle button.is-active,
+.admin-popup-type-toggle button:hover {
+  border-color: var(--color-black);
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
 .admin-popups-upload-row {
   display: flex;
   gap: 8px;
@@ -158,10 +188,49 @@
   opacity: 0.7;
 }
 
-.admin-popups-preview-image {
+.admin-popups-preview-frame {
   margin-top: 10px;
-  max-height: 140px;
+  width: 100%;
+  height: 220px;
   border: 1px solid var(--color-border);
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.admin-popups-preview-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.admin-popups-notice-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  background: #fafafa;
+  color: var(--color-text);
+}
+
+.admin-popups-notice-preview svg {
+  flex: 0 0 auto;
+}
+
+.admin-popups-notice-preview div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-popups-notice-preview strong {
+  font-size: 13px;
+}
+
+.admin-popups-notice-preview span {
+  font-size: 12px;
+  color: var(--color-text-light);
 }
 
 .admin-popups-switches {

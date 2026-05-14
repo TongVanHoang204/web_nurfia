@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Edit2, Plus, Trash2, Upload, X } from 'lucide-react';
+import { Bell, Edit2, Megaphone, Plus, Trash2, Upload, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
@@ -7,6 +7,7 @@ import './AdminPopups.css';
 
 interface HomePopup {
   id: number;
+  popupType?: 'OFFER' | 'NOTICE';
   title: string;
   subtitle: string | null;
   message: string | null;
@@ -23,6 +24,7 @@ interface HomePopup {
 }
 
 const emptyForm = {
+  popupType: 'OFFER' as 'OFFER' | 'NOTICE',
   title: '',
   subtitle: 'Limited Offer',
   message: '',
@@ -90,6 +92,7 @@ export default function AdminPopups() {
     setEditingPopup(popup);
     setFormData({
       title: popup.title,
+      popupType: popup.popupType === 'NOTICE' ? 'NOTICE' : 'OFFER',
       subtitle: popup.subtitle || '',
       message: popup.message || '',
       imageUrl: popup.imageUrl || '',
@@ -202,7 +205,9 @@ export default function AdminPopups() {
                 </span>
               </div>
               <div className="admin-popup-card-body">
-                <span className="admin-popup-kicker">{popup.subtitle || 'Announcement'}</span>
+                <span className="admin-popup-kicker">
+                  {popup.popupType === 'NOTICE' ? 'Notification' : 'Offer'}{popup.subtitle ? ` / ${popup.subtitle}` : ''}
+                </span>
                 <h3>{popup.title}</h3>
                 {popup.message && <p>{popup.message}</p>}
                 <div className="admin-popup-meta">
@@ -234,6 +239,28 @@ export default function AdminPopups() {
               </button>
             </div>
             <form onSubmit={handleSave} className="admin-form">
+              <div className="admin-form-group">
+                <label>Popup Type</label>
+                <div className="admin-popup-type-toggle">
+                  <button
+                    type="button"
+                    className={formData.popupType === 'OFFER' ? 'is-active' : ''}
+                    onClick={() => setFormData({ ...formData, popupType: 'OFFER', subtitle: formData.subtitle || 'Limited Offer' })}
+                  >
+                    <Megaphone size={16} />
+                    Offer
+                  </button>
+                  <button
+                    type="button"
+                    className={formData.popupType === 'NOTICE' ? 'is-active' : ''}
+                    onClick={() => setFormData({ ...formData, popupType: 'NOTICE', subtitle: formData.subtitle || 'Announcement', offerCode: '' })}
+                  >
+                    <Bell size={16} />
+                    Notification
+                  </button>
+                </div>
+              </div>
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label htmlFor="popup-title">Title *</label>
@@ -260,22 +287,35 @@ export default function AdminPopups() {
                   </label>
                 </div>
                 {formData.imageUrl && (
-                  <img
-                    className="admin-popups-preview-image"
-                    src={resolveSiteAssetUrl(formData.imageUrl)}
-                    alt="Popup preview"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
+                  <div className="admin-popups-preview-frame">
+                    <img
+                      src={resolveSiteAssetUrl(formData.imageUrl)}
+                      alt="Popup preview"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
                 )}
               </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label htmlFor="popup-code">Offer Code</label>
-                  <input id="popup-code" value={formData.offerCode} onChange={(e) => setFormData({ ...formData, offerCode: e.target.value })} />
+              {formData.popupType === 'NOTICE' && (
+                <div className="admin-popups-notice-preview">
+                  <Bell size={20} />
+                  <div>
+                    <strong>Notification layout</strong>
+                    <span>This popup uses a centered announcement design and does not display an offer code.</span>
+                  </div>
                 </div>
+              )}
+
+              <div className="admin-form-row">
+                {formData.popupType === 'OFFER' && (
+                  <div className="admin-form-group">
+                    <label htmlFor="popup-code">Offer Code</label>
+                    <input id="popup-code" value={formData.offerCode} onChange={(e) => setFormData({ ...formData, offerCode: e.target.value })} />
+                  </div>
+                )}
                 <div className="admin-form-group">
                   <label htmlFor="popup-button">Button Text</label>
                   <input id="popup-button" value={formData.buttonText} onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })} />
@@ -292,7 +332,6 @@ export default function AdminPopups() {
                   <input id="popup-delay" type="number" min="0" max="60000" value={formData.displayDelayMs} onChange={(e) => setFormData({ ...formData, displayDelayMs: Number(e.target.value) || 0 })} />
                 </div>
               </div>
-
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label htmlFor="popup-start">Start Time</label>

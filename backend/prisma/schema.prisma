@@ -429,6 +429,7 @@ model Banner {
 
 model HomePopup {
   id              Int       @id @default(autoincrement())
+  popupType       String    @default("OFFER") @map("popup_type") @db.VarChar(20)
   title           String    @db.VarChar(255)
   subtitle        String?   @db.VarChar(255)
   message         String?   @db.Text

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -42,6 +42,7 @@ interface BlogPost {
 
 interface HomePopup {
   id: number;
+  popupType?: 'OFFER' | 'NOTICE';
   title: string;
   subtitle: string | null;
   message: string | null;
@@ -192,29 +193,37 @@ export default function HomePage() {
     }
   };
 
+  const activePopupType = activePopup?.popupType === 'NOTICE' || (!activePopup?.offerCode && !activePopup?.imageUrl) ? 'NOTICE' : 'OFFER';
+  const shouldShowPopupImage = Boolean(activePopup?.imageUrl) && !promoImageFailed;
+
   return (
     <div className="homepage">
       {showPromoPopup && activePopup && (
         <div className="home-promo-popup" role="dialog" aria-modal="true" aria-labelledby="home-promo-title">
           <button className="home-promo-backdrop" type="button" aria-label="Close promotion popup" onClick={closePromoPopup} />
-          <div className={`home-promo-panel ${activePopup.imageUrl && !promoImageFailed ? '' : 'home-promo-panel-text-only'}`}>
+          <div className={`home-promo-panel ${activePopupType === 'NOTICE' ? 'home-promo-panel-notice' : ''} ${shouldShowPopupImage ? '' : 'home-promo-panel-text-only'}`}>
             <button className="home-promo-close" type="button" aria-label="Close promotion popup" onClick={closePromoPopup}>
               <X size={18} strokeWidth={1.8} />
             </button>
-            {activePopup.imageUrl && !promoImageFailed && (
+            {shouldShowPopupImage && (
               <div className="home-promo-image">
                 <img
-                  src={resolveSiteAssetUrl(activePopup.imageUrl)}
+                  src={resolveSiteAssetUrl(activePopup.imageUrl || '')}
                   alt={activePopup.title}
                   onError={() => setPromoImageFailed(true)}
                 />
               </div>
             )}
             <div className="home-promo-content">
+              {activePopupType === 'NOTICE' && (
+                <div className="home-promo-notice-icon" aria-hidden="true">
+                  <Bell size={22} strokeWidth={1.8} />
+                </div>
+              )}
               {activePopup.subtitle && <span className="home-promo-kicker">{activePopup.subtitle}</span>}
               <h2 id="home-promo-title" className="home-promo-title">{activePopup.title}</h2>
               {activePopup.message && <p className="home-promo-text">{activePopup.message}</p>}
-              {activePopup.offerCode && (
+              {activePopupType === 'OFFER' && activePopup.offerCode && (
                 <div className="home-promo-code" aria-label="Promotion code">
                   <span>Use code</span>
                   <strong>{activePopup.offerCode}</strong>
