@@ -266,6 +266,40 @@ export const updateBannerSchema = bannerBaseSchema.partial().refine(
   { message: 'At least one field is required' }
 );
 
+const popupShape = z.object({
+  title: z.string().trim().min(1).max(200),
+  subtitle: optionalNullableString(255),
+  message: optionalNullableString(5000),
+  imageUrl: z.preprocess((value) => value === '' ? null : value, urlOrAssetPath.nullable().optional()),
+  offerCode: optionalNullableString(80),
+  buttonText: optionalNullableString(80),
+  linkUrl: optionalNullableString(2048),
+  displayDelayMs: z.coerce.number().int().min(0).max(60000).optional().default(900),
+  showOnceSession: z.boolean().optional().default(true),
+  isActive: z.boolean().optional().default(true),
+  sortOrder: z.coerce.number().int().min(0).optional().default(0),
+  startAt: z.preprocess((value) => value === '' || value === null ? null : value, z.coerce.date().nullable().optional()),
+  endAt: z.preprocess((value) => value === '' || value === null ? null : value, z.coerce.date().nullable().optional()),
+});
+
+const validatePopupDateRange = (value: { startAt?: Date | null; endAt?: Date | null }) => (
+  !value.startAt || !value.endAt || value.endAt > value.startAt
+);
+
+export const homePopupSchema = popupShape.refine(validatePopupDateRange, {
+  message: 'End date must be after start date',
+  path: ['endAt'],
+});
+
+export const updateHomePopupSchema = popupShape.partial().refine(
+  (value: Record<string, unknown>) => Object.keys(value).length > 0,
+  { message: 'At least one field is required' }
+).refine(validatePopupDateRange, {
+  message: 'End date must be after start date',
+  path: ['endAt'],
+}
+);
+
 export const couponSchema = z.object({
   code: z.string().trim().min(1).max(50),
   type: z.enum(['PERCENTAGE', 'FIXED', 'FIXED_AMOUNT']),

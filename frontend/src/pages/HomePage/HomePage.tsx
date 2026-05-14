@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -39,6 +40,19 @@ interface BlogPost {
   publishedAt: string;
 }
 
+interface HomePopup {
+  id: number;
+  title: string;
+  subtitle: string | null;
+  message: string | null;
+  imageUrl: string | null;
+  offerCode: string | null;
+  buttonText: string | null;
+  linkUrl: string | null;
+  displayDelayMs: number;
+  showOnceSession: boolean;
+}
+
 const formatBlogDate = (value: string) => {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return '';
@@ -48,6 +62,8 @@ const formatBlogDate = (value: string) => {
     year: 'numeric',
   });
 };
+
+const HOME_PROMO_POPUP_KEY = 'nurfia_home_promo_popup_seen';
 
 export default function HomePage() {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -63,6 +79,9 @@ export default function HomePage() {
   const [activeTab1, setActiveTab1] = useState<'women' | 'dresses' | 'men' | 'tshirts'>('women');
   const [activeTab2, setActiveTab2] = useState<'featured' | 'new' | 'bestsellers'>('new');
   const [isLoading, setIsLoading] = useState(true);
+  const [activePopup, setActivePopup] = useState<HomePopup | null>(null);
+  const [showPromoPopup, setShowPromoPopup] = useState(false);
+  const [promoImageFailed, setPromoImageFailed] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,6 +135,44 @@ export default function HomePage() {
     })();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    let timer: number | undefined;
+
+    const fetchHomePopup = async () => {
+      try {
+        const { data } = await api.get('/popups/homepage');
+        const popup = data.data as HomePopup | null;
+        if (!isMounted || !popup) return;
+
+        setActivePopup(popup);
+        setPromoImageFailed(false);
+        const storageKey = `${HOME_PROMO_POPUP_KEY}_${popup.id}`;
+        if (popup.showOnceSession && sessionStorage.getItem(storageKey) === 'true') return;
+
+        timer = window.setTimeout(() => {
+          if (isMounted) setShowPromoPopup(true);
+        }, Math.max(0, Number(popup.displayDelayMs) || 0));
+      } catch (error) {
+        console.error('Failed to fetch homepage popup:', error);
+      }
+    };
+
+    fetchHomePopup();
+
+    return () => {
+      isMounted = false;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, []);
+
+  const closePromoPopup = () => {
+    if (activePopup?.showOnceSession) {
+      sessionStorage.setItem(`${HOME_PROMO_POPUP_KEY}_${activePopup.id}`, 'true');
+    }
+    setShowPromoPopup(false);
+  };
+
   const getProductsForTab1 = (tab: 'women' | 'dresses' | 'men' | 'tshirts') => {
     switch (tab) {
       case 'women': return womenProducts;
@@ -137,6 +194,41 @@ export default function HomePage() {
 
   return (
     <div className="homepage">
+      {showPromoPopup && activePopup && (
+        <div className="home-promo-popup" role="dialog" aria-modal="true" aria-labelledby="home-promo-title">
+          <button className="home-promo-backdrop" type="button" aria-label="Close promotion popup" onClick={closePromoPopup} />
+          <div className={`home-promo-panel ${activePopup.imageUrl && !promoImageFailed ? '' : 'home-promo-panel-text-only'}`}>
+            <button className="home-promo-close" type="button" aria-label="Close promotion popup" onClick={closePromoPopup}>
+              <X size={18} strokeWidth={1.8} />
+            </button>
+            {activePopup.imageUrl && !promoImageFailed && (
+              <div className="home-promo-image">
+                <img
+                  src={resolveSiteAssetUrl(activePopup.imageUrl)}
+                  alt={activePopup.title}
+                  onError={() => setPromoImageFailed(true)}
+                />
+              </div>
+            )}
+            <div className="home-promo-content">
+              {activePopup.subtitle && <span className="home-promo-kicker">{activePopup.subtitle}</span>}
+              <h2 id="home-promo-title" className="home-promo-title">{activePopup.title}</h2>
+              {activePopup.message && <p className="home-promo-text">{activePopup.message}</p>}
+              {activePopup.offerCode && (
+                <div className="home-promo-code" aria-label="Promotion code">
+                  <span>Use code</span>
+                  <strong>{activePopup.offerCode}</strong>
+                </div>
+              )}
+              {activePopup.linkUrl && (
+                <Link to={activePopup.linkUrl} className="btn btn-primary home-promo-cta" onClick={closePromoPopup}>
+                  {activePopup.buttonText || 'Shop now'}
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {/* ═══ 1. Hero Slider ═══════════════════════════════════════════════════ */}
       <section className="hero-section">
         <Swiper

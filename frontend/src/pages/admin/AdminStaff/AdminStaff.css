@@ -189,12 +189,48 @@
   animation: staff-admin-rgb-shift 2.8s linear infinite;
 }
 
+.staff-role-pill-manager {
+  border: 1px solid #7c3aed;
+  border-radius: 3px;
+  background: #f5f3ff;
+  color: #4c1d95;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.08), 0 0 12px rgba(124, 58, 237, 0.28);
+  animation: staff-manager-glow 2.8s ease-in-out infinite;
+}
+
+.staff-role-pill-staff {
+  border: 1px solid #0f766e;
+  border-radius: 3px;
+  background: #ecfdf5;
+  color: #115e59;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.08), 0 0 12px rgba(20, 184, 166, 0.28);
+  animation: staff-role-glow 2.8s ease-in-out infinite;
+}
+
 @keyframes staff-admin-rgb-shift {
   from {
     background-position: 0% 50%;
   }
   to {
     background-position: 260% 50%;
+  }
+}
+
+@keyframes staff-manager-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.08), 0 0 8px rgba(124, 58, 237, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.18), 0 0 16px rgba(124, 58, 237, 0.42);
+  }
+}
+
+@keyframes staff-role-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.08), 0 0 8px rgba(20, 184, 166, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.18), 0 0 16px rgba(20, 184, 166, 0.42);
   }
 }
 

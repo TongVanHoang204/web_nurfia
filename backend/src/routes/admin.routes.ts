@@ -7,6 +7,7 @@ import { staffController } from '../controllers/staff.controller.js';
 import { reportController } from '../controllers/report.controller.js';
 import { inventoryController } from '../controllers/inventory.controller.js';
 import { bannerController } from '../controllers/banner.controller.js';
+import { popupController } from '../controllers/popup.controller.js';
 import { contactController } from '../controllers/contact.controller.js';
 import { validate, validateParams, validateQuery } from '../middlewares/validate.js';
 import { adminContactReplySchema } from '../validators/commerce.validator.js';
@@ -31,6 +32,7 @@ import {
   couponSchema,
   createStaffSchema,
   dashboardQuerySchema,
+  homePopupSchema,
   inventoryUpdateSchema,
   productSchema,
   reviewApprovalSchema,
@@ -38,6 +40,7 @@ import {
   updateBannerSchema,
   updateBrandSchema,
   updateCategorySchema,
+  updateHomePopupSchema,
   updateOrderStatusSchema,
   updatePaymentStatusSchema,
   updateProductSchema,
@@ -837,6 +840,11 @@ router.post('/banners', requirePermission('MANAGE_BANNERS'), validate(bannerSche
  */
 router.put('/banners/:id', requirePermission('MANAGE_BANNERS'), validateParams(adminIdParamSchema), validate(updateBannerSchema), bannerController.updateBanner);
 router.delete('/banners/:id', requirePermission('MANAGE_BANNERS'), validateParams(adminIdParamSchema), bannerController.deleteBanner);
+
+router.get('/popups', requirePermission('MANAGE_BANNERS'), popupController.getAdminPopups);
+router.post('/popups', requirePermission('MANAGE_BANNERS'), validate(homePopupSchema), popupController.createPopup);
+router.put('/popups/:id', requirePermission('MANAGE_BANNERS'), validateParams(adminIdParamSchema), validate(updateHomePopupSchema), popupController.updatePopup);
+router.delete('/popups/:id', requirePermission('MANAGE_BANNERS'), validateParams(adminIdParamSchema), popupController.deletePopup);
 
 /**
  * @swagger

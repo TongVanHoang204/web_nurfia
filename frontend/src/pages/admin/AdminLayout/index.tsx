@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Ticket, Truck, Settings, LogOut, Menu, X, FileText, Activity, ShieldQuestion, BarChart, Layers, Image as ImageIcon, Mail, Star, Tag, Sliders, Bell, Globe } from 'lucide-react';
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Ticket, Truck, Settings, LogOut, Menu, X, FileText, Activity, ShieldQuestion, BarChart, Layers, Image as ImageIcon, Mail, Star, Tag, Sliders, Bell, Globe, Megaphone } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
 import NotificationBell from '../../../components/Notifications/NotificationBell';
 import PageLoader from '../../../components/PageLoader/PageLoader';
@@ -10,6 +10,7 @@ import '../admin.css';
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin', permissions: [] as string[] },
   { label: 'Banners', icon: ImageIcon, path: '/admin/banners', permissions: ['MANAGE_BANNERS'] },
+  { label: 'Popups', icon: Megaphone, path: '/admin/popups', permissions: ['MANAGE_BANNERS'] },
   { label: 'Products', icon: Package, path: '/admin/products', permissions: ['MANAGE_PRODUCTS'] },
   { label: 'Inventory', icon: Layers, path: '/admin/inventory', permissions: ['MANAGE_INVENTORY'] },
   { label: 'Categories', icon: FolderTree, path: '/admin/categories', permissions: ['MANAGE_CATEGORIES'] },
@@ -144,7 +145,7 @@ export default function AdminLayout() {
             <NotificationBell />
             <div className="admin-user-profile">
               <span className="admin-user-name">{user?.fullName}</span>
-              <span className={`admin-user-role ${user?.role === 'ADMIN' ? 'admin-user-role-rgb' : ''}`}>
+              <span className={`admin-user-role admin-user-role-${String(user?.role || 'staff').toLowerCase()}`}>
                 {user?.role === 'ADMIN' ? 'ADMIN' : user?.role === 'MANAGER' ? 'Manager' : 'Staff'}
               </span>
             </div>

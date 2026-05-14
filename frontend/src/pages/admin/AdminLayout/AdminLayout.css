@@ -165,7 +165,7 @@
   color: var(--color-accent);
 }
 
-.admin-user-role-rgb {
+.admin-user-role-admin {
   padding: 2px 7px;
   border: 1px solid #dc2626;
   border-radius: 3px;
@@ -178,12 +178,52 @@
   animation: admin-role-rgb-shift 2.8s linear infinite;
 }
 
+.admin-user-role-manager,
+.admin-user-role-staff {
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.admin-user-role-manager {
+  border: 1px solid #7c3aed;
+  background: #f5f3ff;
+  color: #4c1d95;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.08), 0 0 12px rgba(124, 58, 237, 0.28);
+  animation: admin-role-manager-glow 2.8s ease-in-out infinite;
+}
+
+.admin-user-role-staff {
+  border: 1px solid #0f766e;
+  background: #ecfdf5;
+  color: #115e59;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.08), 0 0 12px rgba(20, 184, 166, 0.28);
+  animation: admin-role-staff-glow 2.8s ease-in-out infinite;
+}
+
 @keyframes admin-role-rgb-shift {
   from {
     background-position: 0% 50%;
   }
   to {
     background-position: 260% 50%;
+  }
+}
+
+@keyframes admin-role-manager-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.08), 0 0 8px rgba(124, 58, 237, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.18), 0 0 16px rgba(124, 58, 237, 0.42);
+  }
+}
+
+@keyframes admin-role-staff-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.08), 0 0 8px rgba(20, 184, 166, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.18), 0 0 16px rgba(20, 184, 166, 0.42);
   }
 }
 

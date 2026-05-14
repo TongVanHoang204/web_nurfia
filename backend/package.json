@@ -16,7 +16,17 @@
   },
   "dependencies": {
     "@prisma/client": "^6.6.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
     "@types/node-fetch": "^2.6.13",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.15.2",
+    "@types/nodemailer": "^6.4.17",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "basic-ftp": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.0",
@@ -35,28 +45,18 @@
     "socket.io": "^4.8.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "typescript": "^5.8.3",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cookie-parser": "^1.4.8",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.2",
     "@types/jest": "^30.0.0",
-    "@types/jsonwebtoken": "^9.0.9",
-    "@types/multer": "^1.4.12",
-    "@types/node": "^22.15.2",
-    "@types/nodemailer": "^6.4.17",
     "@types/supertest": "^7.2.0",
-    "@types/swagger-jsdoc": "^6.0.4",
-    "@types/swagger-ui-express": "^4.1.8",
     "jest": "^30.3.0",
     "mysql2": "^3.22.2",
     "prisma": "^6.6.0",
     "socket.io-client": "^4.8.3",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.9",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
+    "tsx": "^4.19.4"
   }
 }
