@@ -282,13 +282,15 @@
   padding: 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  gap: 8px;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border);
 }
 
 .admin-notifications-pagination-text {
+  width: 100%;
+  text-align: center;
   color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 700;
@@ -301,7 +303,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  flex: 1;
+  flex: 0 0 auto;
 }
 
 .admin-notifications-page-btn {
@@ -391,8 +393,7 @@
     justify-content: center;
   }
 
-  .admin-notifications-pagination-text,
-  .admin-notifications-page-numbers {
+  .admin-notifications-pagination-text {
     width: 100%;
   }
 }
