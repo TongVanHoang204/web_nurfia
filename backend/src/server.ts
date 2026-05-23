@@ -35,6 +35,7 @@ import notificationRoutes from './routes/notification.routes.js';
 import chatRoutes from './routes/chat.routes.js';
 import { initSocketServer } from './services/socket.service.js';
 import { startChatHistoryRetentionJob } from './services/chat-retention.service.js';
+import { ensureStartupDatabaseCompatibility } from './services/startup-migration.service.js';
 import { getAllowedOrigins } from './utils/security.js';
 import { setupSwagger } from './utils/swagger.js';
 import {
@@ -201,6 +202,7 @@ if (config.env !== 'test') {
     console.log(`[Server] Running on http://localhost:${config.port}`);
     console.log(`[Server] Environment: ${config.env}`);
     console.log(`[Socket] Running on ws://localhost:${config.port}`);
+    ensureStartupDatabaseCompatibility();
   });
 }
 
