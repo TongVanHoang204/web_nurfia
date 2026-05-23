@@ -53,7 +53,7 @@ export const shippingOptionsSchema = z.object({
 });
 
 export const createOrderSchema = shippingOptionsSchema.extend({
-  paymentMethod: z.enum(['COD', 'BANK_TRANSFER', 'MOMO']).default('COD'),
+  paymentMethod: z.enum(['COD', 'BANK_TRANSFER', 'MOMO', 'STRIPE']).default('COD'),
   shippingMethodId: z.coerce.number().int().positive('Please select a valid shipping method'),
   shippingName: orderAddressText('Shipping name', 200),
   shippingPhone: z.string().trim().regex(phoneRegex, 'Shipping phone must contain 9 to 15 digits'),
@@ -73,4 +73,9 @@ export const bankTransferProofSchema = z.object({
 export const createMomoPaymentSchema = z.object({
   orderId: positiveIntSchema,
   redirectUrl: z.string().trim().url('Redirect URL must be a valid URL').max(2048).optional(),
+});
+
+export const createStripeCheckoutSessionSchema = z.object({
+  orderId: positiveIntSchema,
+  returnUrl: z.string().trim().url('Return URL must be a valid URL').max(2048).optional(),
 });

@@ -73,7 +73,7 @@ router.post('/shipping-options', requireCustomer, validate(shippingOptionsSchema
  *             type: object
  *             required: [paymentMethod, shippingMethodId, shippingName, shippingPhone, shippingEmail, shippingProvince, shippingDistrict, shippingWard, shippingStreet]
  *             properties:
- *               paymentMethod: { type: string, enum: [COD, BANK_TRANSFER, MOMO] }
+ *               paymentMethod: { type: string, enum: [COD, BANK_TRANSFER, MOMO, STRIPE] }
  *               shippingMethodId: { type: integer }
  *               shippingName: { type: string }
  *               shippingPhone: { type: string }

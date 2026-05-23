@@ -303,6 +303,7 @@ enum PaymentMethod {
   COD // Thanh toán khi nhận hàng
   BANK_TRANSFER // Chuyển khoản ngân hàng
   MOMO // Thanh toán Momo
+  STRIPE // Stripe Checkout
 }
 
 enum PaymentStatus {

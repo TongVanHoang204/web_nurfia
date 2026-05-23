@@ -67,6 +67,13 @@ export const config = {
     endpoint: process.env.MOMO_ENDPOINT || 'https://test-payment.momo.vn/v2/gateway/api/create',
     redirectUrl: process.env.MOMO_REDIRECT_URL || 'http://localhost:5173/checkout/success',
     ipnUrl: process.env.MOMO_IPN_URL || 'https://your-domain.ngrok.io/api/payment/momo/ipn',
+  },
+
+  stripe: {
+    secretKey: String(process.env.STRIPE_SECRET_KEY || '').trim(),
+    webhookSecret: String(process.env.STRIPE_WEBHOOK_SECRET || '').trim(),
+    currency: String(process.env.STRIPE_CURRENCY || 'usd').trim().toLowerCase(),
+    demoMode: String(process.env.STRIPE_DEMO_MODE || '').toLowerCase() === 'true',
   }
 } as const;
 

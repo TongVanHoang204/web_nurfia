@@ -77,6 +77,7 @@ app.use(cors({
 }));
 
 // Body parsing
+app.use('/api/payment/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

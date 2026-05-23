@@ -12,6 +12,7 @@ const STATUS_STEPS = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelle
 const getPaymentLabel = (method: string) => {
   if (method === 'BANK_TRANSFER') return 'Bank Transfer';
   if (method === 'MOMO') return 'Momo Wallet';
+  if (method === 'STRIPE') return 'Stripe Checkout';
   return 'Cash on Delivery';
 };
 
@@ -174,6 +175,27 @@ export default function OrderConfirmationPage() {
     }
   };
 
+  const handleRetryStripePayment = async () => {
+    if (!order) return;
+
+    setIsRetryingPayment(true);
+    try {
+      const response = await api.post('/payment/stripe/create-checkout-session', {
+        orderId: order.id,
+        returnUrl: `${window.location.origin}/order-confirmation/${order.id}`,
+      });
+      const checkoutUrl = response.data.data?.url;
+      if (!checkoutUrl) {
+        throw new Error('Missing Stripe Checkout URL.');
+      }
+      window.location.href = checkoutUrl;
+    } catch (err: any) {
+      addToast(err.response?.data?.error || 'Unable to open Stripe Checkout.', 'error');
+    } finally {
+      setIsRetryingPayment(false);
+    }
+  };
+
   useEffect(() => {
     if (!order || !timelineRef.current) {
       return;
@@ -320,6 +342,8 @@ export default function OrderConfirmationPage() {
                     ? order.bankTransferImage ? 'Transfer proof received.' : 'Upload your transfer proof below.'
                     : order.paymentMethod === 'MOMO'
                       ? (order.paymentStatus === 'PAID' ? 'Momo payment completed.' : 'Payment pending in Momo.')
+                      : order.paymentMethod === 'STRIPE'
+                        ? (order.paymentStatus === 'PAID' ? 'Stripe payment completed.' : 'Payment pending in Stripe Checkout.')
                       : 'Payment will be collected on delivery.'}
                 </p>
               </div>
@@ -360,6 +384,18 @@ export default function OrderConfirmationPage() {
               </div>
               <button type="button" className="btn btn-primary" onClick={handleRetryMomoPayment} disabled={isRetryingPayment}>
                 <CreditCard size={16} /> {isRetryingPayment ? 'Opening Momo...' : 'Retry Momo Payment'}
+              </button>
+            </div>
+          )}
+
+          {order.paymentMethod === 'STRIPE' && order.paymentStatus !== 'PAID' && order.status !== 'CANCELLED' && (
+            <div className="order-action-panel">
+              <div className="order-action-copy">
+                <h3>Complete Stripe Payment</h3>
+                <p>Your order is created but still unpaid. Open Stripe Checkout again to complete card payment.</p>
+              </div>
+              <button type="button" className="btn btn-primary" onClick={handleRetryStripePayment} disabled={isRetryingPayment}>
+                <CreditCard size={16} /> {isRetryingPayment ? 'Opening Stripe...' : 'Retry Stripe Payment'}
               </button>
             </div>
           )}

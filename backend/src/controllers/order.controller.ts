@@ -12,7 +12,7 @@ import {
 import { notificationService } from '../services/notification.service.js';
 import { mailService } from '../services/mail.service.js';
 
-const PAYMENT_METHODS = ['COD', 'BANK_TRANSFER', 'MOMO'] as const;
+const PAYMENT_METHODS = ['COD', 'BANK_TRANSFER', 'MOMO', 'STRIPE'] as const;
 const CUSTOMER_CANCELLABLE_STATUSES = new Set(['PENDING', 'CONFIRMED']);
 
 const normalizeText = (value: unknown) => String(value || '').trim().toLowerCase();

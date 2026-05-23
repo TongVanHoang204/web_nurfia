@@ -8,7 +8,7 @@ const CSRF_HEADER = 'x-csrf-token';
 const CSRF_COOKIE_NAME = process.env.CSRF_COOKIE_NAME || 'nurfia_csrf';
 const CSRF_TTL_MS = 60 * 60 * 1000;
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
-const CSRF_EXEMPT_PATHS = new Set(['/payment/momo/ipn']);
+const CSRF_EXEMPT_PATHS = new Set(['/payment/momo/ipn', '/payment/stripe/webhook']);
 
 const signPayload = (payload: string) =>
   crypto.createHmac('sha256', config.jwt.secret).update(payload).digest('base64url');

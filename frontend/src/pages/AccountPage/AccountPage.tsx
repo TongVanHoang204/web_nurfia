@@ -12,6 +12,7 @@ import './AccountPage.css';
 const getPaymentLabel = (method: string) => {
   if (method === 'BANK_TRANSFER') return 'Bank Transfer';
   if (method === 'MOMO') return 'Momo';
+  if (method === 'STRIPE') return 'Stripe';
   return 'Cash on Delivery';
 };
 

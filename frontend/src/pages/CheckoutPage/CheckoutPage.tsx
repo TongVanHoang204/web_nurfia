@@ -16,7 +16,7 @@ type ShippingOption = {
   freeShipMinOrder?: number | null;
 };
 
-type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'MOMO';
+type PaymentMethod = 'COD' | 'BANK_TRANSFER' | 'MOMO' | 'STRIPE';
 
 const paymentDescriptions: Record<PaymentMethod, { title: string; description: string }> = {
   COD: {
@@ -30,6 +30,10 @@ const paymentDescriptions: Record<PaymentMethod, { title: string; description: s
   MOMO: {
     title: 'Momo Wallet',
     description: 'You will be redirected to Momo to complete payment immediately.',
+  },
+  STRIPE: {
+    title: 'Credit or Debit Card',
+    description: 'Pay securely with Stripe Checkout.',
   },
 };
 
@@ -252,6 +256,25 @@ export default function CheckoutPage() {
         }
       }
 
+      if (payload.paymentMethod === 'STRIPE') {
+        try {
+          const paymentRes = await api.post('/payment/stripe/create-checkout-session', {
+            orderId: createdOrder.id,
+            returnUrl: `${window.location.origin}/order-confirmation/${createdOrder.id}`,
+          });
+          const checkoutUrl = paymentRes.data.data?.url;
+          if (!checkoutUrl) {
+            throw new Error('Missing Stripe Checkout URL.');
+          }
+          window.location.href = checkoutUrl;
+          return;
+        } catch (paymentError: any) {
+          addToast(paymentError.response?.data?.error || 'Order created, but Stripe Checkout failed. Please contact support or choose another payment method.', 'error');
+          navigate(`/order-confirmation/${createdOrder.id}`);
+          return;
+        }
+      }
+
       addToast('Order placed successfully!', 'success');
       navigate(`/order-confirmation/${createdOrder.id}`);
     } catch (err: any) {
@@ -380,6 +403,12 @@ export default function CheckoutPage() {
                 Your order will be created first, then you will be redirected to Momo to finish payment. If the redirect fails, the order remains pending and you can retry from the order page.
               </div>
             )}
+
+            {form.paymentMethod === 'STRIPE' && (
+              <div className="payment-help-panel">
+                Your order will be created first, then Stripe Checkout will open so you can complete card payment securely.
+              </div>
+            )}
           </div>
 
           <div className="checkout-summary">
@@ -411,7 +440,7 @@ export default function CheckoutPage() {
             <div className="summary-divider" />
             <div className="summary-row summary-total"><span>Total</span><span>${total.toFixed(2)}</span></div>
             <button type="submit" className="btn btn-primary submit-order-btn" disabled={isSubmitting}>
-              {isSubmitting ? 'Processing...' : form.paymentMethod === 'MOMO' ? 'Continue to Momo' : 'Place Order'}
+              {isSubmitting ? 'Processing...' : form.paymentMethod === 'MOMO' ? 'Continue to Momo' : form.paymentMethod === 'STRIPE' ? 'Continue to Stripe' : 'Place Order'}
             </button>
           </div>
         </form>
