@@ -479,8 +479,34 @@ export default function AdminInventory() {
 
   const fetchSelectableProducts = async () => {
     try {
-      const { data } = await api.get('/admin/inventory/stock?page=1&limit=500&status=ALL&lowThreshold=10');
-      setSelectableProducts(data.data || []);
+      const pageSize = 100;
+      const buildQuery = (page: number) => new URLSearchParams({
+        page: String(page),
+        limit: String(pageSize),
+        status: 'ALL',
+        lowThreshold: '10',
+      });
+
+      const firstResponse = await api.get(`/admin/inventory/stock?${buildQuery(1).toString()}`);
+      const firstPageData = firstResponse.data?.data || [];
+      const totalPages = Math.max(1, Number(firstResponse.data?.pagination?.totalPages) || 1);
+
+      if (totalPages === 1) {
+        setSelectableProducts(firstPageData);
+        return;
+      }
+
+      const remainingResponses = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, index) => {
+          const page = index + 2;
+          return api.get(`/admin/inventory/stock?${buildQuery(page).toString()}`);
+        })
+      );
+
+      setSelectableProducts([
+        ...firstPageData,
+        ...remainingResponses.flatMap((response) => response.data?.data || []),
+      ]);
     } catch {
       setSelectableProducts([]);
     }

@@ -111,7 +111,7 @@ function StoreLayout() {
 }
 
 export default function App() {
-  const { loadUser, isAuthenticated, user } = useAuthStore();
+  const { loadUser, isAuthenticated, isHydrating, user } = useAuthStore();
   const { fetchCart } = useCartStore();
   const { fetchCompare, resetCompare } = useCompareStore();
   const { fetchWishlist, clearWishlistLocally } = useWishlistStore();
@@ -119,6 +119,8 @@ export default function App() {
 
   useEffect(() => { loadUser(); }, []);
   useEffect(() => { 
+    if (isHydrating) return;
+
     if (isAuthenticated) {
       fetchCart(); 
       fetchWishlist();
@@ -129,9 +131,11 @@ export default function App() {
       clearWishlistLocally();
       resetCompare();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, isHydrating, user]);
 
   useEffect(() => {
+    if (isHydrating) return;
+
     if (!isAuthenticated) {
       disconnectSocket();
       return;
@@ -154,7 +158,7 @@ export default function App() {
     return () => {
       socket.off('account-status-changed', handleAccountStatusChanged);
     };
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, isHydrating, user?.id]);
 
   return (
     <BrowserRouter>

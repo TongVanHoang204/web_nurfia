@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { CalendarDays, Download, Eye, Filter, Mail, Package, Phone, Search, UserRound, Users, X } from 'lucide-react';
 import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
+import { useAuthStore } from '../../../stores/authStore';
 import { connectSocket } from '../../../services/socket';
 import './AdminCustomers.css';
 
@@ -145,6 +146,7 @@ export default function AdminCustomers() {
   const [isRecentOrdersLoading, setIsRecentOrdersLoading] = useState(false);
   const [statusUpdatingCustomerId, setStatusUpdatingCustomerId] = useState<number | null>(null);
   const { addToast } = useUIStore();
+  const { isAuthenticated, isHydrating } = useAuthStore();
 
   const fetchCustomers = (page = 1, keyword = search, segment = engagementFilter, sort = sortOption) => {
     setIsLoading(true);
@@ -198,6 +200,8 @@ export default function AdminCustomers() {
   }, [selectedCustomer?.id]);
 
   useEffect(() => {
+    if (isHydrating || !isAuthenticated) return;
+
     const socket = connectSocket();
     if (!socket) return;
 
@@ -220,7 +224,7 @@ export default function AdminCustomers() {
     return () => {
       socket.off('customer-status-changed', handleStatusChanged);
     };
-  }, []);
+  }, [isAuthenticated, isHydrating]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -678,4 +682,3 @@ export default function AdminCustomers() {
     </div>
   );
 }
-

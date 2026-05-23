@@ -34,8 +34,14 @@ export const connectSocket = () => {
     socket = io(getSocketBaseUrl(), {
       autoConnect: false,
       withCredentials: true,
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
     }) as Socket<ServerToClientEvents>;
+
+    socket.on('connect_error', (error) => {
+      if (import.meta.env.DEV) {
+        console.warn('[Socket] Connection failed:', error.message);
+      }
+    });
   }
 
   if (!socket.connected) {

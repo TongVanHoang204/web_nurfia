@@ -17,6 +17,24 @@ const normalizeAssetInput = (value: string) => {
   return trimmed;
 };
 
+const safelyPlayVideo = (video: HTMLVideoElement) => {
+  const playRequest = video.play();
+  if (playRequest && typeof playRequest.catch === 'function') {
+    playRequest.catch(() => {
+      // Hover previews may be interrupted by a quick mouse leave.
+    });
+  }
+};
+
+const safelyResetVideo = (video: HTMLVideoElement) => {
+  if (!video.paused) {
+    video.pause();
+  }
+  if (Number.isFinite(video.duration)) {
+    video.currentTime = 0;
+  }
+};
+
 export default function AdminBanners() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -172,8 +190,8 @@ export default function AdminBanners() {
                     loop
                     playsInline
                     className="admin-banner-card-video"
-                    onMouseEnter={(e) => (e.target as HTMLVideoElement).play()}
-                    onMouseLeave={(e) => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
+                    onMouseEnter={(e) => safelyPlayVideo(e.currentTarget)}
+                    onMouseLeave={(e) => safelyResetVideo(e.currentTarget)}
                   />
                 ) : banner.imageUrl ? (
                   <img src={resolveSiteAssetUrl(banner.imageUrl) || banner.imageUrl} alt={banner.title} />
