@@ -411,7 +411,7 @@ const getDetailsPreview = (details: unknown) => {
     });
   });
 
-  return previewLines.slice(0, 2).join(' â€¢ ');
+  return previewLines.slice(0, 2).join(' | ');
 };
 
 const escapeCsv = (value: unknown) => {

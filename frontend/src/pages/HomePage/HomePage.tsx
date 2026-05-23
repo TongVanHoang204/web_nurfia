@@ -281,7 +281,7 @@ export default function HomePage() {
           </div>
         </div>
       )}
-      {/* ═══ 1. Hero Slider ═══════════════════════════════════════════════════ */}
+      {/* 1. Hero Slider */}
       <section className="hero-section">
         <Swiper
           modules={[Autoplay, Pagination, Navigation]}
@@ -344,18 +344,18 @@ export default function HomePage() {
         </Swiper>
       </section>
 
-      {/* ═══ 2. Marquee ═══════════════════════════════════════════════════════ */}
+      {/* 2. Marquee */}
       <section className="marquee-section">
         <div className="marquee-track">
           <div className="marquee-content">
             {Array(8).fill(null).map((_, i) => (
-              <span key={i} className="marquee-text">CHOOSE YOUR<span className="marquee-dot">•</span>SUMMER STYLE</span>
+              <span key={i} className="marquee-text">CHOOSE YOUR<span className="marquee-dot">&bull;</span>SUMMER STYLE</span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ 3. Redefine Your Wardrobe — Product Carousel ═════════════════════ */}
+      {/* 3. Redefine Your Wardrobe - Product Carousel */}
       <section className="products-section py-section">
         <div className="container">
           <div className="products-section-header">
@@ -393,7 +393,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 4. Category Banners (WOMEN + MEN) ════════════════════════════════ */}
+      {/* 4. Category Banners (WOMEN + MEN) */}
       <section className="category-banners">
         <div className="banner-grid-full">
           <Link to="/category/women" className="banner-card-full banner-women">
@@ -413,7 +413,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 5. Elevate Text Section ══════════════════════════════════════════ */}
+      {/* 5. Elevate Text Section */}
       <section className="elevate-section py-section">
         <div className="container">
           <div className="elevate-text">
@@ -441,7 +441,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 6. Full-Width Promo Banner ═══════════════════════════════════════ */}
+      {/* 6. Full-Width Promo Banner */}
       <section className="promo-banner">
         <div className="promo-overlay" />
         <div className="promo-content">
@@ -451,7 +451,7 @@ export default function HomePage() {
         <Link to="/category/all" className="promo-wrap-link" aria-label="Shop the look" />
       </section>
 
-      {/* ═══ 7. Featured Products Carousel ════════════════════════════════════ */}
+      {/* 7. Featured Products Carousel */}
       <section className="products-section py-section">
         <div className="container">
           <div className="products-section-header">
@@ -488,7 +488,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 8. Testimonial ═══════════════════════════════════════════════════ */}
+      {/* 8. Testimonial */}
       <section className="testimonial-section">
         <div className="container">
           <Swiper
@@ -516,7 +516,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 9. Sustainability Section ════════════════════════════════════════ */}
+      {/* 9. Sustainability Section */}
       <section className="sustainability-section py-section">
         <div className="container">
           <div className="sustainability-grid">
@@ -537,18 +537,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ 10. Second Marquee ═══════════════════════════════════════════════ */}
+      {/* 10. Second Marquee */}
       <section className="marquee-section">
         <div className="marquee-track">
           <div className="marquee-content">
             {Array(8).fill(null).map((_, i) => (
-              <span key={i} className="marquee-text">CHOOSE YOUR<span className="marquee-dot">•</span>SUMMER STYLE</span>
+              <span key={i} className="marquee-text">CHOOSE YOUR<span className="marquee-dot">&bull;</span>SUMMER STYLE</span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ 11. Blog Posts ═══════════════════════════════════════════════════ */}
+      {/* 11. Blog Posts */}
       <section className="blog-section py-section">
         <div className="container">
           <div className="blog-grid">
@@ -587,7 +587,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ⭐️ 12. Recently Viewed ⭐️ */}
+      {/* 12. Recently Viewed */}
       {recentlyViewed.length > 0 && (
         <section className="products-section py-section">
           <div className="container">
