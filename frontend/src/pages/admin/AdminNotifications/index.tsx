@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, CheckCheck, Search, Inbox } from 'lucide-react';
+import { Bell, CheckCheck, Search, Inbox, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
 import { useNotificationStore, type Notification } from '../../../stores/notificationStore';
+import { useUIStore } from '../../../stores/uiStore';
 import { getNotificationIconConfig } from '../../../components/Notifications';
 import './AdminNotifications.css';
 
@@ -45,11 +46,15 @@ export default function AdminNotifications() {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
+    deleteNotifications,
     initSocket,
   } = useNotificationStore();
+  const { addToast, openConfirm } = useUIStore();
 
   const [filter, setFilter] = useState<NotificationFilter>('ALL');
   const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
@@ -72,6 +77,65 @@ export default function AdminNotifications() {
     });
   }, [filter, notifications, search]);
 
+  useEffect(() => {
+    const visibleIds = new Set(filteredNotifications.map((notification) => notification.id));
+    setSelectedIds((prev) => prev.filter((id) => visibleIds.has(id)));
+  }, [filteredNotifications]);
+
+  const filteredIds = filteredNotifications.map((notification) => notification.id);
+  const selectedSet = new Set(selectedIds);
+  const allFilteredSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedSet.has(id));
+
+  const toggleSelected = (id: number) => {
+    setSelectedIds((prev) => (
+      prev.includes(id)
+        ? prev.filter((selectedId) => selectedId !== id)
+        : [...prev, id]
+    ));
+  };
+
+  const toggleSelectAllFiltered = () => {
+    setSelectedIds(allFilteredSelected ? [] : filteredIds);
+  };
+
+  const handleDeleteOne = (notification: Notification) => {
+    openConfirm({
+      title: 'Delete Notification',
+      message: `Delete "${notification.title}"?`,
+      confirmText: 'Delete',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await deleteNotification(notification.id);
+          setSelectedIds((prev) => prev.filter((id) => id !== notification.id));
+          addToast('Notification deleted', 'success');
+        } catch {
+          addToast('Failed to delete notification', 'error');
+        }
+      },
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+
+    openConfirm({
+      title: 'Delete Notifications',
+      message: `Delete ${selectedIds.length} selected notification${selectedIds.length === 1 ? '' : 's'}?`,
+      confirmText: 'Delete',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await deleteNotifications(selectedIds);
+          setSelectedIds([]);
+          addToast('Selected notifications deleted', 'success');
+        } catch {
+          addToast('Failed to delete selected notifications', 'error');
+        }
+      },
+    });
+  };
+
   const hasMore = page < totalPages;
   const hasNotifications = notifications.length > 0;
 
@@ -82,6 +146,18 @@ export default function AdminNotifications() {
           <h1>System Alerts</h1>
           <p>Manage your notifications, order updates, and system alerts.</p>
         </div>
+        <div className="admin-notifications-header-actions">
+        {selectedIds.length > 0 && (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm admin-notifications-danger-btn"
+            onClick={handleDeleteSelected}
+            disabled={isLoading}
+          >
+            <Trash2 size={14} />
+            Delete selected ({selectedIds.length})
+          </button>
+        )}
         {unreadCount > 0 && (
           <button
             type="button"
@@ -89,10 +165,11 @@ export default function AdminNotifications() {
             onClick={markAllAsRead}
             disabled={isLoading}
           >
-            <CheckCheck size={14} style={{ marginRight: '8px' }} />
+            <CheckCheck size={14} />
             Mark all as read
           </button>
         )}
+        </div>
       </header>
 
       <div className="admin-notifications-toolbar">
@@ -140,6 +217,18 @@ export default function AdminNotifications() {
           </div>
         ) : (
           <div className="admin-notifications-list">
+            <div className="admin-notifications-bulk-row">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={allFilteredSelected}
+                  onChange={toggleSelectAllFiltered}
+                  disabled={filteredNotifications.length === 0}
+                />
+                Select all shown
+              </label>
+              <span>{filteredNotifications.length} shown</span>
+            </div>
             {filteredNotifications.map((notification) => {
               const { color } = getNotificationIconConfig(notification.type);
               const target = getNotificationTarget(notification);
@@ -165,28 +254,42 @@ export default function AdminNotifications() {
 
               const itemClass = `admin-notifications-item ${isUnread ? 'is-unread' : ''}`;
 
-              if (target) {
-                return (
+              return (
+                <article key={notification.id} className={itemClass}>
+                  <label className="admin-notifications-select" aria-label={`Select ${notification.title}`}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSet.has(notification.id)}
+                      onChange={() => toggleSelected(notification.id)}
+                    />
+                  </label>
+                  {target ? (
                   <Link
-                    key={notification.id}
                     to={target}
-                    className={itemClass}
+                    className="admin-notifications-main-action"
                     onClick={() => isUnread && markAsRead(notification.id)}
                   >
                     {itemContent}
                   </Link>
-                );
-              }
-
-              return (
-                <button
-                  key={notification.id}
-                  type="button"
-                  className={itemClass}
-                  onClick={() => isUnread && markAsRead(notification.id)}
-                >
-                  {itemContent}
-                </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="admin-notifications-main-action"
+                      onClick={() => isUnread && markAsRead(notification.id)}
+                    >
+                      {itemContent}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="admin-notifications-delete"
+                    aria-label={`Delete ${notification.title}`}
+                    title={`Delete ${notification.title}`}
+                    onClick={() => handleDeleteOne(notification)}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </article>
               );
             })}
           </div>

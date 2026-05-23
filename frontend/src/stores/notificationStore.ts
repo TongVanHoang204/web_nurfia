@@ -23,6 +23,8 @@ interface NotificationState {
   fetchNotifications: (page?: number) => Promise<void>;
   markAsRead: (id: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  deleteNotification: (id: number) => Promise<void>;
+  deleteNotifications: (ids: number[]) => Promise<void>;
   initSocket: (userId: number, onOrderStatusChanged?: (payload: any) => void) => void;
 }
 
@@ -81,6 +83,42 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       }));
     } catch (err) {
       console.error('[NotificationStore] Failed to mark all notifications as read:', err);
+    }
+  },
+
+  deleteNotification: async (id: number) => {
+    try {
+      await api.delete(`/notifications/${id}`);
+      set((state) => {
+        const removed = state.notifications.find((n) => n.id === id);
+        return {
+          notifications: state.notifications.filter((n) => n.id !== id),
+          unreadCount: removed && !removed.isRead ? Math.max(0, state.unreadCount - 1) : state.unreadCount,
+        };
+      });
+    } catch (err) {
+      console.error('[NotificationStore] Failed to delete notification:', err);
+      throw err;
+    }
+  },
+
+  deleteNotifications: async (ids: number[]) => {
+    const uniqueIds = [...new Set(ids)].filter((id) => Number.isInteger(id) && id > 0);
+    if (uniqueIds.length === 0) return;
+
+    try {
+      await api.delete('/notifications', { data: { ids: uniqueIds } });
+      const idSet = new Set(uniqueIds);
+      set((state) => {
+        const removedUnreadCount = state.notifications.filter((n) => idSet.has(n.id) && !n.isRead).length;
+        return {
+          notifications: state.notifications.filter((n) => !idSet.has(n.id)),
+          unreadCount: Math.max(0, state.unreadCount - removedUnreadCount),
+        };
+      });
+    } catch (err) {
+      console.error('[NotificationStore] Failed to delete notifications:', err);
+      throw err;
     }
   },
 

@@ -40,6 +40,21 @@ export const notificationService = {
     });
   },
 
+  async deleteNotification(userId: number, notificationId: number) {
+    return prisma.notification.deleteMany({
+      where: { id: notificationId, userId },
+    });
+  },
+
+  async deleteNotifications(userId: number, notificationIds: number[]) {
+    return prisma.notification.deleteMany({
+      where: {
+        userId,
+        id: { in: notificationIds },
+      },
+    });
+  },
+
   async createNotification(userId: number, type: string, title: string, message: string, link?: string) {
     const notification = await prisma.notification.create({
       data: {

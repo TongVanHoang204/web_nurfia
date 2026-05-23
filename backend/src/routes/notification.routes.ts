@@ -32,6 +32,29 @@ router.put('/read-all', notificationController.markAllAsRead);
 
 /**
  * @swagger
+ * /api/notifications:
+ *   delete:
+ *     tags: [Notifications]
+ *     summary: Delete multiple notifications
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ids]
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items: { type: integer }
+ *     responses:
+ *       200: { description: Notifications deleted }
+ */
+router.delete('/', notificationController.deleteNotifications);
+
+/**
+ * @swagger
  * /api/notifications/{id}/read:
  *   put:
  *     tags: [Notifications]
@@ -46,5 +69,22 @@ router.put('/read-all', notificationController.markAllAsRead);
  *       200: { description: Notification marked as read }
  */
 router.put('/:id/read', notificationController.markAsRead);
+
+/**
+ * @swagger
+ * /api/notifications/{id}:
+ *   delete:
+ *     tags: [Notifications]
+ *     summary: Delete a notification
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200: { description: Notification deleted }
+ */
+router.delete('/:id', notificationController.deleteNotification);
 
 export default router;

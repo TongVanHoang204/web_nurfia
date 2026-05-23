@@ -36,4 +36,46 @@ export const notificationController = {
       next(err);
     }
   },
+
+  async deleteNotification(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const id = parseInt(String(req.params.id), 10);
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid ID' });
+      }
+
+      const result = await notificationService.deleteNotification(req.userId!, id);
+      if (result.count === 0) {
+        return res.status(404).json({ success: false, message: 'Notification not found' });
+      }
+
+      res.json({ success: true, message: 'Notification deleted' });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async deleteNotifications(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const ids: number[] = Array.isArray(req.body?.ids)
+        ? req.body.ids
+          .map((value: unknown) => Number(value))
+          .filter((value: number): value is number => Number.isInteger(value) && value > 0)
+        : [];
+
+      const uniqueIds = [...new Set(ids)];
+      if (uniqueIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'Notification IDs are required' });
+      }
+
+      const result = await notificationService.deleteNotifications(req.userId!, uniqueIds);
+      res.json({
+        success: true,
+        message: 'Notifications deleted',
+        data: { deletedCount: result.count },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
