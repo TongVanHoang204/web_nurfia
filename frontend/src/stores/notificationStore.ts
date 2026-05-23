@@ -41,8 +41,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     try {
       const { data } = await api.get(`/notifications?page=${page}&limit=20`);
       const result = data.data;
-      set((state) => ({
-        notifications: page === 1 ? result.notifications : [...state.notifications, ...result.notifications],
+      set(() => ({
+        notifications: result.notifications,
         unreadCount: result.unreadCount,
         page: result.page,
         totalPages: result.totalPages,

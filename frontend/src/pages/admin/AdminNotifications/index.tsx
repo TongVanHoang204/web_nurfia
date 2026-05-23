@@ -9,6 +9,21 @@ import './AdminNotifications.css';
 
 type NotificationFilter = 'ALL' | 'UNREAD' | 'READ';
 
+const getPageNumbers = (currentPage: number, totalPages: number) => {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const pages: number[] = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (start > 2) pages.push(-1);
+  for (let page = start; page <= end; page += 1) pages.push(page);
+  if (end < totalPages - 1) pages.push(-2);
+  pages.push(totalPages);
+
+  return pages;
+};
+
 const formatNotificationDate = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
@@ -136,8 +151,13 @@ export default function AdminNotifications() {
     });
   };
 
-  const hasMore = page < totalPages;
+  const pageNumbers = useMemo(() => getPageNumbers(page, Math.max(totalPages, 1)), [page, totalPages]);
   const hasNotifications = notifications.length > 0;
+  const goToPage = (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === page || isLoading) return;
+    setSelectedIds([]);
+    fetchNotifications(nextPage);
+  };
 
   return (
     <div className="admin-notifications-page">
@@ -295,15 +315,44 @@ export default function AdminNotifications() {
           </div>
         )}
 
-        {hasNotifications && hasMore && (
+        {hasNotifications && totalPages > 1 && (
           <div className="admin-notifications-footer">
+            <span className="admin-notifications-pagination-text">
+              Page {page} of {totalPages}
+            </span>
             <button
               type="button"
-              className="btn btn-outline"
-              onClick={() => fetchNotifications(page + 1)}
-              disabled={isLoading}
+              className="admin-notifications-page-btn"
+              onClick={() => goToPage(page - 1)}
+              disabled={page <= 1 || isLoading}
             >
-              {isLoading ? 'Loading...' : 'Load Older Notifications'}
+              Previous
+            </button>
+            <div className="admin-notifications-page-numbers">
+              {pageNumbers.map((pageNumber) => (
+                pageNumber < 0 ? (
+                  <span key={pageNumber} className="admin-notifications-page-ellipsis">...</span>
+                ) : (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    className={`admin-notifications-page-btn ${pageNumber === page ? 'is-active' : ''}`}
+                    onClick={() => goToPage(pageNumber)}
+                    disabled={isLoading}
+                    aria-current={pageNumber === page ? 'page' : undefined}
+                  >
+                    {pageNumber}
+                  </button>
+                )
+              ))}
+            </div>
+            <button
+              type="button"
+              className="admin-notifications-page-btn"
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages || isLoading}
+            >
+              Next
             </button>
           </div>
         )}

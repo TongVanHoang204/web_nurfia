@@ -281,8 +281,59 @@
 .admin-notifications-footer {
   padding: 20px;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   border-top: 1px solid var(--color-border);
+}
+
+.admin-notifications-pagination-text {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-notifications-page-numbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.admin-notifications-page-btn {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.admin-notifications-page-btn:hover:not(:disabled),
+.admin-notifications-page-btn.is-active {
+  border-color: var(--color-black);
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.admin-notifications-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-notifications-page-ellipsis {
+  padding: 0 4px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .admin-empty-notifications {
@@ -334,5 +385,14 @@
   .admin-notifications-item-meta {
     flex-direction: column;
     gap: 4px;
+  }
+
+  .admin-notifications-footer {
+    justify-content: center;
+  }
+
+  .admin-notifications-pagination-text,
+  .admin-notifications-page-numbers {
+    width: 100%;
   }
 }
