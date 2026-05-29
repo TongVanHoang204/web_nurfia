@@ -106,8 +106,8 @@ export default function AdminSettings() {
           <p>Global store configuration and branding assets.</p>
         </div>
         <div className="settings-toolbar-actions">
-           <button className="btn btn-outline" onClick={() => setSettings(initialSettings)} disabled={changedKeys.length === 0}><RefreshCw size={14} style={{ marginRight: 8 }} /> Reset</button>
-           <button className="btn btn-primary" onClick={handleSaveAll} disabled={changedKeys.length === 0 || savingAll}><Save size={14} style={{ marginRight: 8 }} /> {savingAll ? 'Saving...' : 'Save All'}</button>
+           <button type="button" className="btn btn-outline" onClick={() => setSettings(initialSettings)} disabled={changedKeys.length === 0}><RefreshCw size={14} /> Reset</button>
+           <button type="button" className="btn btn-primary" onClick={handleSaveAll} disabled={changedKeys.length === 0 || savingAll}><Save size={14} /> {savingAll ? 'Saving...' : 'Save All'}</button>
         </div>
       </header>
 
@@ -118,78 +118,121 @@ export default function AdminSettings() {
         <div className="settings-overview-card"><span>Live Status</span><strong>Online</strong></div>
       </div>
 
-      <div className="settings-toolbar">
-         <div className="settings-search-wrap">
+      <div className="settings-workspace">
+        <aside className="settings-sidebar">
+          <div className="settings-search-wrap">
             <Search size={18} />
             <input type="text" placeholder="Search setting names or values..." value={search} onChange={e => setSearch(e.target.value)} />
-         </div>
-      </div>
+          </div>
 
-      <div className="settings-groups-grid">
-        {GROUPS.map(group => (
-          <section key={group.id} className="settings-group-card">
-            <header className="settings-group-header">
-              <div className="settings-group-title-wrap">
-                <div className="settings-group-icon"><group.icon size={20} /></div>
-                <div><h3>{group.title}</h3><p>{group.description}</p></div>
-              </div>
-            </header>
-            
-            <div className="settings-form-grid">
-              {group.keys.filter(k => k.toLowerCase().includes(search.toLowerCase()) || FIELD_META[k].label.toLowerCase().includes(search.toLowerCase())).map(k => {
-                const meta = FIELD_META[k];
-                const isDirty = settings[k] !== initialSettings[k];
-                return (
-                  <div key={k} className={`settings-field ${isDirty ? 'is-dirty' : ''}`}>
-                    <label>{meta.label}</label>
-                    {meta.type === 'textarea' ? (
-                      <textarea title={meta.label} placeholder={meta.placeholder || meta.label} value={settings[k]} rows={meta.rows || 3} onChange={e => setSettings({...settings, [k]: e.target.value})} />
-                    ) : (
-                      <input title={meta.label} placeholder={meta.placeholder || meta.label} type={meta.type} value={settings[k]} onChange={e => setSettings({...settings, [k]: e.target.value})} />
-                    )}
-                    
-                    <div className="settings-field-actions">
-                      {meta.uploadTarget && (
-                        <label className="btn btn-outline btn-sm">
-                          <Upload size={12} style={{ marginRight: 6 }} /> {uploadingTarget === k ? '...' : 'Upload'}
-                          <input aria-label="Upload" title="Upload" type="file" hidden onChange={e => handleUpload(meta.uploadTarget!, e.target.files?.[0] || null)} />
-                        </label>
-                      )}
-                      {settings[k] && <button title={`Open ${meta.label}`} aria-label={`Open ${meta.label}`} className="btn btn-outline btn-sm" onClick={() => window.open(resolveSiteAssetUrl(settings[k]), '_blank')}><ExternalLink size={12} /></button>}
-                    </div>
+          <nav className="settings-section-nav" aria-label="Settings sections">
+            {GROUPS.map(group => {
+              const dirtyCount = group.keys.filter(k => changedKeys.includes(k)).length;
+              return (
+                <a key={group.id} href={`#settings-${group.id}`} className="settings-section-link">
+                  <span className="settings-section-link-icon"><group.icon size={16} /></span>
+                  <span>
+                    <strong>{group.title}</strong>
+                    <small>{group.keys.length} fields</small>
+                  </span>
+                  {dirtyCount > 0 && <em>{dirtyCount}</em>}
+                </a>
+              );
+            })}
+          </nav>
+        </aside>
 
-                    {meta.preview && settings[k] && (
-                       <div key={settings[k]} className={`settings-preview settings-preview-${meta.preview}`}>
-                          <img 
-                            src={resolveSiteAssetUrl(settings[k])} 
-                            alt={meta.label} 
-                            onError={(e: any) => {
-                              e.target.style.display = 'none';
-                              const p = e.target.parentElement;
-                              if (p && !p.querySelector('.preview-error')) {
-                                const err = document.createElement('span');
-                                err.className = 'preview-error';
-                                err.innerText = 'Load failed';
-                                p.appendChild(err);
-                              }
-                            }}
-                          />
-                       </div>
-                    )}
+        <div className="settings-groups-grid">
+          {GROUPS.map(group => {
+            const visibleKeys = group.keys.filter(k => {
+              const query = search.toLowerCase();
+              if (!query) return true;
+              return (
+                k.toLowerCase().includes(query)
+                || FIELD_META[k].label.toLowerCase().includes(query)
+                || String(settings[k] || '').toLowerCase().includes(query)
+              );
+            });
+
+            return (
+              <section key={group.id} id={`settings-${group.id}`} className="settings-group-card">
+                <header className="settings-group-header">
+                  <div className="settings-group-title-wrap">
+                    <div className="settings-group-icon"><group.icon size={20} /></div>
+                    <div><h3>{group.title}</h3><p>{group.description}</p></div>
                   </div>
-                );
-              })}
-            </div>
-          </section>
-        ))}
+                  <span className="settings-group-count">{visibleKeys.length} / {group.keys.length}</span>
+                </header>
+
+                {visibleKeys.length === 0 ? (
+                  <div className="settings-empty-state">
+                    <Search size={18} />
+                    <p>No settings match your search in this section.</p>
+                  </div>
+                ) : (
+                  <div className="settings-form-grid">
+                    {visibleKeys.map(k => {
+                      const meta = FIELD_META[k];
+                      const isDirty = settings[k] !== initialSettings[k];
+                      return (
+                        <div key={k} className={`settings-field ${isDirty ? 'is-dirty' : ''}`}>
+                          <div className="settings-field-label-row">
+                            <label>{meta.label}</label>
+                            {isDirty && <span>Changed</span>}
+                          </div>
+                          {meta.type === 'textarea' ? (
+                            <textarea title={meta.label} placeholder={meta.placeholder || meta.label} value={settings[k]} rows={meta.rows || 3} onChange={e => setSettings({...settings, [k]: e.target.value})} />
+                          ) : (
+                            <input title={meta.label} placeholder={meta.placeholder || meta.label} type={meta.type} value={settings[k]} onChange={e => setSettings({...settings, [k]: e.target.value})} />
+                          )}
+
+                          {(meta.uploadTarget || settings[k]) && (
+                            <div className="settings-field-actions">
+                              {meta.uploadTarget && (
+                                <label className="btn btn-outline btn-sm">
+                                  <Upload size={12} /> {uploadingTarget === k ? 'Uploading...' : 'Upload'}
+                                  <input aria-label="Upload" title="Upload" type="file" hidden onChange={e => handleUpload(meta.uploadTarget!, e.target.files?.[0] || null)} />
+                                </label>
+                              )}
+                              {settings[k] && <button type="button" title={`Open ${meta.label}`} aria-label={`Open ${meta.label}`} className="btn btn-outline btn-sm" onClick={() => window.open(resolveSiteAssetUrl(settings[k]), '_blank')}><ExternalLink size={12} /> Open</button>}
+                            </div>
+                          )}
+
+                          {meta.preview && settings[k] && (
+                            <div key={settings[k]} className={`settings-preview settings-preview-${meta.preview}`}>
+                              <img
+                                src={resolveSiteAssetUrl(settings[k])}
+                                alt={meta.label}
+                                onError={(e: any) => {
+                                  e.target.style.display = 'none';
+                                  const p = e.target.parentElement;
+                                  if (p && !p.querySelector('.preview-error')) {
+                                    const err = document.createElement('span');
+                                    err.className = 'preview-error';
+                                    err.innerText = 'Load failed';
+                                    p.appendChild(err);
+                                  }
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </div>
       </div>
 
       {changedKeys.length > 0 && (
         <div className="settings-unsaved-bar">
           <span>You have {changedKeys.length} unsaved changes.</span>
           <div className="settings-unsaved-actions">
-             <button className="btn btn-outline btn-discard" onClick={() => setSettings(initialSettings)}>Discard</button>
-             <button className="btn btn-primary" onClick={handleSaveAll} disabled={savingAll}>Save Now</button>
+             <button type="button" className="btn btn-outline btn-discard" onClick={() => setSettings(initialSettings)}>Discard</button>
+             <button type="button" className="btn btn-primary" onClick={handleSaveAll} disabled={savingAll}>Save Now</button>
           </div>
         </div>
       )}

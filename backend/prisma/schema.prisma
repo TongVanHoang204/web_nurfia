@@ -34,6 +34,7 @@ model User {
   inventoryTxs  InventoryTransaction[]
   notifications Notification[]
   chatHistory   ChatHistory?
+  statusChanges OrderStatusHistory[]
 
   @@map("users")
 }
@@ -279,10 +280,11 @@ model Order {
   createdAt         DateTime      @default(now()) @map("created_at")
   updatedAt         DateTime      @updatedAt @map("updated_at")
 
-  user    User        @relation(fields: [userId], references: [id])
-  address Address?    @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  coupon  Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  items   OrderItem[]
+  user          User                @relation(fields: [userId], references: [id])
+  address       Address?            @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  coupon        Coupon?             @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+  statusHistory OrderStatusHistory[]
 
   @@index([userId])
   @@index([status])
@@ -560,6 +562,23 @@ model Notification {
 
   @@index([userId, isRead])
   @@map("notifications")
+}
+
+// ─── Order Status History ────────────────────────────────────────────────────
+
+model OrderStatusHistory {
+  id        Int         @id @default(autoincrement())
+  orderId   Int         @map("order_id")
+  status    OrderStatus
+  note      String?     @db.Text
+  changedBy Int?        @map("changed_by")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("order_status_history")
 }
 
 // ─── AI Chat History ─────────────────────────────────────────────────────────

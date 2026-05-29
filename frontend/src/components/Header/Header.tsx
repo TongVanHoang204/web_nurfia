@@ -9,6 +9,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { resolveSiteAssetUrl, useSiteSettings } from '../../contexts/SiteSettingsContext';
 import { useState, useEffect, useRef } from 'react';
 import NotificationBell from '../Notifications/NotificationBell';
+import SearchAutocomplete from '../SearchAutocomplete/SearchAutocomplete';
 import api from '../../api/client';
 
 type SubLink = { label: string; href: string };
@@ -238,7 +239,7 @@ export default function Header() {
 
         {/* Search Bar */}
         <div className={`search-bar ${isSearchOpen ? 'active' : ''}`}>
-          <div className="container">
+          <div className="container" style={{ position: 'relative' }}>
             <form onSubmit={handleSearch} className="search-form">
               <Search size={18} className="search-icon" />
               <input
@@ -248,9 +249,24 @@ export default function Header() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
+                autoComplete="off"
               />
               <button type="button" className="search-close" onClick={closeSearch} title="Close search" aria-label="Close search"><X size={18} /></button>
             </form>
+            <SearchAutocomplete
+              query={searchQuery}
+              isOpen={isSearchOpen && searchQuery.length > 0}
+              onClose={() => { closeSearch(); setSearchQuery(''); }}
+              onSearch={(q) => { setSearchQuery(q); navigate(`/category/all?search=${encodeURIComponent(q)}`); closeSearch(); setSearchQuery(''); }}
+            />
+            {isSearchOpen && searchQuery.length === 0 && (
+              <SearchAutocomplete
+                query=""
+                isOpen={true}
+                onClose={() => { closeSearch(); setSearchQuery(''); }}
+                onSearch={(q) => { setSearchQuery(q); }}
+              />
+            )}
           </div>
         </div>
       </header>

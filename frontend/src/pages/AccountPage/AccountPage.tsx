@@ -359,12 +359,21 @@ export function OrdersSection() {
                     This order has been cancelled.
                   </div>
                 ) : (
-                  orderSteps.map((step, index) => (
-                    <div key={step} className={`order-progress-step${index <= statusStepIndex ? ' is-complete' : ''}`}>
-                      <span>{index + 1}</span>
-                      <small>{step.toLowerCase()}</small>
-                    </div>
-                  ))
+                  orderSteps.map((step, index) => {
+                    const stepHistory = order.statusHistory?.find((h: any) => String(h.status).toUpperCase() === step);
+                    const timestamp = stepHistory ? new Date(stepHistory.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null;
+                    const isComplete = index <= statusStepIndex || !!stepHistory;
+
+                    return (
+                      <div key={step} className={`order-progress-step${isComplete ? ' is-complete' : ''}`}>
+                        <span>{isComplete ? '✓' : index + 1}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <small style={{ paddingRight: '6px' }}>{step.toLowerCase()}</small>
+                          {timestamp && <span className="step-timestamp">{timestamp}</span>}
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
               <div className="order-card-items">

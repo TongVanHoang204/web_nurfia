@@ -357,5 +357,63 @@ export const productController = {
     } catch (err) {
       next(err);
     }
-  }
+  },
+
+  searchSuggest: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const q = String(req.query.q || '').trim();
+      if (!q || q.length < 2) {
+        res.json({ success: true, data: { products: [], categories: [] } });
+        return;
+      }
+
+      const [products, categories] = await Promise.all([
+        prisma.product.findMany({
+          where: {
+            isActive: true,
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { shortDescription: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+          take: 6,
+          orderBy: [{ salesCount: 'desc' }, { viewCount: 'desc' }],
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            price: true,
+            salePrice: true,
+            images: {
+              where: { isPrimary: true },
+              take: 1,
+              select: { url: true, alt: true },
+            },
+            category: {
+              select: { name: true, slug: true },
+            },
+          },
+        }),
+        prisma.category.findMany({
+          where: {
+            isActive: true,
+            name: { contains: q, mode: 'insensitive' },
+          },
+          take: 3,
+          orderBy: { sortOrder: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            image: true,
+          },
+        }),
+      ]);
+
+      res.json({ success: true, data: { products, categories } });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
+

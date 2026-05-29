@@ -6,23 +6,27 @@ import { useUIStore } from '../../../stores/uiStore';
 import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import './AdminStaff.css';
 
-const PERMISSION_OPTIONS = [
-  'MANAGE_BANNERS',
-  'MANAGE_PRODUCTS',
-  'MANAGE_INVENTORY',
-  'MANAGE_CATEGORIES',
-  'MANAGE_ORDERS',
-  'MANAGE_CUSTOMERS',
-  'MANAGE_REVIEWS',
-  'MANAGE_STAFF',
-  'VIEW_REPORTS',
-  'MANAGE_COUPONS',
-  'MANAGE_SHIPPING',
-  'MANAGE_CONTACTS',
-  'VIEW_ACTIVITY_LOGS',
-  'MANAGE_SETTINGS',
-  'MANAGE_BLOG'
-];
+const PERMISSION_DEFINITIONS = [
+  { value: 'MANAGE_BANNERS', label: 'Banners & Popups', group: 'Storefront', unlocks: 'Banners, popups' },
+  { value: 'MANAGE_BLOG', label: 'Blog Posts', group: 'Storefront', unlocks: 'Blog posts' },
+  { value: 'MANAGE_SETTINGS', label: 'Settings', group: 'Storefront', unlocks: 'Site settings' },
+  { value: 'MANAGE_PRODUCTS', label: 'Products', group: 'Catalog', unlocks: 'Products, brands, attributes' },
+  { value: 'MANAGE_INVENTORY', label: 'Inventory', group: 'Catalog', unlocks: 'Stock and inventory history' },
+  { value: 'MANAGE_CATEGORIES', label: 'Categories', group: 'Catalog', unlocks: 'Product categories' },
+  { value: 'MANAGE_ORDERS', label: 'Orders', group: 'Sales Ops', unlocks: 'Orders and fulfillment status' },
+  { value: 'MANAGE_CUSTOMERS', label: 'Customers', group: 'Sales Ops', unlocks: 'Customer accounts and activity' },
+  { value: 'MANAGE_COUPONS', label: 'Coupons', group: 'Sales Ops', unlocks: 'Discount codes' },
+  { value: 'MANAGE_SHIPPING', label: 'Shipping', group: 'Sales Ops', unlocks: 'Shipping methods' },
+  { value: 'VIEW_REPORTS', label: 'Reports', group: 'Sales Ops', unlocks: 'Reports and charts' },
+  { value: 'MANAGE_REVIEWS', label: 'Reviews', group: 'Trust & Support', unlocks: 'Product reviews' },
+  { value: 'MANAGE_CONTACTS', label: 'Contacts', group: 'Trust & Support', unlocks: 'Contact messages and replies' },
+  { value: 'VIEW_ACTIVITY_LOGS', label: 'Activity Logs', group: 'Trust & Support', unlocks: 'Admin activity logs' },
+  { value: 'MANAGE_STAFF', label: 'Staff Management', group: 'Trust & Support', unlocks: 'Staff accounts and permissions' },
+] as const;
+
+const PERMISSION_OPTIONS = PERMISSION_DEFINITIONS.map((permission) => permission.value);
+const PERMISSION_GROUPS = Array.from(new Set(PERMISSION_DEFINITIONS.map((permission) => permission.group)));
+const PERMISSION_META = new Map(PERMISSION_DEFINITIONS.map((permission) => [permission.value, permission]));
 
 type TeamRole = 'STAFF' | 'MANAGER';
 
@@ -108,10 +112,14 @@ const formatDate = (value: string) => {
 };
 
 const formatPermissionLabel = (permission: string) => {
-  return permission.replace('MANAGE_', '').replace('VIEW_', '').split('_').join(' ').toLowerCase();
+  return PERMISSION_META.get(permission as (typeof PERMISSION_OPTIONS)[number])?.label
+    || permission.replace('MANAGE_', '').replace('VIEW_', '').split('_').join(' ').toLowerCase();
 };
 
 const formatPermissionTitle = (permission: string) => {
+  const permissionMeta = PERMISSION_META.get(permission as (typeof PERMISSION_OPTIONS)[number]);
+  if (permissionMeta) return permissionMeta.label;
+
   return permission
     .split('_')
     .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
@@ -696,16 +704,24 @@ export default function AdminStaff() {
                 </div>
 
                 <div className="staff-permission-grid">
-                  {PERMISSION_OPTIONS.map(perm => (
-                    <label key={perm} htmlFor={`perm-${perm}`} className="staff-permission-option">
-                      <input
-                        id={`perm-${perm}`}
-                        type="checkbox"
-                        checked={formData.permissions.includes(perm)}
-                        onChange={() => togglePermission(perm)}
-                      />
-                      <span>{formatPermissionLabel(perm)}</span>
-                    </label>
+                  {PERMISSION_GROUPS.map((group) => (
+                    <section key={group} className="staff-permission-group" aria-label={`${group} permissions`}>
+                      <div className="staff-permission-group-title">{group}</div>
+                      {PERMISSION_DEFINITIONS.filter((permission) => permission.group === group).map((permission) => (
+                        <label key={permission.value} htmlFor={`perm-${permission.value}`} className="staff-permission-option">
+                          <input
+                            id={`perm-${permission.value}`}
+                            type="checkbox"
+                            checked={formData.permissions.includes(permission.value)}
+                            onChange={() => togglePermission(permission.value)}
+                          />
+                          <span>
+                            <strong>{permission.label}</strong>
+                            <small>{permission.unlocks}</small>
+                          </span>
+                        </label>
+                      ))}
+                    </section>
                   ))}
                 </div>
               </div>

@@ -566,3 +566,10 @@
     white-space: normal;
   }
 }
+
+.step-timestamp {
+  display: block;
+  font-size: 9px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}

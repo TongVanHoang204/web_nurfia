@@ -463,6 +463,16 @@ export const orderController = {
 
         await tx.cartItem.deleteMany({ where: { userId: req.userId! } });
 
+        // Log initial status
+        await tx.orderStatusHistory.create({
+          data: {
+            orderId: newOrder.id,
+            status: 'PENDING',
+            note: 'Order placed by customer',
+            changedBy: req.userId!,
+          },
+        });
+
         return newOrder;
       });
 
@@ -524,6 +534,10 @@ export const orderController = {
               product: { include: { images: { where: { isPrimary: true }, take: 1 } } },
             },
           },
+          statusHistory: {
+            orderBy: { createdAt: 'asc' },
+            include: { user: { select: { fullName: true } } },
+          },
         },
       });
       res.json({ success: true, data: orders.map((order) => serializeOrderWithProtectedProof(order)) });
@@ -542,6 +556,10 @@ export const orderController = {
             },
           },
           coupon: true,
+          statusHistory: {
+            orderBy: { createdAt: 'asc' },
+            include: { user: { select: { fullName: true } } },
+          },
         },
       });
       if (!order) throw new AppError('Order not found.', 404);
@@ -649,7 +667,16 @@ export const orderController = {
 
         return tx.order.update({
           where: { id: order.id },
-          data: { status: 'CANCELLED' },
+          data: {
+            status: 'CANCELLED',
+            statusHistory: {
+              create: {
+                status: 'CANCELLED',
+                note: 'Cancelled by customer',
+                changedBy: req.userId!,
+              },
+            },
+          },
         });
       });
 

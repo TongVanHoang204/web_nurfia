@@ -5,6 +5,7 @@ import api from '../../api/client';
 import { useUIStore } from '../../stores/uiStore';
 import { useCartStore } from '../../stores/cartStore';
 import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
+import { connectSocket } from '../../services/socket';
 import './OrderConfirmationPage.css';
 
 const STATUS_STEPS = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
@@ -50,6 +51,23 @@ export default function OrderConfirmationPage() {
     if (id) {
       fetchOrder();
     }
+  }, [id]);
+
+  useEffect(() => {
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const handleOrderStatusChanged = (payload: any) => {
+      if (payload.orderId === Number(id)) {
+        addToast(`Order status updated to ${payload.status}`, 'info');
+        fetchOrder();
+      }
+    };
+
+    socket.on('order-status-changed', handleOrderStatusChanged);
+    return () => {
+      socket.off('order-status-changed', handleOrderStatusChanged);
+    };
   }, [id]);
 
   const getProgressRatio = () => {
@@ -400,6 +418,58 @@ export default function OrderConfirmationPage() {
             </div>
           )}
         </div>
+
+        {order.statusHistory && order.statusHistory.length > 0 && (
+          <div className="status-history-section" style={{ marginTop: '40px', marginBottom: '40px' }}>
+            <h3 className="tracking-header" style={{ marginBottom: '24px' }}>Detailed Order Journey</h3>
+            <div className="premium-timeline">
+              {order.statusHistory.map((item: any, index: number) => {
+                const isLast = index === order.statusHistory.length - 1;
+                const itemStatus = String(item.status).toLowerCase();
+                
+                let statusClass = 'completed';
+                if (itemStatus === 'cancelled') statusClass = 'cancelled';
+                else if (isLast && order.status !== 'DELIVERED') statusClass = 'active';
+
+                return (
+                  <div 
+                    key={item.id} 
+                    className={`premium-timeline-item ${statusClass}`}
+                    style={{ animationDelay: `${index * 150}ms` }}
+                  >
+                    <div className="premium-timeline-badge">
+                      {itemStatus === 'pending' && <Clock size={12} />}
+                      {itemStatus === 'confirmed' && <Box size={12} />}
+                      {itemStatus === 'shipping' && <Truck size={12} />}
+                      {itemStatus === 'delivered' && <CheckCircle2 size={12} />}
+                      {itemStatus === 'cancelled' && <span style={{ fontSize: '10px', fontWeight: 'bold' }}>✕</span>}
+                    </div>
+                    <div className="premium-timeline-content">
+                      <div className="premium-timeline-header">
+                        <span className="premium-timeline-title">
+                          {itemStatus === 'pending' ? 'Order Placed' : itemStatus}
+                        </span>
+                        <span className="premium-timeline-time">
+                          {new Date(item.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      {item.note && (
+                        <div className="premium-timeline-note">
+                          {item.note}
+                        </div>
+                      )}
+                      {item.user && (
+                        <div className="premium-timeline-actor">
+                          Updated by {item.user.fullName}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="oc-details">
           <h2>Order details</h2>

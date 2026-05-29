@@ -39,7 +39,7 @@ router.get('/', productController.getProducts);
  *       200: { description: Filter options }
  */
 router.get('/filters', productController.getFilterOptions);
-
+router.get('/search-suggest', productController.searchSuggest);
 /**
  /** * @swagger
  * /api/products/featured:
