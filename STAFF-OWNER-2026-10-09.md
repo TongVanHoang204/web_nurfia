@@ -35,3 +35,15 @@ Mã nguồn chưa được commit, push hoặc triển khai trong lần làm vi�
 4. Đăng nhập lại bằng tài khoản `admin`; profile phải trả `role: OWNER`, badge hiển thị Owner và Staff Management cho phép quản lý Admin.
 
 CLI cấp Owner cho tài khoản hiện có: `npm run owner:provision --workspace backend`, nhận `OWNER_USERNAME` / `OWNER_PASSWORD` từ môi trường tạm thời. Không cần chạy lại cho `admin` sau lần cấp này và không lưu hai biến đó vào repo.
+
+## Cập nhật: Owner chỉnh quyền Admin và màu vai trò
+
+Owner có thể bật/tắt từng module của Admin tại Permissions, kể cả bỏ toàn bộ module. Admin giữ cấp bậc cao hơn Manager/Staff nhưng chỉ sử dụng và cấp lại các quyền Owner cho phép. API, login/profile và menu điều hướng cùng áp dụng quyền này; quyền Owner luôn đầy đủ. Thay đổi quyền thu hồi phiên cũ.
+
+Admin cũ giữ toàn bộ module cho đến lần Owner cấu hình quyền. Cột `admin_permissions_restricted` đánh dấu việc cấu hình, phân biệt tài khoản cũ với Admin đã bị bỏ hết quyền. Cột này không được nhận từ API hoặc trả ra profile/lịch sử. Migration: `0008_admin_permissions`; startup thêm cột trước khi mở server. Admin mới được tạo với danh sách quyền cụ thể, mặc định toàn bộ module nếu Owner không chỉnh.
+
+Nhãn vai trò ở thanh tài khoản, danh sách nhân viên và panel dùng cùng màu và hiệu ứng chuyển màu/phát sáng: Owner vàng, Admin tím, Manager xanh dương, Staff xanh lá. Tắt chuyển động khi người dùng bật giảm chuyển động.
+
+Đã kiểm tra: 77 test backend, 6 test frontend đều đạt; cả hai build thành công. Kiểm tra trình duyệt có API giả lập xác nhận Owner lưu danh sách quyền Admin, màu bốn vai trò khác nhau, hiệu ứng giảm chuyển động và bố cục điện thoại hoạt động. File test AdminStaff.test.tsx đã bị xóa trong workspace trước lần sửa này được giữ nguyên trạng thái xóa; kiểm thử mới nằm trong StaffEditor.permissions.test.tsx và AdminLayout.access.test.tsx.
+
+**Thứ tự triển khai bắt buộc:** deploy backend mới trên Render trước, sau đó upload `dist/dist.zip` mới vào `/domains/vanhoang.mauweb68.com/public_html`, giải nén ghi đè và tải lại trang. Bản sửa này chưa được push hoặc deploy. Frontend mới cần API mới trả quyền đầy đủ của Admin cũ và kiểm tra quyền Admin sau khi Owner lưu; chỉ upload ZIP sẽ chưa áp dụng giới hạn quyền ở server.

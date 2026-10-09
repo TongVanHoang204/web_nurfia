@@ -20,7 +20,7 @@ interface NotificationState {
   totalPages: number;
   isLoading: boolean;
   isInitialized: boolean;
-  fetchNotifications: (page?: number) => Promise<void>;
+  fetchNotifications: (page?: number, append?: boolean) => Promise<void>;
   markAsRead: (id: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   deleteNotification: (id: number) => Promise<void>;
@@ -36,13 +36,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   isLoading: false,
   isInitialized: false,
 
-  fetchNotifications: async (page = 1) => {
+  fetchNotifications: async (page = 1, append = false) => {
     set({ isLoading: true });
     try {
       const { data } = await api.get(`/notifications?page=${page}&limit=20`);
       const result = data.data;
-      set(() => ({
-        notifications: result.notifications,
+      set((state) => ({
+        notifications: append ? [...new Map([...state.notifications, ...result.notifications].map((n: Notification) => [n.id, n])).values()] : result.notifications,
         unreadCount: result.unreadCount,
         page: result.page,
         totalPages: result.totalPages,

@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { CalendarDays, Download, Eye, Filter, Mail, Package, Phone, Search, UserRound, Users, X } from 'lucide-react';
@@ -60,7 +62,7 @@ const joinedInLastDays = (dateValue: string, days: number) => {
 };
 
 const formatJoinedDate = (value: string) => {
-  return new Date(value).toLocaleDateString('en-US', {
+  return new Date(value).toLocaleDateString(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -68,7 +70,7 @@ const formatJoinedDate = (value: string) => {
 };
 
 const formatDateTime = (value: string) => {
-  return new Date(value).toLocaleString('en-US', {
+  return new Date(value).toLocaleString(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -133,6 +135,7 @@ const normalizeCustomer = (customer: Partial<Customer> & Record<string, unknown>
 const isCustomerActive = (customer: Pick<Customer, 'isActive'>) => customer.isActive !== false;
 
 export default function AdminCustomers() {
+  useTranslation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, total: 0, totalPages: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -379,14 +382,14 @@ export default function AdminCustomers() {
     <div className="customers-admin-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Customers ({pagination.total})</h1>
-          <p className="customers-admin-subtitle">Track customer growth, profile quality, and engagement at a glance.</p>
+          <h1 className="admin-page-title">{translateUi("Customers (")}{pagination.total})</h1>
+          <p className="customers-admin-subtitle">{translateUi("Track customer growth, profile quality, and engagement at a glance.")}</p>
         </div>
         <div className="customers-admin-stats">
-          <span><Users size={14} /> This page: {stats.totalOnPage}</span>
-          <span><Phone size={14} /> With phone: {stats.withPhone}</span>
-          <span><CalendarDays size={14} /> New 30d: {stats.newIn30Days}</span>
-          <span><Filter size={14} /> No orders: {stats.noOrders}</span>
+          <span><Users size={14} /> {translateUi("This page:")} {stats.totalOnPage}</span>
+          <span><Phone size={14} /> {translateUi("With phone:")} {stats.withPhone}</span>
+          <span><CalendarDays size={14} /> {translateUi("New 30d:")} {stats.newIn30Days}</span>
+          <span><Filter size={14} /> {translateUi("No orders:")} {stats.noOrders}</span>
         </div>
       </div>
 
@@ -398,44 +401,43 @@ export default function AdminCustomers() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search by name, username, email, or phone"
+              placeholder={translateUi("Search by name, username, email, or phone")}
             />
           </div>
 
-          <label className="customers-select-wrap" aria-label="Filter engagement">
+          <label className="customers-select-wrap" aria-label={translateUi("Filter engagement")}>
             <Filter size={15} />
             <select value={engagementFilter} onChange={(e) => setEngagementFilter(e.target.value as EngagementFilter)}>
-              <option value="ALL">All segments</option>
-              <option value="NEW">New in 30 days</option>
-              <option value="NO_ORDERS">No orders</option>
-              <option value="RETURNING">Returning (2+ orders)</option>
-              <option value="HAS_PHONE">Has phone number</option>
+              <option value="ALL">{translateUi("All segments")}</option>
+              <option value="NEW">{translateUi("New in 30 days")}</option>
+              <option value="NO_ORDERS">{translateUi("No orders")}</option>
+              <option value="RETURNING">{translateUi("Returning (2+ orders)")}</option>
+              <option value="HAS_PHONE">{translateUi("Has phone number")}</option>
             </select>
           </label>
 
-          <label className="customers-select-wrap" aria-label="Sort customers">
+          <label className="customers-select-wrap" aria-label={translateUi("Sort customers")}>
             <Users size={15} />
             <select value={sortOption} onChange={(e) => setSortOption(e.target.value as SortOption)}>
-              <option value="NEWEST">Sort: Newest</option>
-              <option value="OLDEST">Sort: Oldest</option>
-              <option value="ORDERS_DESC">Sort: Most orders</option>
-              <option value="NAME_ASC">Sort: Name A-Z</option>
+              <option value="NEWEST">{translateUi("Sort: Newest")}</option>
+              <option value="OLDEST">{translateUi("Sort: Oldest")}</option>
+              <option value="ORDERS_DESC">{translateUi("Sort: Most orders")}</option>
+              <option value="NAME_ASC">{translateUi("Sort: Name A-Z")}</option>
             </select>
           </label>
 
-          <button className="admin-btn admin-btn-primary" type="submit">Search</button>
+          <button className="admin-btn admin-btn-primary" type="submit">{translateUi("Search")}</button>
           <button className="admin-btn admin-btn-outline" type="button" onClick={exportCsv}>
-            <Download size={14} /> Export CSV
-          </button>
-          <button className="admin-btn admin-btn-outline" type="button" onClick={resetAll}>Reset</button>
-          {search && <button className="admin-btn admin-btn-outline" type="button" onClick={clearSearch}>Clear search</button>}
+            <Download size={14} />{translateUi("Export CSV")}</button>
+          <button className="admin-btn admin-btn-outline" type="button" onClick={resetAll}>{translateUi("Reset")}</button>
+          {search && <button className="admin-btn admin-btn-outline" type="button" onClick={clearSearch}>{translateUi("Clear search")}</button>}
         </form>
       </div>
 
       <div className="admin-card customers-list-card">
         {isLoading ? <div className="loading-page"><div className="spinner" /></div> : customers.length === 0 ? (
           <p className="customers-empty-state">
-            {search ? 'No customers match this search.' : 'No customers match current filters.'}
+            {search ? translateUi("No customers match this search.") : translateUi("No customers match current filters.")}
           </p>
         ) : (
           <>
@@ -453,22 +455,22 @@ export default function AdminCustomers() {
                         <h3>{customer.fullName || customer.username}</h3>
                         <p>@{customer.username}</p>
                         <div className="customers-tags">
-                          {isNew && <span className="customers-tag is-new">New</span>}
-                          <span className="customers-tag">{orderCount} order{orderCount === 1 ? '' : 's'}</span>
+                          {isNew && <span className="customers-tag is-new">{translateUi("New")}</span>}
+                          <span className="customers-tag">{orderCount} {translateUi("order")}{orderCount === 1 ? '' : translateUi("s")}</span>
                             <span className={`customers-tag ${isCustomerActive(customer) ? 'is-active' : 'is-banned'}`}>
-                              {isCustomerActive(customer) ? 'Active' : 'Banned'}
+                              {isCustomerActive(customer) ? translateUi("Active") : translateUi("Banned")}
                           </span>
-                          {!customer.phone && <span className="customers-tag is-muted">No phone</span>}
+                          {!customer.phone && <span className="customers-tag is-muted">{translateUi("No phone")}</span>}
                         </div>
                       </div>
 
                       <div className="customers-contact-col">
                         <p><Mail size={13} /> {customer.email}</p>
-                        <p><Phone size={13} /> {customer.phone || 'Not provided'}</p>
+                        <p><Phone size={13} /> {customer.phone || translateUi("Not provided")}</p>
                       </div>
 
                       <div className="customers-joined-col">
-                        <span><CalendarDays size={13} /> Joined</span>
+                        <span><CalendarDays size={13} /> {translateUi("Joined")}</span>
                         <strong>{formatJoinedDate(customer.createdAt)}</strong>
                       </div>
                     </div>
@@ -481,18 +483,16 @@ export default function AdminCustomers() {
                         onClick={() => handleToggleCustomerActive(customer)}
                       >
                         {statusUpdatingCustomerId === customer.id
-                          ? (isCustomerActive(customer) ? 'Banning...' : 'Unbanning...')
-                          : (isCustomerActive(customer) ? 'Ban' : 'Unban')}
+                          ? (isCustomerActive(customer) ? translateUi("Banning...") : translateUi("Unbanning..."))
+                          : (isCustomerActive(customer) ? translateUi("Ban") : translateUi("Unban"))}
                       </button>
                       <button className="admin-btn admin-btn-outline admin-btn-sm" type="button" onClick={() => copyField(customer.email, 'Email')}>
-                        <Mail size={13} /> Copy email
-                      </button>
+                        <Mail size={13} />{translateUi("Copy email")}</button>
                       <button className="admin-btn admin-btn-outline admin-btn-sm" type="button" onClick={() => {
                         setModalTab('PROFILE');
                         setSelectedCustomer(customer);
                       }}>
-                        <Eye size={13} /> View profile
-                      </button>
+                        <Eye size={13} />{translateUi("View profile")}</button>
                     </div>
                   </article>
                 );
@@ -501,9 +501,7 @@ export default function AdminCustomers() {
 
             {pagination.totalPages > 1 && (
               <div className="customers-footer">
-                <div className="customers-footer-text">
-                  Showing <strong>{(pagination.page - 1) * PAGE_LIMIT + 1}</strong> to <strong>{Math.min(pagination.page * PAGE_LIMIT, pagination.total)}</strong> of <strong>{pagination.total}</strong> customers
-                </div>
+                <div className="customers-footer-text">{translateUi("Showing")}<strong>{(pagination.page - 1) * PAGE_LIMIT + 1}</strong> {translateUi("to")} <strong>{Math.min(pagination.page * PAGE_LIMIT, pagination.total)}</strong> {translateUi("of")} <strong>{pagination.total}</strong>{translateUi("customers")}</div>
                 <div className="customers-pagination">
                   <button
                     disabled={pagination.page <= 1}
@@ -541,8 +539,8 @@ export default function AdminCustomers() {
         <div className="admin-modal-overlay" onClick={closeCustomerModal}>
           <div className="admin-modal-content customers-detail-modal" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">Customer profile</h3>
-              <button className="admin-modal-close" onClick={closeCustomerModal} aria-label="Close" type="button">
+              <h3 className="admin-modal-title">{translateUi("Customer profile")}</h3>
+              <button className="admin-modal-close" onClick={closeCustomerModal} aria-label={translateUi("Close")} type="button">
                 <X size={18} />
               </button>
             </div>
@@ -553,15 +551,12 @@ export default function AdminCustomers() {
                   type="button"
                   className={`customers-tab-btn ${modalTab === 'PROFILE' ? 'is-active' : ''}`}
                   onClick={() => setModalTab('PROFILE')}
-                >
-                  Profile
-                </button>
+                >{translateUi("Profile")}</button>
                 <button
                   type="button"
                   className={`customers-tab-btn ${modalTab === 'ORDERS' ? 'is-active' : ''}`}
                   onClick={() => setModalTab('ORDERS')}
-                >
-                  Recent Orders ({selectedCustomerOrderCount})
+                >{translateUi("Recent Orders (")}{selectedCustomerOrderCount})
                 </button>
               </div>
 
@@ -578,31 +573,31 @@ export default function AdminCustomers() {
                 <>
                   <div className="customers-detail-grid">
                     <div className="customers-detail-item">
-                      <span><UserRound size={14} /> Customer ID</span>
+                      <span><UserRound size={14} /> {translateUi("Customer ID")}</span>
                       <strong>#{selectedCustomer.id}</strong>
                     </div>
                     <div className="customers-detail-item">
-                      <span><CalendarDays size={14} /> Joined</span>
+                      <span><CalendarDays size={14} /> {translateUi("Joined")}</span>
                       <strong>{formatJoinedDate(selectedCustomer.createdAt)}</strong>
                     </div>
                     <div className="customers-detail-item">
-                      <span><Mail size={14} /> Email</span>
+                      <span><Mail size={14} /> {translateUi("Email")}</span>
                       <strong>{selectedCustomer.email}</strong>
                     </div>
                     <div className="customers-detail-item">
-                      <span><Phone size={14} /> Phone</span>
-                      <strong>{selectedCustomer.phone || 'Not provided'}</strong>
+                      <span><Phone size={14} /> {translateUi("Phone")}</span>
+                      <strong>{selectedCustomer.phone || translateUi("Not provided")}</strong>
                     </div>
                     <div className="customers-detail-item">
-                      <span><Filter size={14} /> Segment</span>
+                      <span><Filter size={14} /> {translateUi("Segment")}</span>
                       <strong>{selectedCustomerSegment}</strong>
                     </div>
                     <div className="customers-detail-item">
-                      <span><Filter size={14} /> Account status</span>
-                      <strong>{isCustomerActive(selectedCustomer) ? 'Active' : 'Banned'}</strong>
+                      <span><Filter size={14} /> {translateUi("Account status")}</span>
+                      <strong>{isCustomerActive(selectedCustomer) ? translateUi("Active") : translateUi("Banned")}</strong>
                     </div>
                     <div className="customers-detail-item">
-                      <span><Users size={14} /> Orders</span>
+                      <span><Users size={14} /> {translateUi("Orders")}</span>
                       <strong>{selectedCustomerOrderCount}</strong>
                     </div>
                   </div>
@@ -615,23 +610,20 @@ export default function AdminCustomers() {
                       onClick={() => handleToggleCustomerActive(selectedCustomer)}
                     >
                       {statusUpdatingCustomerId === selectedCustomer.id
-                        ? (isCustomerActive(selectedCustomer) ? 'Banning...' : 'Unbanning...')
-                        : (isCustomerActive(selectedCustomer) ? 'Ban customer' : 'Unban customer')}
+                        ? (isCustomerActive(selectedCustomer) ? translateUi("Banning...") : translateUi("Unbanning..."))
+                        : (isCustomerActive(selectedCustomer) ? translateUi("Ban customer") : translateUi("Unban customer"))}
                     </button>
                     <button className="admin-btn admin-btn-outline" type="button" onClick={() => copyField(selectedCustomer.email, 'Email')}>
-                      <Mail size={14} /> Copy email
-                    </button>
+                      <Mail size={14} />{translateUi("Copy email")}</button>
                     <button className="admin-btn admin-btn-outline" type="button" onClick={() => copyField(selectedCustomer.phone, 'Phone')}>
-                      <Phone size={14} /> Copy phone
-                    </button>
+                      <Phone size={14} />{translateUi("Copy phone")}</button>
                     <button className="admin-btn admin-btn-primary" type="button" onClick={() => {
                       setSearchInput(selectedCustomer.email);
                       setSearch(selectedCustomer.email);
                       closeCustomerModal();
                       fetchCustomers(1, selectedCustomer.email);
                     }}>
-                      <Search size={14} /> Focus this customer
-                    </button>
+                      <Search size={14} />{translateUi("Focus this customer")}</button>
                   </div>
                 </>
               ) : (
@@ -639,7 +631,7 @@ export default function AdminCustomers() {
                   {isRecentOrdersLoading ? (
                     <div className="loading-page"><div className="spinner" /></div>
                   ) : recentOrders.length === 0 ? (
-                    <p className="customers-empty-state customers-modal-empty">This customer has no recent orders.</p>
+                    <p className="customers-empty-state customers-modal-empty">{translateUi("This customer has no recent orders.")}</p>
                   ) : (
                     <div className="customers-order-history-list">
                       {recentOrders.map((order) => (
@@ -650,13 +642,13 @@ export default function AdminCustomers() {
                               <p>{formatDateTime(order.createdAt)}</p>
                             </div>
                             <div className="customers-order-history-badges">
-                              <span className={`customers-badge ${getStatusBadgeClass(order.status)}`}>{order.status}</span>
-                              <span className={`customers-badge ${getPaymentBadgeClass(order.paymentStatus)}`}>{order.paymentStatus}</span>
+                              <span className={`customers-badge ${getStatusBadgeClass(order.status)}`}>{translateUi(order.status)}</span>
+                              <span className={`customers-badge ${getPaymentBadgeClass(order.paymentStatus)}`}>{translateUi(order.paymentStatus)}</span>
                             </div>
                           </div>
 
                           <div className="customers-order-history-meta">
-                            <span><Package size={13} /> {order._count?.items || order.items.length} item(s)</span>
+                            <span><Package size={13} /> {order._count?.items || order.items.length} {translateUi("item(s)")}</span>
                             <span className="customers-order-total">{formatCurrency(order.totalAmount)}</span>
                           </div>
 
@@ -664,7 +656,7 @@ export default function AdminCustomers() {
                             {order.items.map((item) => (
                               <div key={item.id} className="customers-order-item-row">
                                 <span className="customers-order-item-name">{item.productName}</span>
-                                <span className="customers-order-item-qty">x{item.quantity}</span>
+                                <span className="customers-order-item-qty">{translateUi("x")}{item.quantity}</span>
                                 <span className="customers-order-item-price">{formatCurrency(item.price)}</span>
                               </div>
                             ))}

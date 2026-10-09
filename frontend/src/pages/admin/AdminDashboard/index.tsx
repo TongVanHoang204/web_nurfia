@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import {
   DollarSign,
@@ -109,13 +111,14 @@ const formatNumber = (value: number | string | null | undefined) => {
 };
 
 const formatDateTime = (date: string) => {
-  return new Date(date).toLocaleDateString('en-US', {
+  return new Date(date).toLocaleDateString(getLocale(), {
     month: 'short',
     day: 'numeric',
   });
 };
 
 export default function AdminDashboard() {
+  useTranslation();
   const [stats, setStats] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<DashboardRange>('7d');
@@ -129,7 +132,7 @@ export default function AdminDashboard() {
   }, [selectedRange]);
 
   if (isLoading) return <div className="loading-page"><div className="spinner" /></div>;
-  if (!stats) return <div className="admin-empty-state"><p>Data unavailable</p></div>;
+  if (!stats) return <div className="admin-empty-state"><p>{translateUi("Data unavailable")}</p></div>;
 
   const totalTrackedStatus = ORDER_STATUSES.reduce((sum, status) => sum + (stats.ordersByStatus?.[status] || 0), 0);
   const revenueTrend = stats.revenueTrend ?? stats.revenueLast7Days;
@@ -139,19 +142,17 @@ export default function AdminDashboard() {
     <div className="admin-dashboard-page">
       <header className="admin-dashboard-header">
         <div>
-          <h1>Dashboard</h1>
-          <p>Welcome back. Here's what's happening with your store today.</p>
+          <h1>{translateUi("Dashboard")}</h1>
+          <p>{translateUi("Welcome back. Here's what's happening with your store today.")}</p>
         </div>
-        <div className="admin-dashboard-refresh">
-          Live Updates Active
-        </div>
+        <div className="admin-dashboard-refresh">{translateUi("Live Updates Active")}</div>
       </header>
 
       <div className="admin-kpi-grid">
-        <KPIItem label="Total Revenue" value={formatCurrency(stats.totalRevenue)} icon={<DollarSign size={18} />} />
-        <KPIItem label="Month Revenue" value={formatCurrency(stats.monthRevenue)} icon={<Wallet size={18} />} />
-        <KPIItem label="Total Orders" value={formatNumber(stats.totalOrders)} icon={<ShoppingCart size={18} />} />
-        <KPIItem label="Active Customers" value={formatNumber(stats.totalCustomers)} icon={<UserRound size={18} />} />
+        <KPIItem label={translateUi("Total Revenue")} value={formatCurrency(stats.totalRevenue)} icon={<DollarSign size={18} />} />
+        <KPIItem label={translateUi("Month Revenue")} value={formatCurrency(stats.monthRevenue)} icon={<Wallet size={18} />} />
+        <KPIItem label={translateUi("Total Orders")} value={formatNumber(stats.totalOrders)} icon={<ShoppingCart size={18} />} />
+        <KPIItem label={translateUi("Active Customers")} value={formatNumber(stats.totalCustomers)} icon={<UserRound size={18} />} />
       </div>
 
       <div className="admin-dashboard-grid">
@@ -159,8 +160,8 @@ export default function AdminDashboard() {
         <section className="admin-dashboard-span-8">
           <div className="admin-db-card">
             <div className="admin-db-card-header">
-              <h3>Revenue Trends</h3>
-              <div className="admin-dashboard-range-tabs" aria-label="Revenue trend range">
+              <h3>{translateUi("Revenue Trends")}</h3>
+              <div className="admin-dashboard-range-tabs" aria-label={translateUi("Revenue trend range")}>
                 {DASHBOARD_RANGES.map((range) => (
                   <button
                     key={range.value}
@@ -169,12 +170,12 @@ export default function AdminDashboard() {
                     onClick={() => setSelectedRange(range.value)}
                     aria-pressed={selectedRange === range.value}
                   >
-                    {range.label}
+                    {translateUi(range.label)}
                   </button>
                 ))}
               </div>
             </div>
-            <small className="admin-dashboard-range-caption">Showing {selectedRangeLabel}</small>
+            <small className="admin-dashboard-range-caption">{translateUi("Showing")} {selectedRangeLabel}</small>
             <div className="admin-revenue-chart-container">
               <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={revenueTrend} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
@@ -200,8 +201,8 @@ export default function AdminDashboard() {
         <section className="admin-dashboard-span-4">
           <div className="admin-db-card">
             <div className="admin-db-card-header">
-              <h3>Order Status</h3>
-              <small>Distribution</small>
+              <h3>{translateUi("Order Status")}</h3>
+              <small>{translateUi("Distribution")}</small>
             </div>
             <div className="admin-status-list">
               {ORDER_STATUSES.map((status) => {
@@ -210,7 +211,7 @@ export default function AdminDashboard() {
                   <div key={status} className="admin-status-item">
                     <div className="admin-status-info">
                       <strong>{status}</strong>
-                      <span>{count} orders</span>
+                      <span>{count} {translateUi("orders")}</span>
                     </div>
                     <div className="admin-status-badge">{totalTrackedStatus ? Math.round((count / totalTrackedStatus) * 100) : 0}%</div>
                   </div>
@@ -224,20 +225,20 @@ export default function AdminDashboard() {
         <section className="admin-dashboard-span-12">
           <div className="admin-db-card">
             <div className="admin-db-card-header">
-              <h3>Recent Transactions</h3>
-              <button className="btn btn-outline btn-sm">View All Orders</button>
+              <h3>{translateUi("Recent Transactions")}</h3>
+              <button className="btn btn-outline btn-sm">{translateUi("View All Orders")}</button>
             </div>
             <div className="admin-db-list">
               {stats.recentOrders?.slice(0, 5).map((order) => (
                 <div key={order.id} className="admin-db-item">
                   <div className="admin-db-item-main">
-                    <span className="admin-db-item-title">Order #{order.orderNumber}</span>
+                    <span className="admin-db-item-title">{translateUi("Order #")}{order.orderNumber}</span>
                     <span className="admin-db-item-sub">
                       {order.user?.fullName} • {formatDateTime(order.createdAt)}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                    <div className="admin-status-badge">{order.status}</div>
+                    <div className="admin-status-badge">{translateUi(order.status)}</div>
                     <strong className="admin-db-item-price">{formatCurrency(order.totalAmount)}</strong>
                     <ArrowUpRight size={16} color="var(--color-text-muted)" />
                   </div>
@@ -251,7 +252,7 @@ export default function AdminDashboard() {
         <section className="admin-dashboard-span-6">
           <div className="admin-db-card">
             <div className="admin-db-card-header">
-              <h3>Best Sellers</h3>
+              <h3>{translateUi("Best Sellers")}</h3>
               <TrendingUp size={18} color="var(--color-accent)" />
             </div>
             <div className="admin-db-list">
@@ -259,10 +260,10 @@ export default function AdminDashboard() {
                 <div key={product.id} className="admin-db-item">
                   <div className="admin-db-item-main">
                     <span className="admin-db-item-title">{product.name}</span>
-                    <span className="admin-db-item-sub">SKU: {product.sku}</span>
+                    <span className="admin-db-item-sub">{translateUi("SKU:")} {product.sku}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <strong style={{ display: 'block', fontSize: 14 }}>{product.salesCount} Sold</strong>
+                    <strong style={{ display: 'block', fontSize: 14 }}>{product.salesCount} {translateUi("Sold")}</strong>
                     <small style={{ color: 'var(--color-text-muted)' }}>{formatCurrency(product.price)}</small>
                   </div>
                 </div>
@@ -275,7 +276,7 @@ export default function AdminDashboard() {
         <section className="admin-dashboard-span-6">
           <div className="admin-db-card">
             <div className="admin-db-card-header">
-              <h3>Inventory Alerts</h3>
+              <h3>{translateUi("Inventory Alerts")}</h3>
               <AlertTriangle size={18} color="var(--color-error)" />
             </div>
             <div className="admin-db-list">
@@ -283,18 +284,16 @@ export default function AdminDashboard() {
                 <div key={product.id} className="admin-db-item">
                   <div className="admin-db-item-main">
                     <span className="admin-db-item-title">{product.name}</span>
-                    <span className="admin-db-item-sub sku-badge">SKU: {product.sku}</span>
+                    <span className="admin-db-item-sub sku-badge">{translateUi("SKU:")} {product.sku}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <strong style={{ display: 'block', fontSize: 14, color: 'var(--color-error)' }}>{product.stock} Units Left</strong>
-                    <small style={{ color: 'var(--color-text-muted)' }}>Threshold: {product.lowStockThreshold}</small>
+                    <strong style={{ display: 'block', fontSize: 14, color: 'var(--color-error)' }}>{product.stock} {translateUi("Units Left")}</strong>
+                    <small style={{ color: 'var(--color-text-muted)' }}>{translateUi("Threshold:")} {product.lowStockThreshold}</small>
                   </div>
                 </div>
               ))}
               {stats.lowStockProducts?.length === 0 && (
-                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                  All stock levels are healthy.
-                </div>
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-muted)' }}>{translateUi("All stock levels are healthy.")}</div>
               )}
             </div>
           </div>
@@ -304,14 +303,14 @@ export default function AdminDashboard() {
         <section className="admin-dashboard-span-12">
           <div className="admin-db-card">
             <div className="admin-db-card-header">
-              <h3>Newest Customers</h3>
+              <h3>{translateUi("Newest Customers")}</h3>
               <Plus size={18} color="var(--color-accent)" />
             </div>
             <div className="admin-db-customers">
               {stats.recentCustomers?.slice(0, 4).map((customer) => (
                 <div key={customer.id} className="admin-customer-mini">
                   <div className="admin-customer-avatar">
-                    {customer.fullName?.charAt(0) || 'C'}
+                    {customer.fullName?.charAt(0) || translateUi("C")}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <strong>{customer.fullName}</strong>
@@ -328,11 +327,12 @@ export default function AdminDashboard() {
 }
 
 function KPIItem({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+  useTranslation();
   return (
     <article className="admin-kpi-card">
       <div className="admin-kpi-icon-wrap">{icon}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span className="admin-kpi-label">{label}</span>
+        <span className="admin-kpi-label">{translateUi(label)}</span>
         <strong className="admin-kpi-value">{value}</strong>
       </div>
     </article>

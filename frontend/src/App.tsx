@@ -1,3 +1,5 @@
+import { translateUi } from './i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header/Header';
@@ -58,6 +60,7 @@ const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications')
 import AccountPage, { ProfileSection, OrdersSection, WishlistSection, AddressesSection } from './pages/AccountPage/AccountPage';
 
 function StoreLayout() {
+  useTranslation();
   const location = useLocation();
   const { isAuthenticated, mustLogin } = useAuthStore();
 
@@ -97,7 +100,7 @@ function StoreLayout() {
             <Route path="*" element={
               <div className="loading-page not-found">
                 <h2>404</h2>
-                <p>Page not found</p>
+                <p>{translateUi("Page not found")}</p>
               </div>
             } />
           </Routes>
@@ -111,6 +114,7 @@ function StoreLayout() {
 }
 
 export default function App() {
+  useTranslation();
   const { loadUser, isAuthenticated, isHydrating, user } = useAuthStore();
   const { fetchCart } = useCartStore();
   const { fetchCompare, resetCompare } = useCompareStore();
@@ -118,11 +122,11 @@ export default function App() {
   const { fetchNotifications, initSocket } = useNotificationStore();
 
   useEffect(() => { loadUser(); }, []);
-  useEffect(() => { 
+  useEffect(() => {
     if (isHydrating) return;
 
     if (isAuthenticated) {
-      fetchCart(); 
+      fetchCart();
       fetchWishlist();
       fetchCompare();
       fetchNotifications();

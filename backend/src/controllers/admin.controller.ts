@@ -1547,6 +1547,18 @@ export const adminController = {
     } catch (err) { next(err); }
   },
 
+  getOrderById: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseEntityId(req.params.id as string, 'order ID');
+      const order = await prisma.order.findUnique({
+        where: { id },
+        include: { user: { select: { fullName: true, username: true, email: true, phone: true } }, address: true, items: { include: { product: { select: { id: true, images: { take: 1, orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }], select: { url: true, alt: true } } } } } } },
+      });
+      if (!order) throw new AppError('Order not found', 404);
+      res.json({ success: true, data: serializeAdminOrderWithProtectedProof(order) });
+    } catch (err) { next(err); }
+  },
+
   updateOrderStatus: async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const id = parseEntityId(req.params.id as string, 'order ID');

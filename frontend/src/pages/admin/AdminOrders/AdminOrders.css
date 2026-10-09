@@ -16,7 +16,7 @@
 .admin-orders-header h1 {
   font-family: var(--font-heading);
   font-size: 48px;
-  color: var(--color-black);
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 
@@ -31,7 +31,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 16px 24px;
-  background: #f9f9f9;
+  background: var(--surface-soft, #f9f9f9);
   border: 1px solid var(--color-border);
   min-width: 140px;
 }
@@ -47,7 +47,7 @@
 .admin-order-badge-stat strong {
   font-family: var(--font-heading);
   font-size: 24px;
-  color: var(--color-black);
+  color: var(--color-text);
   font-weight: 400;
   line-height: 1;
 }
@@ -72,7 +72,7 @@
   padding: 12px 16px 12px 44px;
   border: 1px solid var(--color-border);
   font-size: 14px;
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .admin-orders-search svg {
@@ -95,7 +95,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  background: var(--color-white);
+  background: var(--surface);
   cursor: pointer;
 }
 
@@ -107,7 +107,7 @@
 }
 
 .admin-order-card {
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   padding: 32px;
   display: grid;
@@ -132,7 +132,7 @@
 .admin-order-card-id strong {
   font-family: var(--font-heading);
   font-size: 24px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-order-card-id span {
@@ -151,7 +151,7 @@
 
 .admin-order-card-customer strong {
   font-size: 16px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-order-card-customer span {
@@ -207,7 +207,7 @@
 .admin-order-modal {
   width: 100%;
   max-width: 1100px;
-  background: var(--color-white);
+  background: var(--surface);
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -223,7 +223,7 @@
 .admin-order-modal-head h2 {
   font-family: var(--font-heading);
   font-size: 42px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-order-modal-body {
@@ -236,7 +236,7 @@
 .admin-order-section-title {
   font-family: var(--font-heading);
   font-size: 24px;
-  color: var(--color-black);
+  color: var(--color-text);
   margin-bottom: 24px;
   display: flex;
   align-items: center;
@@ -276,7 +276,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--color-white);
+  background: var(--surface);
   border: 2px solid var(--color-border);
   display: flex;
   align-items: center;
@@ -303,7 +303,7 @@
 }
 
 .admin-order-step.is-current .admin-order-step-label {
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 /* Items */
@@ -336,7 +336,7 @@
   display: block;
   font-size: 18px;
   font-family: var(--font-heading);
-  color: var(--color-black);
+  color: var(--color-text);
   margin-bottom: 4px;
 }
 
@@ -364,7 +364,7 @@
 
 .admin-order-info-card p {
   font-size: 14px;
-  color: var(--color-black);
+  color: var(--color-text);
   line-height: 1.6;
 }
 
@@ -442,7 +442,7 @@
 .admin-order-grand-value {
   font-size: 24px;
   font-family: var(--font-heading);
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-order-pagination-text {

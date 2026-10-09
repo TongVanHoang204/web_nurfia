@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { CheckCircle, Eye, Mail, MailOpen, Reply, Search, Trash2, X } from 'lucide-react';
@@ -7,6 +9,7 @@ import WordEditor from '../../../components/WordEditor/WordEditor';
 import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import { sanitizeRichHtml } from '../../../utils/sanitizeHtml';
 import './AdminContacts.css';
+import { useSearchParams } from 'react-router-dom';
 
 type ContactMessage = {
   id: number;
@@ -57,7 +60,7 @@ const getPageNumbers = (current: number, total: number) => {
   return pages;
 };
 
-const formatDate = (value: string) => new Date(value).toLocaleString('en-US', {
+const formatDate = (value: string) => new Date(value).toLocaleString(getLocale(), {
   month: 'short',
   day: 'numeric',
   year: 'numeric',
@@ -78,6 +81,9 @@ const isLongMessage = (value: string) => {
 };
 
 export default function AdminContacts() {
+  useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const contactId = searchParams.get('contactId');
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: PAGE_LIMIT, total: 0, totalPages: 1 });
   const [stats, setStats] = useState<Stats>({ totalUnread: 0, totalRead: 0, filteredTotal: 0 });
@@ -92,6 +98,19 @@ export default function AdminContacts() {
   const [replyForm, setReplyForm] = useState({ subject: '', message: '' });
   const { addToast } = useUIStore();
   const { confirm, dialog: confirmDialog } = useAdminConfirm();
+  useEffect(() => {
+    if (!contactId) return;
+    if (!/^[1-9]\d*$/.test(contactId)) { addToast(translateUi('Invalid contact ID'), 'error'); return; }
+    const controller = new AbortController();
+    api.get(`/admin/contacts/${contactId}`, { signal: controller.signal })
+      .then(response => setDetailMessage(response.data.data))
+      .catch(() => { if (!controller.signal.aborted) addToast(translateUi('Message unavailable or access denied'), 'error'); });
+    return () => controller.abort();
+  }, [contactId, addToast]);
+  const closeNotificationDetail = () => {
+    setDetailMessage(null);
+    if (contactId) setSearchParams(current => { const next = new URLSearchParams(current); next.delete('contactId'); return next; }, { replace: true });
+  };
 
   const fetchMessages = async (page = 1, keyword = search, status = statusFilter) => {
     try {
@@ -269,22 +288,22 @@ export default function AdminContacts() {
     <div className="contacts-admin-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Contact Messages</h1>
-          <p className="contacts-admin-subtitle">Review inbox traffic, reply to customer requests, and keep message handling organized.</p>
+          <h1 className="admin-page-title">{translateUi("Contact Messages")}</h1>
+          <p className="contacts-admin-subtitle">{translateUi("Review inbox traffic, reply to customer requests, and keep message handling organized.")}</p>
         </div>
       </div>
 
       <div className="contacts-stats-grid">
         <article className="contacts-stat-card">
-          <span>Unread</span>
+          <span>{translateUi("Unread")}</span>
           <strong>{stats.totalUnread}</strong>
         </article>
         <article className="contacts-stat-card">
-          <span>Read</span>
+          <span>{translateUi("Read")}</span>
           <strong>{stats.totalRead}</strong>
         </article>
         <article className="contacts-stat-card">
-          <span>Matched Results</span>
+          <span>{translateUi("Matched Results")}</span>
           <strong>{stats.filteredTotal}</strong>
         </article>
       </div>
@@ -295,7 +314,7 @@ export default function AdminContacts() {
             <Search size={16} />
             <input
               type="text"
-              placeholder="Search sender, email, subject, or message"
+              placeholder={translateUi("Search sender, email, subject, or message")}
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
             />
@@ -303,15 +322,15 @@ export default function AdminContacts() {
 
           <div className="contacts-select-wrap">
             <Mail size={16} />
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} title="Filter contact status">
-              <option value="ALL">All Messages</option>
-              <option value="UNREAD">Unread</option>
-              <option value="READ">Read</option>
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} title={translateUi("Filter contact status")}>
+              <option value="ALL">{translateUi("All Messages")}</option>
+              <option value="UNREAD">{translateUi("Unread")}</option>
+              <option value="READ">{translateUi("Read")}</option>
             </select>
           </div>
 
-          <button type="submit" className="admin-btn admin-btn-primary">Search</button>
-          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>Reset</button>
+          <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>
+          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>{translateUi("Reset")}</button>
         </form>
       </div>
 
@@ -319,7 +338,7 @@ export default function AdminContacts() {
         {isLoading ? (
           <div className="loading-page"><div className="spinner" /></div>
         ) : messages.length === 0 ? (
-          <p className="contacts-empty-state">No contact messages found for this filter set.</p>
+          <p className="contacts-empty-state">{translateUi("No contact messages found for this filter set.")}</p>
         ) : (
           <>
             <div className="contacts-bulk-bar">
@@ -328,9 +347,9 @@ export default function AdminContacts() {
                   type="checkbox"
                   checked={allVisibleSelected}
                   onChange={toggleSelectAllVisible}
-                  aria-label="Select all visible messages"
+                  aria-label={translateUi("Select all visible messages")}
                 />
-                <span>{selectedIds.length > 0 ? `${selectedIds.length} selected` : 'Select all'}</span>
+                <span>{selectedIds.length > 0 ? translateUi("{{value1}} selected", { value1: selectedIds.length }) : translateUi("Select all")}</span>
               </label>
 
               <button
@@ -339,8 +358,7 @@ export default function AdminContacts() {
                 onClick={handleBulkDelete}
                 disabled={selectedIds.length === 0}
               >
-                <Trash2 size={13} /> Delete Selected
-              </button>
+                <Trash2 size={13} />{translateUi("Delete Selected")}</button>
             </div>
 
             <div className="contacts-list">
@@ -351,7 +369,7 @@ export default function AdminContacts() {
                       type="checkbox"
                       checked={selectedIds.includes(message.id)}
                       onChange={() => toggleSelected(message.id)}
-                      aria-label={`Select message from ${message.name}`}
+                      aria-label={translateUi("Select message from {{value1}}", { value1: message.name })}
                     />
                   </label>
 
@@ -364,13 +382,13 @@ export default function AdminContacts() {
 
                       <div className="contacts-message">
                         <strong>{message.subject}</strong>
-                        <p>{message.message || 'No message body provided.'}</p>
+                        <p>{message.message || translateUi("No message body provided.")}</p>
                       </div>
 
                       <div className="contacts-meta">
                         <span className={`contacts-status-pill ${message.isRead ? '' : 'is-unread'}`}>
                           {message.isRead ? <MailOpen size={14} /> : <Mail size={14} />}
-                          {message.isRead ? 'Read' : 'Unread'}
+                          {message.isRead ? translateUi("Read") : translateUi("Unread")}
                         </span>
                         <span>{formatDate(message.createdAt)}</span>
                       </div>
@@ -379,13 +397,13 @@ export default function AdminContacts() {
                     {message.repliedAt && message.replyMessage && (
                       <div className="contacts-reply-history">
                         <div className="contacts-reply-history-head">
-                          <span>Staff reply</span>
+                          <span>{translateUi("Staff reply")}</span>
                           <strong className={message.replyDelivered ? 'is-delivered' : 'is-failed'}>
-                            {message.replyDelivered ? 'Delivered' : 'Not delivered'}
+                            {message.replyDelivered ? translateUi("Delivered") : translateUi("Not delivered")}
                           </strong>
                           <time>{formatDate(message.repliedAt)}</time>
                         </div>
-                        <h4>{message.replySubject || `Re: ${message.subject}`}</h4>
+                        <h4>{message.replySubject || translateUi("Re: {{value1}}", { value1: message.subject })}</h4>
                         <div
                           className="contacts-reply-history-body"
                           dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(message.replyMessage) }}
@@ -396,20 +414,16 @@ export default function AdminContacts() {
                     <div className="contacts-row-actions">
                       {isLongMessage(message.message) && (
                         <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setDetailMessage(message)}>
-                          <Eye size={14} /> View Detail
-                        </button>
+                          <Eye size={14} />{translateUi("View Detail")}</button>
                       )}
                       {!message.isRead && (
                         <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => handleMarkRead(message.id)}>
-                          <CheckCircle size={14} /> Mark Read
-                        </button>
+                          <CheckCircle size={14} />{translateUi("Mark Read")}</button>
                       )}
                       <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openReplyModal(message)}>
-                        <Reply size={14} /> Reply
-                      </button>
+                        <Reply size={14} />{translateUi("Reply")}</button>
                       <button type="button" className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(message.id)}>
-                        <Trash2 size={14} /> Delete
-                      </button>
+                        <Trash2 size={14} />{translateUi("Delete")}</button>
                     </div>
                   </div>
                 </article>
@@ -420,13 +434,9 @@ export default function AdminContacts() {
 
         {pagination.total > 0 && (
           <div className="contacts-pagination">
-            <div className="contacts-pagination-text">
-              Showing <strong>{(pagination.page - 1) * pagination.limit + 1}</strong> to <strong>{Math.min(pagination.page * pagination.limit, pagination.total)}</strong> of <strong>{pagination.total}</strong> messages
-            </div>
+            <div className="contacts-pagination-text">{translateUi("Showing")}<strong>{(pagination.page - 1) * pagination.limit + 1}</strong> {translateUi("to")} <strong>{Math.min(pagination.page * pagination.limit, pagination.total)}</strong> {translateUi("of")} <strong>{pagination.total}</strong>{translateUi("messages")}</div>
             <div className="contacts-pagination-actions">
-              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={pagination.page <= 1} onClick={() => fetchMessages(pagination.page - 1)}>
-                Previous
-              </button>
+              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={pagination.page <= 1} onClick={() => fetchMessages(pagination.page - 1)}>{translateUi("Previous")}</button>
               {pageNumbers.map((page, index) => page < 0 ? (
                 <span key={`ellipsis-${index}`} className="contacts-page-ellipsis">...</span>
               ) : (
@@ -439,9 +449,7 @@ export default function AdminContacts() {
                   {page}
                 </button>
               ))}
-              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={pagination.page >= totalPages} onClick={() => fetchMessages(pagination.page + 1)}>
-                Next
-              </button>
+              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={pagination.page >= totalPages} onClick={() => fetchMessages(pagination.page + 1)}>{translateUi("Next")}</button>
             </div>
           </div>
         )}
@@ -451,20 +459,18 @@ export default function AdminContacts() {
         <div className="admin-modal-overlay" onClick={closeReplyModal}>
           <div className="admin-modal-content contacts-reply-modal" onClick={(event) => event.stopPropagation()}>
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">Reply to {selectedMessage.name}</h2>
-              <button onClick={closeReplyModal} className="admin-modal-close" aria-label="Close" title="Close"><X size={20} /></button>
+              <h2 className="admin-modal-title">{translateUi("Reply to")} {selectedMessage.name}</h2>
+              <button onClick={closeReplyModal} className="admin-modal-close" aria-label={translateUi("Close")} title={translateUi("Close")}><X size={20} /></button>
             </div>
 
             <form className="contacts-reply-form" onSubmit={handleReplySubmit}>
               <div className="contacts-reply-context">
                 <strong>{selectedMessage.subject}</strong>
-                <p>{selectedMessage.message || 'No message body provided.'}</p>
+                <p>{selectedMessage.message || translateUi("No message body provided.")}</p>
               </div>
 
               <div className="contacts-reply-grid">
-                <label htmlFor="reply-subject">
-                  Subject
-                  <input
+                <label htmlFor="reply-subject">{translateUi("Subject")}<input
                     id="reply-subject"
                     value={replyForm.subject}
                     onChange={(event) => setReplyForm((current) => ({ ...current, subject: event.target.value }))}
@@ -472,9 +478,7 @@ export default function AdminContacts() {
                   />
                 </label>
 
-                <label htmlFor="reply-message">
-                  Reply
-                  <WordEditor
+                <label htmlFor="reply-message">{translateUi("Reply")}<WordEditor
                     id="reply-message"
                     ariaLabel="Reply Message"
                     value={replyForm.message}
@@ -484,14 +488,12 @@ export default function AdminContacts() {
                 </label>
               </div>
 
-              <p className="contacts-reply-note">
-                If SMTP is not configured, the system will not deliver the email and will tell you directly.
-              </p>
+              <p className="contacts-reply-note">{translateUi("If SMTP is not configured, the system will not deliver the email and will tell you directly.")}</p>
 
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={closeReplyModal} disabled={isReplying}>Cancel</button>
+                <button type="button" className="admin-btn admin-btn-outline" onClick={closeReplyModal} disabled={isReplying}>{translateUi("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary" disabled={isReplying}>
-                  {isReplying ? 'Sending...' : 'Send Reply'}
+                  {isReplying ? translateUi("Sending...") : translateUi("Send Reply")}
                 </button>
               </div>
             </form>
@@ -500,53 +502,53 @@ export default function AdminContacts() {
       )}
 
       {detailMessage && (
-        <div className="admin-modal-overlay" onClick={() => setDetailMessage(null)}>
+        <div className="admin-modal-overlay" onClick={closeNotificationDetail}>
           <div className="admin-modal-content contacts-detail-modal" onClick={(event) => event.stopPropagation()}>
             <div className="admin-modal-header">
               <div>
-                <h2 className="admin-modal-title">Message Detail</h2>
+                <h2 className="admin-modal-title">{translateUi("Message Detail")}</h2>
                 <p className="admin-modal-subtitle">{detailMessage.email}</p>
               </div>
-              <button onClick={() => setDetailMessage(null)} className="admin-modal-close" aria-label="Close" title="Close"><X size={20} /></button>
+              <button onClick={closeNotificationDetail} className="admin-modal-close" aria-label={translateUi("Close")} title={translateUi("Close")}><X size={20} /></button>
             </div>
 
             <div className="contacts-detail-body">
               <div className="contacts-detail-meta-grid">
                 <div>
-                  <span>Sender</span>
+                  <span>{translateUi("Sender")}</span>
                   <strong>{detailMessage.name}</strong>
                 </div>
                 <div>
-                  <span>Status</span>
-                  <strong>{detailMessage.isRead ? 'Read' : 'Unread'}</strong>
+                  <span>{translateUi("Status")}</span>
+                  <strong>{detailMessage.isRead ? translateUi("Read") : translateUi("Unread")}</strong>
                 </div>
                 <div>
-                  <span>Received</span>
+                  <span>{translateUi("Received")}</span>
                   <strong>{formatDate(detailMessage.createdAt)}</strong>
                 </div>
               </div>
 
               <section className="contacts-detail-section">
-                <span>Subject</span>
+                <span>{translateUi("Subject")}</span>
                 <h3>{detailMessage.subject}</h3>
               </section>
 
               <section className="contacts-detail-section">
-                <span>Message</span>
-                <p className="contacts-detail-message">{detailMessage.message || 'No message body provided.'}</p>
+                <span>{translateUi("Message")}</span>
+                <p className="contacts-detail-message">{detailMessage.message || translateUi("No message body provided.")}</p>
               </section>
 
               {detailMessage.repliedAt && detailMessage.replyMessage && (
                 <section className="contacts-detail-section">
-                  <span>Staff reply</span>
+                  <span>{translateUi("Staff reply")}</span>
                   <div className="contacts-reply-history is-detail">
                     <div className="contacts-reply-history-head">
                       <strong className={detailMessage.replyDelivered ? 'is-delivered' : 'is-failed'}>
-                        {detailMessage.replyDelivered ? 'Delivered' : 'Not delivered'}
+                        {detailMessage.replyDelivered ? translateUi("Delivered") : translateUi("Not delivered")}
                       </strong>
                       <time>{formatDate(detailMessage.repliedAt)}</time>
                     </div>
-                    <h4>{detailMessage.replySubject || `Re: ${detailMessage.subject}`}</h4>
+                    <h4>{detailMessage.replySubject || translateUi("Re: {{value1}}", { value1: detailMessage.subject })}</h4>
                     <div
                       className="contacts-reply-history-body"
                       dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(detailMessage.replyMessage) }}
@@ -557,7 +559,7 @@ export default function AdminContacts() {
             </div>
 
             <div className="admin-modal-actions">
-              <button type="button" className="admin-btn admin-btn-outline" onClick={() => setDetailMessage(null)}>Close</button>
+              <button type="button" className="admin-btn admin-btn-outline" onClick={closeNotificationDetail}>{translateUi("Close")}</button>
               <button
                 type="button"
                 className="admin-btn admin-btn-primary"
@@ -567,8 +569,7 @@ export default function AdminContacts() {
                   openReplyModal(message);
                 }}
               >
-                <Reply size={14} /> Reply
-              </button>
+                <Reply size={14} />{translateUi("Reply")}</button>
             </div>
           </div>
         </div>

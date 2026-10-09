@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import './AdminConfirmDialog.css';
@@ -17,6 +19,7 @@ type ConfirmState = ConfirmOptions & {
 };
 
 export function useAdminConfirm() {
+  useTranslation();
   const [state, setState] = useState<ConfirmState | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -62,26 +65,26 @@ export function useAdminConfirm() {
           <span className={`admin-confirm-icon ${state.tone === 'danger' ? 'is-danger' : ''}`}>
             <AlertTriangle size={20} />
           </span>
-          <button type="button" className="admin-modal-close" title="Close" aria-label="Close" onClick={() => close(false)}>
+          <button type="button" className="admin-modal-close" title={translateUi("Close")} aria-label={translateUi("Close")} onClick={() => close(false)}>
             <X size={18} />
           </button>
         </div>
 
         <div className="admin-confirm-body">
-          <h2 id={titleId}>{state.title}</h2>
-          <p>{state.message}</p>
+          <h2 id={titleId}>{translateUi(state.title)}</h2>
+          <p>{translateUi(state.message)}</p>
         </div>
 
         <div className="admin-confirm-actions">
           <button type="button" className="admin-btn admin-btn-outline" onClick={() => close(false)}>
-            {state.cancelText}
+            {translateUi(state.cancelText)}
           </button>
           <button
             type="button"
             className={`admin-btn ${state.tone === 'danger' ? 'admin-btn-danger' : 'admin-btn-primary'}`}
             onClick={() => close(true)}
           >
-            {state.confirmText}
+            {translateUi(state.confirmText)}
           </button>
         </div>
       </div>

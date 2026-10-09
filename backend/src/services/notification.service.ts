@@ -1,4 +1,5 @@
 import prisma from '../models/prisma.js';
+import { resolveLegacyNotificationLinks } from '../utils/notificationLinks.js';
 
 export const notificationService = {
   async getNotifications(userId: number, page: number = 1, limit: number = 20) {
@@ -18,7 +19,7 @@ export const notificationService = {
     });
 
     return {
-      notifications,
+      notifications: await resolveLegacyNotificationLinks(notifications),
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -124,7 +125,7 @@ export const notificationService = {
             'LOW_STOCK',
             'Low Stock Alert',
             `${product.sku} - ${product.name} only ${product.stock} left.`,
-            '/admin/inventory',
+            `/admin/inventory?sku=${encodeURIComponent(product.sku)}`,
           ).catch(() => {});
         }
       }
@@ -136,7 +137,7 @@ export const notificationService = {
             'LOW_STOCK',
             'Low Stock Alert',
             `${variant.sku} - ${variant.product.name} variant only ${variant.stock} left.`,
-            '/admin/inventory',
+            `/admin/inventory?sku=${encodeURIComponent(variant.sku)}`,
           ).catch(() => {});
         }
       }

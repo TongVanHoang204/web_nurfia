@@ -20,7 +20,7 @@
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: 0;
-  color: var(--color-black);
+  color: var(--color-text);
   margin: 0 0 16px;
 }
 
@@ -64,13 +64,13 @@
 .compare-primary-link:hover,
 .compare-select-btn:hover {
   background: transparent;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .compare-secondary-link,
 .compare-clear-btn {
   background: transparent;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .compare-secondary-link:hover,
@@ -81,7 +81,7 @@
 
 .compare-board {
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .compare-board-scroll {
@@ -97,7 +97,7 @@
 }
 
 .compare-products-row {
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -109,9 +109,9 @@
   align-items: center;
   min-height: 68px;
   padding: 22px 24px;
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
   border-right: 1px solid var(--color-border);
-  color: var(--color-black);
+  color: var(--color-text);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.4px;
@@ -124,7 +124,7 @@
   flex-direction: column;
   min-height: 430px;
   padding: 28px 28px 30px;
-  background: var(--color-white);
+  background: var(--surface);
   border-right: 1px solid var(--color-border);
 }
 
@@ -145,7 +145,7 @@
   justify-content: center;
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.92);
-  color: var(--color-black);
+  color: var(--color-text);
   transition: all var(--transition-fast);
 }
 
@@ -162,7 +162,7 @@
   width: 100%;
   aspect-ratio: 3 / 4;
   margin-bottom: 22px;
-  background: #f7f7f7;
+  background: var(--surface-soft, #f7f7f7);
   overflow: hidden;
 }
 
@@ -181,7 +181,7 @@
 .compare-product-name {
   display: block;
   margin-top: auto;
-  color: var(--color-black);
+  color: var(--color-text);
   font-size: 17px;
   font-weight: 600;
   line-height: 1.35;
@@ -192,7 +192,7 @@
 }
 
 .compare-spec-list {
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .compare-spec-row {
@@ -258,7 +258,7 @@
 }
 
 .new-price {
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .compare-stock {
@@ -308,7 +308,7 @@
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
     linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
-    var(--color-white);
+    var(--surface);
   background-size: 48px 48px;
 }
 
@@ -320,8 +320,8 @@
   justify-content: center;
   margin-bottom: 28px;
   border: 1px solid var(--color-black);
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
 }
 
 .compare-empty p {

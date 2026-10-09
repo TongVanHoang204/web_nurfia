@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Edit2, Plus, Trash2, X, ChevronDown, ChevronUp, Sliders, Hash } from 'lucide-react';
 import api from '../../../api/client';
@@ -28,11 +30,12 @@ const toSlug = (v: string) =>
   String(v || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
 export default function AdminAttributes() {
+  useTranslation();
   const { addToast, openConfirm } = useUIStore();
 
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Expanded rows to show values
   const [expandedAttrIds, setExpandedAttrIds] = useState<Set<number>>(new Set());
 
@@ -224,21 +227,20 @@ export default function AdminAttributes() {
     <div className="admin-attributes-page">
       <header className="admin-attributes-header">
         <div>
-          <h1>Product Attributes</h1>
-          <p>Global catalog properties like Size, Color, and Materials.</p>
+          <h1>{translateUi("Product Attributes")}</h1>
+          <p>{translateUi("Global catalog properties like Size, Color, and Materials.")}</p>
         </div>
         <button className="btn btn-primary" onClick={openCreateAttr}>
-          <Plus size={16} className="admin-icon-right-8" /> Create Attribute
-        </button>
+          <Plus size={16} className="admin-icon-right-8" />{translateUi("Create Attribute")}</button>
       </header>
 
       <div className="admin-attributes-stats">
         <div className="admin-attr-stat-card">
-          <span>Registered Types</span>
+          <span>{translateUi("Registered Types")}</span>
           <strong>{attributes.length}</strong>
         </div>
         <div className="admin-attr-stat-card">
-          <span>Configured Terms</span>
+          <span>{translateUi("Configured Terms")}</span>
           <strong>{totalValues}</strong>
         </div>
       </div>
@@ -249,17 +251,17 @@ export default function AdminAttributes() {
         ) : filteredAttributes.length === 0 ? (
            <div className="admin-empty-state">
              <Sliders size={48} strokeWidth={1} style={{ marginBottom: 16, opacity: 0.5 }} />
-             <p>No attributes found in the catalog.</p>
+             <p>{translateUi("No attributes found in the catalog.")}</p>
            </div>
         ) : (
           <table className="admin-attr-table">
             <thead>
               <tr>
                 <th className="admin-col-actions"></th>
-                <th>Attribute Name</th>
-                <th>Slug ID</th>
-                <th>Sample Values</th>
-                <th className="admin-col-right">Actions</th>
+                <th>{translateUi("Attribute Name")}</th>
+                <th>{translateUi("Slug ID")}</th>
+                <th>{translateUi("Sample Values")}</th>
+                <th className="admin-col-right">{translateUi("Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -269,10 +271,10 @@ export default function AdminAttributes() {
                   <React.Fragment key={attr.id}>
                     <tr className={`admin-attr-row ${isExpanded ? 'is-expanded' : ''}`}>
                       <td className="admin-col-center">
-                        <button 
+                        <button
                           className="admin-attr-expand-btn"
                           onClick={() => toggleExpand(attr.id)}
-                          title={isExpanded ? "Collapse" : "Expand Terms"}
+                          title={isExpanded ? translateUi("Collapse") : translateUi("Expand Terms")}
                         >
                           {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         </button>
@@ -293,23 +295,22 @@ export default function AdminAttributes() {
                           ))}
                           {attr.values && attr.values.length > 4 && (
                             <span className="admin-text-muted-sm">
-                              +{attr.values.length - 4} MORE
-                            </span>
+                              +{attr.values.length - 4}{translateUi("MORE")}</span>
                           )}
                           {(!attr.values || attr.values.length === 0) && (
-                            <span className="admin-text-muted-italic">None defined</span>
+                            <span className="admin-text-muted-italic">{translateUi("None defined")}</span>
                           )}
                         </div>
                       </td>
                       <td className="admin-col-right">
                         <div className="admin-inline-flex">
-                          <button className="admin-attr-expand-btn" title="Add Term" onClick={() => openCreateVal(attr)}>
+                          <button className="admin-attr-expand-btn" title={translateUi("Add Term")} onClick={() => openCreateVal(attr)}>
                             <Plus size={18} />
                           </button>
-                          <button className="admin-attr-expand-btn" title="Edit" onClick={() => openEditAttr(attr)}>
+                          <button className="admin-attr-expand-btn" title={translateUi("Edit")} onClick={() => openEditAttr(attr)}>
                             <Edit2 size={16} />
                           </button>
-                          <button className="admin-attr-expand-btn admin-color-error" title="Delete" onClick={() => handleDeleteAttr(attr)}>
+                          <button className="admin-attr-expand-btn admin-color-error" title={translateUi("Delete")} onClick={() => handleDeleteAttr(attr)}>
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -320,21 +321,20 @@ export default function AdminAttributes() {
                         <td colSpan={5} className="admin-attr-expanded-pane">
                            <div className="admin-attr-terms-card">
                              <div className="admin-attr-terms-header">
-                               <h4>Configure "{attr.name}" Terms</h4>
+                               <h4>{translateUi("Configure \"")}{attr.name}{translateUi("\" Terms")}</h4>
                                <button className="btn btn-outline btn-sm" onClick={() => openCreateVal(attr)}>
-                                  <Plus size={14} className="admin-icon-right-6"/> Add New Term
-                               </button>
+                                  <Plus size={14} className="admin-icon-right-6"/>{translateUi("Add New Term")}</button>
                              </div>
-                             
+
                              {attr.values && attr.values.length > 0 ? (
                                 <table className="admin-terms-table">
                                   <thead>
                                     <tr>
-                                      <th>Term Label</th>
-                                      <th>Hex Code</th>
-                                      <th>Sort</th>
-                                      <th>Status</th>
-                                      <th className="admin-col-right">Actions</th>
+                                      <th>{translateUi("Term Label")}</th>
+                                      <th>{translateUi("Hex Code")}</th>
+                                      <th>{translateUi("Sort")}</th>
+                                      <th>{translateUi("Status")}</th>
+                                      <th className="admin-col-right">{translateUi("Actions")}</th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -350,17 +350,15 @@ export default function AdminAttributes() {
                                         <td>{val.sortOrder}</td>
                                         <td>
                                           {(val._count?.variantAttributes ?? 0) > 0 ? (
-                                            <span className="admin-term-inuse">
-                                              Used in {val._count!.variantAttributes} products
-                                            </span>
+                                            <span className="admin-term-inuse">{translateUi("Used in")}{val._count!.variantAttributes}{translateUi("products")}</span>
                                           ) : (
-                                            <span className="admin-term-unused">Unused</span>
+                                            <span className="admin-term-unused">{translateUi("Unused")}</span>
                                           )}
                                         </td>
                                         <td className="admin-col-right">
                                           <div className="admin-inline-flex">
-                                            <button className="admin-attr-expand-btn" title="Edit Term" onClick={() => openEditVal(val, attr)}><Edit2 size={14} /></button>
-                                            <button className="admin-attr-expand-btn admin-color-error" title="Delete Term" onClick={() => handleDeleteVal(val)}><Trash2 size={14} /></button>
+                                            <button className="admin-attr-expand-btn" title={translateUi("Edit Term")} onClick={() => openEditVal(val, attr)}><Edit2 size={14} /></button>
+                                            <button className="admin-attr-expand-btn admin-color-error" title={translateUi("Delete Term")} onClick={() => handleDeleteVal(val)}><Trash2 size={14} /></button>
                                           </div>
                                         </td>
                                       </tr>
@@ -368,9 +366,7 @@ export default function AdminAttributes() {
                                   </tbody>
                                 </table>
                              ) : (
-                               <div className="admin-empty-terms">
-                                 No terms available for this attribute.
-                               </div>
+                               <div className="admin-empty-terms">{translateUi("No terms available for this attribute.")}</div>
                              )}
                            </div>
                         </td>
@@ -389,14 +385,14 @@ export default function AdminAttributes() {
         <div className="admin-modal-overlay" onClick={() => setAttrModalOpen(false)}>
           <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">{editingAttr ? 'Edit Attribute' : 'Create Attribute'}</h2>
-              <button type="button" className="admin-modal-close" title="Close" onClick={() => setAttrModalOpen(false)}><X size={20} /></button>
+              <h2 className="admin-modal-title">{editingAttr ? translateUi("Edit Attribute") : translateUi("Create Attribute")}</h2>
+              <button type="button" className="admin-modal-close" title={translateUi("Close")} onClick={() => setAttrModalOpen(false)}><X size={20} /></button>
             </div>
             <form className="admin-form" onSubmit={handleSaveAttr}>
               <div className="admin-modal-body">
                 {attrFormError && <div className="admin-form-error">{attrFormError}</div>}
                 <div className="admin-form-row">
-                  <label>Display Name</label>
+                  <label>{translateUi("Display Name")}</label>
                   <input
                     type="text"
                     value={attrForm.name}
@@ -404,20 +400,20 @@ export default function AdminAttributes() {
                       const n = e.target.value;
                       setAttrForm(prev => ({ ...prev, name: n, slug: editingAttr ? prev.slug : toSlug(n) }));
                     }}
-                    placeholder="e.g. Fabric Material"
+                    placeholder={translateUi("e.g. Fabric Material")}
                     required
                     autoFocus
                   />
                 </div>
                 <div className="admin-form-row">
-                  <label>Technical Slug</label>
-                  <input type="text" value={attrForm.slug} onChange={e => setAttrForm(prev => ({ ...prev, slug: toSlug(e.target.value) }))} placeholder="e.g. fabric-material" required />
+                  <label>{translateUi("Technical Slug")}</label>
+                  <input type="text" value={attrForm.slug} onChange={e => setAttrForm(prev => ({ ...prev, slug: toSlug(e.target.value) }))} placeholder={translateUi("e.g. fabric-material")} required />
                 </div>
               </div>
               <div className="admin-modal-actions">
-                <button type="button" className="btn btn-outline" onClick={() => setAttrModalOpen(false)}>Cancel</button>
+                <button type="button" className="btn btn-outline" onClick={() => setAttrModalOpen(false)}>{translateUi("Cancel")}</button>
                 <button type="submit" className="btn btn-primary" disabled={attrSubmitting}>
-                  {attrSubmitting ? 'Saving...' : editingAttr ? 'Save Changes' : 'Create Attribute'}
+                  {attrSubmitting ? translateUi("Saving...") : editingAttr ? translateUi("Save Changes") : translateUi("Create Attribute")}
                 </button>
               </div>
             </form>
@@ -431,54 +427,54 @@ export default function AdminAttributes() {
           <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <div className="admin-val-modal-header">
-                <h2 className="admin-modal-title">{editingVal ? 'Edit Term' : 'Add Term'}</h2>
-                <span className="admin-val-modal-subtitle">Attribute: {parentAttr.name}</span>
+                <h2 className="admin-modal-title">{editingVal ? translateUi("Edit Term") : translateUi("Add Term")}</h2>
+                <span className="admin-val-modal-subtitle">{translateUi("Attribute:")} {parentAttr.name}</span>
               </div>
-              <button type="button" className="admin-modal-close" title="Close" onClick={() => setValModalOpen(false)}><X size={20} /></button>
+              <button type="button" className="admin-modal-close" title={translateUi("Close")} onClick={() => setValModalOpen(false)}><X size={20} /></button>
             </div>
             <form className="admin-form" onSubmit={handleSaveVal}>
               <div className="admin-modal-body">
                 {valFormError && <div className="admin-form-error">{valFormError}</div>}
-                
+
                 <div className="admin-form-row">
-                  <label>Term Label</label>
-                  <input type="text" value={valForm.value} onChange={e => setValForm(prev => ({ ...prev, value: e.target.value }))} placeholder="e.g. Silk, XL, #000000" title="Term Label" required autoFocus />
+                  <label>{translateUi("Term Label")}</label>
+                  <input type="text" value={valForm.value} onChange={e => setValForm(prev => ({ ...prev, value: e.target.value }))} placeholder={translateUi("e.g. Silk, XL, #000000")} title={translateUi("Term Label")} required autoFocus />
                 </div>
 
                 <div className="admin-form-row">
-                  <label>Visual Color (Hex)</label>
+                  <label>{translateUi("Visual Color (Hex)")}</label>
                   <div className="admin-flex-color">
                     <div className="admin-hash-wrapper">
                       <Hash size={14} className="admin-hash-icon" />
-                      <input 
-                        type="text" 
-                        value={valForm.colorHex?.replace('#', '')} 
-                        onChange={e => setValForm(prev => ({ ...prev, colorHex: '#' + e.target.value.replace('#', '') }))} 
-                        placeholder="FFFFFF" 
-                        title="Color hex code"
+                      <input
+                        type="text"
+                        value={valForm.colorHex?.replace('#', '')}
+                        onChange={e => setValForm(prev => ({ ...prev, colorHex: '#' + e.target.value.replace('#', '') }))}
+                        placeholder={translateUi("FFFFFF")}
+                        title={translateUi("Color hex code")}
                         className="admin-color-hex-input"
-                        maxLength={7} 
+                        maxLength={7}
                       />
                     </div>
-                    <input 
-                      type="color" 
-                      value={valForm.colorHex || '#ffffff'} 
-                      onChange={e => setValForm(prev => ({ ...prev, colorHex: e.target.value }))} 
-                      className="admin-color-input" 
-                      title="Color picker"
+                    <input
+                      type="color"
+                      value={valForm.colorHex || '#ffffff'}
+                      onChange={e => setValForm(prev => ({ ...prev, colorHex: e.target.value }))}
+                      className="admin-color-input"
+                      title={translateUi("Color picker")}
                     />
                   </div>
                 </div>
 
                 <div className="admin-form-row">
-                  <label>Display Priority (Sort Order)</label>
-                  <input type="number" min="0" value={valForm.sortOrder} onChange={e => setValForm(prev => ({ ...prev, sortOrder: Number(e.target.value) || 0 }))} title="Sort Order" />
+                  <label>{translateUi("Display Priority (Sort Order)")}</label>
+                  <input type="number" min="0" value={valForm.sortOrder} onChange={e => setValForm(prev => ({ ...prev, sortOrder: Number(e.target.value) || 0 }))} title={translateUi("Sort Order")} />
                 </div>
               </div>
               <div className="admin-modal-actions">
-                <button type="button" className="btn btn-outline" onClick={() => setValModalOpen(false)}>Cancel</button>
+                <button type="button" className="btn btn-outline" onClick={() => setValModalOpen(false)}>{translateUi("Cancel")}</button>
                 <button type="submit" className="btn btn-primary" disabled={valSubmitting}>
-                  {valSubmitting ? 'Saving...' : editingVal ? 'Save Changes' : 'Add Term'}
+                  {valSubmitting ? translateUi("Saving...") : editingVal ? translateUi("Save Changes") : translateUi("Add Term")}
                 </button>
               </div>
             </form>

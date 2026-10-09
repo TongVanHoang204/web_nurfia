@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Eye, Star } from 'lucide-react';
 import { useWishlistStore } from '../../stores/wishlistStore';
@@ -20,6 +22,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { isInWishlist, toggleWishlist } = useWishlistStore();
@@ -76,9 +79,9 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Top Right Actions */}
         <div className="product-card-top-actions">
-            <button 
-              className={`product-card-icon-btn ${isInWishlist(product.id) ? 'active' : ''}`} 
-              title="Add to Wishlist"
+            <button
+              className={`product-card-icon-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+              title={translateUi("Add to Wishlist")}
               onClick={(e) => {
                 e.preventDefault();
                 if (!isAuthenticated) return navigate('/login');
@@ -87,14 +90,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             >
               <Heart size={16} fill={isInWishlist(product.id) ? 'currentColor' : 'none'} className={isInWishlist(product.id) ? 'text-red-500' : ''} />
           </button>
-          <Link to={`/product/${product.slug}`} className="product-card-icon-btn" title="Quick View">
+          <Link to={`/product/${product.slug}`} className="product-card-icon-btn" title={translateUi("Quick View")}>
             <Eye size={16} />
           </Link>
         </div>
 
         {/* Hover Bottom Strip Action */}
         <div className="product-card-bottom-action">
-          <Link to={`/product/${product.slug}`} className="select-options-btn">SELECT OPTIONS</Link>
+          <Link to={`/product/${product.slug}`} className="select-options-btn">{translateUi("SELECT OPTIONS")}</Link>
         </div>
       </div>
 
@@ -104,7 +107,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
         </Link>
-        
+
         <div className="product-card-price flex-left align-end gap-2 mb-2">
           {hasDiscount ? (
             <>

@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { Edit2, Plus, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -39,6 +41,7 @@ const formatCurrency = (value: number | string | null | undefined) => {
 };
 
 export default function AdminShipping() {
+  useTranslation();
   const [methods, setMethods] = useState<ShippingMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -229,29 +232,28 @@ export default function AdminShipping() {
     <div className="shipping-admin-page">
       <div className="admin-page-header shipping-admin-header">
         <div>
-          <h1 className="admin-page-title">Shipping Methods</h1>
-          <p className="shipping-admin-subtitle">Manage shipping options and zone pricing in one place.</p>
+          <h1 className="admin-page-title">{translateUi("Shipping Methods")}</h1>
+          <p className="shipping-admin-subtitle">{translateUi("Manage shipping options and zone pricing in one place.")}</p>
         </div>
 
         <div className="shipping-header-actions">
           <div className="shipping-quick-stats">
             <div className="shipping-stat-pill">
               <strong>{methods.length}</strong>
-              <span>Methods</span>
+              <span>{translateUi("Methods")}</span>
             </div>
             <div className="shipping-stat-pill">
               <strong>{activeMethods}</strong>
-              <span>Active</span>
+              <span>{translateUi("Active")}</span>
             </div>
             <div className="shipping-stat-pill">
               <strong>{totalZones}</strong>
-              <span>Zones</span>
+              <span>{translateUi("Zones")}</span>
             </div>
           </div>
 
           <button className="admin-btn admin-btn-primary" onClick={openAddModal}>
-            <Plus size={16} /> Add Method
-          </button>
+            <Plus size={16} />{translateUi("Add Method")}</button>
         </div>
       </div>
 
@@ -259,8 +261,8 @@ export default function AdminShipping() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content shipping-modal-content">
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">{editingMethod ? 'Edit Shipping Method' : 'Create Shipping Method'}</h3>
-              <button aria-label="Close" title="Close modal" onClick={resetForm} className="admin-modal-close">
+              <h3 className="admin-modal-title">{editingMethod ? translateUi("Edit Shipping Method") : translateUi("Create Shipping Method")}</h3>
+              <button aria-label={translateUi("Close")} title={translateUi("Close modal")} onClick={resetForm} className="admin-modal-close">
                 <X size={20} />
               </button>
             </div>
@@ -270,75 +272,74 @@ export default function AdminShipping() {
             <form onSubmit={handleSubmit} className="admin-form">
               <div className="shipping-form-grid">
                 <div className="admin-form-group shipping-form-group-tight">
-                  <label htmlFor="shippingName">Name</label>
-                  <input id="shippingName" title="Shipping Method Name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
+                  <label htmlFor="shippingName">{translateUi("Name")}</label>
+                  <input id="shippingName" title={translateUi("Shipping Method Name")} type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
                 </div>
 
                 <div className="shipping-status-toggle-wrap">
                   <label htmlFor="shippingActive" className="shipping-status-toggle">
-                    <input id="shippingActive" title="Shipping Method Status" type="checkbox" checked={formData.isActive} onChange={e => setFormData(prev => ({ ...prev, isActive: e.target.checked }))} />
-                    <span>Active</span>
+                    <input id="shippingActive" title={translateUi("Shipping Method Status")} type="checkbox" checked={formData.isActive} onChange={e => setFormData(prev => ({ ...prev, isActive: e.target.checked }))} />
+                    <span>{translateUi("Active")}</span>
                   </label>
                 </div>
               </div>
 
               <div className="admin-form-group shipping-form-group-tight">
-                <label htmlFor="shippingDescription">Description</label>
-                <textarea id="shippingDescription" title="Shipping Method Description" rows={2} value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} />
+                <label htmlFor="shippingDescription">{translateUi("Description")}</label>
+                <textarea id="shippingDescription" title={translateUi("Shipping Method Description")} rows={2} value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} />
               </div>
 
               <div className="admin-form-group shipping-zone-block">
                 <div className="shipping-zone-toolbar">
-                  <label>Shipping Zones</label>
+                  <label>{translateUi("Shipping Zones")}</label>
                   <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={addZone}>
-                    <Plus size={14} /> Add Zone
-                  </button>
+                    <Plus size={14} />{translateUi("Add Zone")}</button>
                 </div>
 
                 <div className="shipping-zone-list">
                   {formData.zones.map((zone, index) => (
                     <div key={`${zone.zoneName}-${index}`} className="shipping-zone-row">
                       <div className="admin-form-group shipping-zone-input shipping-zone-name-input">
-                        {index === 0 && <label htmlFor={`zone-name-${index}`}>Zone</label>}
+                        {index === 0 && <label htmlFor={`zone-name-${index}`}>{translateUi("Zone")}</label>}
                         <input
                           id={`zone-name-${index}`}
-                          title={`Zone Name ${index + 1}`}
+                          title={translateUi("Zone Name {{value1}}", { value1: index + 1 })}
                           type="text"
                           value={zone.zoneName}
                           onChange={e => updateZone(index, 'zoneName', e.target.value)}
-                          placeholder="Zone Name"
+                          placeholder={translateUi("Zone Name")}
                         />
                       </div>
 
                       <div className="admin-form-group shipping-zone-input">
-                        {index === 0 && <label htmlFor={`zone-cost-${index}`}>Cost</label>}
+                        {index === 0 && <label htmlFor={`zone-cost-${index}`}>{translateUi("Cost")}</label>}
                         <input
                           id={`zone-cost-${index}`}
-                          title={`Zone Cost ${index + 1}`}
+                          title={translateUi("Zone Cost {{value1}}", { value1: index + 1 })}
                           type="number"
                           min="0"
                           step="0.01"
                           value={zone.cost}
                           onChange={e => updateZone(index, 'cost', e.target.value)}
-                          placeholder="Cost"
+                          placeholder={translateUi("Cost")}
                         />
                       </div>
 
                       <div className="admin-form-group shipping-zone-input">
-                        {index === 0 && <label htmlFor={`zone-free-${index}`}>Free Min</label>}
+                        {index === 0 && <label htmlFor={`zone-free-${index}`}>{translateUi("Free Min")}</label>}
                         <input
                           id={`zone-free-${index}`}
-                          title={`Zone Free Shipping Threshold ${index + 1}`}
+                          title={translateUi("Zone Free Shipping Threshold {{value1}}", { value1: index + 1 })}
                           type="number"
                           min="0"
                           step="0.01"
                           value={zone.freeShipMinOrder}
                           onChange={e => updateZone(index, 'freeShipMinOrder', e.target.value)}
-                          placeholder="Threshold"
+                          placeholder={translateUi("Threshold")}
                         />
                       </div>
 
-                      <button type="button" className="admin-btn admin-btn-danger shipping-zone-remove-btn" onClick={() => removeZone(index)} title="Remove Zone">
+                      <button type="button" className="admin-btn admin-btn-danger shipping-zone-remove-btn" onClick={() => removeZone(index)} title={translateUi("Remove Zone")}>
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -347,9 +348,9 @@ export default function AdminShipping() {
               </div>
 
               <div className="admin-modal-actions shipping-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={resetForm} disabled={isSubmitting}>Cancel</button>
+                <button type="button" className="admin-btn admin-btn-outline" onClick={resetForm} disabled={isSubmitting}>{translateUi("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : editingMethod ? 'Update Method' : 'Create Method'}
+                  {isSubmitting ? translateUi("Saving...") : editingMethod ? translateUi("Update Method") : translateUi("Create Method")}
                 </button>
               </div>
             </form>
@@ -359,7 +360,7 @@ export default function AdminShipping() {
 
       <div className="admin-card shipping-list-wrap">
         {isLoading ? <div className="loading-page"><div className="spinner" /></div> : methods.length === 0 ? (
-          <p className="no-shipping-methods">No shipping methods configured</p>
+          <p className="no-shipping-methods">{translateUi("No shipping methods configured")}</p>
         ) : (
           <div className="shipping-method-grid">
             {methods.map((method) => (
@@ -367,19 +368,19 @@ export default function AdminShipping() {
                 <div className="shipping-method-header">
                   <div>
                     <h3 className="shipping-method-title">{method.name}</h3>
-                    <p className="shipping-method-desc">{method.description || 'No description'}</p>
+                    <p className="shipping-method-desc">{method.description || translateUi("No description")}</p>
                   </div>
 
                   <div className="shipping-method-actions">
                     <span className={`status-badge ${method.isActive ? 'status-delivered' : 'status-cancelled'}`}>
-                      {method.isActive ? 'Active' : 'Inactive'}
+                      {method.isActive ? translateUi("Active") : translateUi("Inactive")}
                     </span>
 
-                    <button className="admin-btn admin-btn-outline admin-btn-sm shipping-action-btn" onClick={() => openEditModal(method)} aria-label="Edit Shipping Method" title="Edit Shipping Method">
+                    <button className="admin-btn admin-btn-outline admin-btn-sm shipping-action-btn" onClick={() => openEditModal(method)} aria-label={translateUi("Edit Shipping Method")} title={translateUi("Edit Shipping Method")}>
                       <Edit2 size={13} />
                     </button>
 
-                    <button className="admin-btn admin-btn-danger admin-btn-sm shipping-action-btn" onClick={() => handleDelete(method.id)} aria-label="Delete Shipping Method" title="Delete Shipping Method">
+                    <button className="admin-btn admin-btn-danger admin-btn-sm shipping-action-btn" onClick={() => handleDelete(method.id)} aria-label={translateUi("Delete Shipping Method")} title={translateUi("Delete Shipping Method")}>
                       <Trash2 size={13} />
                     </button>
                   </div>
@@ -388,21 +389,21 @@ export default function AdminShipping() {
                 {method.zones?.length ? (
                   <div className="shipping-zone-summary-wrap">
                     <div className="shipping-zone-summary-head">
-                      <span>Zone</span>
-                      <span>Cost</span>
-                      <span>Free Shipping</span>
+                      <span>{translateUi("Zone")}</span>
+                      <span>{translateUi("Cost")}</span>
+                      <span>{translateUi("Free Shipping")}</span>
                     </div>
 
                     {method.zones.map((zone) => (
                       <div key={`${method.id}-${zone.id || zone.zoneName}`} className="shipping-zone-summary-row">
                         <span>{zone.zoneName}</span>
                         <span>{formatCurrency(zone.cost)}</span>
-                        <span>{zone.freeShipMinOrder ? `From ${formatCurrency(zone.freeShipMinOrder)}` : 'Not configured'}</span>
+                        <span>{zone.freeShipMinOrder ? translateUi("From {{value1}}", { value1: formatCurrency(zone.freeShipMinOrder) }) : translateUi("Not configured")}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="shipping-zone-empty">No shipping zones configured for this method.</div>
+                  <div className="shipping-zone-empty">{translateUi("No shipping zones configured for this method.")}</div>
                 )}
               </div>
             ))}

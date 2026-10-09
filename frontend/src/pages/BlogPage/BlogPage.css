@@ -39,7 +39,7 @@
 }
 
 .mock-gray-bg {
-  background-color: #f3f4f6;
+  background-color: var(--surface-soft, #f3f4f6);
 }
 
 .blog-post-title {
@@ -51,17 +51,17 @@
 }
 
 .blog-post-title a {
-  color: #000;
+  color: var(--color-text, #000);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .blog-post-title a:hover {
-  color: #666;
+  color: var(--color-text-light, #666);
 }
 
 .blog-post-excerpt {
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   font-size: 15px;
   line-height: 1.7;
   margin-bottom: 24px;
@@ -116,7 +116,7 @@
   justify-content: center;
   background: transparent;
   border: 1px solid transparent;
-  color: #000;
+  color: var(--color-text, #000);
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -124,7 +124,7 @@
 }
 
 .blog-page-btn:hover {
-  color: #000;
+  color: var(--color-text, #000);
 }
 
 .blog-page-btn.active {
@@ -143,7 +143,7 @@
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 24px 0;
-  color: #000;
+  color: var(--color-text, #000);
 }
 
 /* Post Widget */
@@ -179,13 +179,13 @@
 }
 
 .recent-post-info h4 a {
-  color: #000;
+  color: var(--color-text, #000);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .recent-post-info h4 a:hover {
-  color: #666;
+  color: var(--color-text-light, #666);
 }
 
 .recent-post-date {
@@ -237,7 +237,7 @@
 }
 .btn-x {
   background-color: #f3f3f3;
-  color: #000;
+  color: var(--color-text, #000);
 }
 .btn-instagram {
   background-color: #fce7eb;

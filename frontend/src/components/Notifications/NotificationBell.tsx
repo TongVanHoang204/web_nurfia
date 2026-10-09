@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { useNotificationStore } from '../../stores/notificationStore';
@@ -10,8 +12,16 @@ import './notifications.css';
  * the dumb <NotificationDropdown />. Drop this anywhere in the UI.
  */
 export default function NotificationBell() {
+  useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const keyboard = (event: KeyboardEvent) => { if (event.key === 'Escape') { setIsOpen(false); triggerRef.current?.focus(); } };
+    document.addEventListener('keydown', keyboard);
+    return () => document.removeEventListener('keydown', keyboard);
+  }, [isOpen]);
 
   const { isAuthenticated, user } = useAuthStore();
   const {
@@ -49,7 +59,7 @@ export default function NotificationBell() {
 
   const handleLoadMore = () => {
     if (page < totalPages && !isLoading) {
-      fetchNotifications(page + 1);
+      fetchNotifications(page + 1, true);
     }
   };
 
@@ -59,14 +69,15 @@ export default function NotificationBell() {
       {isOpen ? (
         <button
           className="action-btn notif-trigger-btn notification-btn"
+          ref={triggerRef}
           onClick={() => setIsOpen(false)}
-          aria-label="Close notifications"
+          aria-label={translateUi("Close notifications")}
           aria-haspopup="dialog"
           aria-expanded="true"
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="cart-count" aria-label={`${unreadCount} unread notifications`}>
+            <span className="cart-count" aria-label={translateUi("{{value1}} unread notifications", { value1: unreadCount })}>
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -74,14 +85,15 @@ export default function NotificationBell() {
       ) : (
         <button
           className="action-btn notif-trigger-btn notification-btn"
+          ref={triggerRef}
           onClick={() => setIsOpen(true)}
-          aria-label="Open notifications"
+          aria-label={translateUi("Open notifications")}
           aria-haspopup="dialog"
           aria-expanded="false"
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="cart-count" aria-label={`${unreadCount} unread notifications`}>
+            <span className="cart-count" aria-label={translateUi("{{value1}} unread notifications", { value1: unreadCount })}>
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -99,6 +111,7 @@ export default function NotificationBell() {
           onRead={markAsRead}
           onMarkAllRead={markAllAsRead}
           onLoadMore={handleLoadMore}
+          onClose={() => setIsOpen(false)}
         />
       )}
     </div>

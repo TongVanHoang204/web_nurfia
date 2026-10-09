@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -24,6 +26,7 @@ const normalizeAssetInput = (value: string) => {
 };
 
 export default function AdminBlog() {
+  useTranslation();
   const [posts, setPosts] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -148,51 +151,51 @@ export default function AdminBlog() {
     <div className="admin-blog-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Blog Posts</h1>
-          <p className="admin-blog-subtitle">Create, edit, and manage your blog articles and content.</p>
+          <h1 className="admin-page-title">{translateUi("Blog Posts")}</h1>
+          <p className="admin-blog-subtitle">{translateUi("Create, edit, and manage your blog articles and content.")}</p>
         </div>
-        <button className="admin-btn admin-btn-primary admin-blog-add-btn" onClick={() => openModal()}><Plus size={16} className="admin-blog-add-icon" /> Add New Post</button>
+        <button className="admin-btn admin-btn-primary admin-blog-add-btn" onClick={() => openModal()}><Plus size={16} className="admin-blog-add-icon" /> {translateUi("Add New Post")}</button>
       </div>
 
       <div className="admin-card">
         {isLoading ? <div className="loading-page"><div className="spinner" /></div> : posts.length === 0 ? (
-          <div className="admin-blog-empty">No blog posts found.</div>
+          <div className="admin-blog-empty">{translateUi("No blog posts found.")}</div>
         ) : (
           <div className="admin-blog-table-wrap">
             <table className="admin-table admin-blog-table">
               <thead>
                 <tr>
-                  <th className="admin-blog-th-image">Image</th>
-                  <th className="admin-blog-th-title">Title & Slug</th>
-                  <th className="admin-blog-th-category">Category</th>
-                  <th className="admin-blog-th-status">Status</th>
-                  <th className="admin-blog-th-date">Published Date</th>
-                  <th className="text-right admin-blog-th-actions">Actions</th>
+                  <th className="admin-blog-th-image">{translateUi("Image")}</th>
+                  <th className="admin-blog-th-title">{translateUi("Title & Slug")}</th>
+                  <th className="admin-blog-th-category">{translateUi("Category")}</th>
+                  <th className="admin-blog-th-status">{translateUi("Status")}</th>
+                  <th className="admin-blog-th-date">{translateUi("Published Date")}</th>
+                  <th className="text-right admin-blog-th-actions">{translateUi("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {posts.map(post => (
                   <tr key={post.id}>
                     <td className="admin-blog-image-cell">
-                      {post.image ? <img src={getImageUrl(post.image)} alt="Blog thumbnail" className="admin-blog-img" /> : <div className="admin-blog-img-placeholder" />}
+                      {post.image ? <img src={getImageUrl(post.image)} alt={translateUi("Blog thumbnail")} className="admin-blog-img" /> : <div className="admin-blog-img-placeholder" />}
                     </td>
                     <td className="admin-blog-title-cell">
                       <div className="admin-blog-title">{post.title}</div>
                       <div className="admin-blog-slug">/{post.slug}</div>
                     </td>
                     <td>
-                      <span className="admin-blog-category">{post.category || 'Uncategorized'}</span>
+                      <span className="admin-blog-category">{post.category || translateUi("Uncategorized")}</span>
                     </td>
                     <td>
                       <span className={`admin-blog-status-badge ${post.isPublished ? 'is-published' : 'is-draft'}`}>
-                        {post.isPublished ? 'Published' : 'Draft'}
+                        {post.isPublished ? translateUi("Published") : translateUi("Draft")}
                       </span>
                     </td>
-                    <td className="admin-blog-date">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Not scheduled'}</td>
+                    <td className="admin-blog-date">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString(getLocale()) : translateUi("Not scheduled")}</td>
                     <td className="text-right">
                       <div className="admin-table-actions admin-blog-actions">
-                        <button className="admin-action-btn" title="Edit" aria-label="Edit" onClick={() => openModal(post)}><Edit size={16} /></button>
-                        <button className="admin-action-btn text-danger" title="Delete" aria-label="Delete" onClick={() => handleDelete(post.id)}><Trash2 size={16} /></button>
+                        <button className="admin-action-btn" title={translateUi("Edit")} aria-label={translateUi("Edit")} onClick={() => openModal(post)}><Edit size={16} /></button>
+                        <button className="admin-action-btn text-danger" title={translateUi("Delete")} aria-label={translateUi("Delete")} onClick={() => handleDelete(post.id)}><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -207,52 +210,52 @@ export default function AdminBlog() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content admin-blog-modal-large">
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">{editingPost ? 'Edit Post' : 'Add New Post'}</h2>
-              <button type="button" className="admin-modal-close" title="Close" onClick={closeModal}><X size={20} /></button>
+              <h2 className="admin-modal-title">{editingPost ? translateUi("Edit Post") : translateUi("Add New Post")}</h2>
+              <button type="button" className="admin-modal-close" title={translateUi("Close")} onClick={closeModal}><X size={20} /></button>
             </div>
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="title">Title</label>
-                  <input id="title" title="Title" type="text" placeholder="Enter post title" value={form.title} onChange={e => setForm({...form, title: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')})} required />
+                  <label htmlFor="title">{translateUi("Title")}</label>
+                  <input id="title" title={translateUi("Title")} type="text" placeholder={translateUi("Enter post title")} value={form.title} onChange={e => setForm({...form, title: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')})} required />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="slug">Slug</label>
-                  <input id="slug" title="Slug" type="text" placeholder="enter-post-slug" value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} required />
+                  <label htmlFor="slug">{translateUi("Slug")}</label>
+                  <input id="slug" title={translateUi("Slug")} type="text" placeholder="enter-post-slug" value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} required />
                 </div>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="category">Category</label>
-                  <input id="category" title="Category" type="text" placeholder="News" value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
+                  <label htmlFor="category">{translateUi("Category")}</label>
+                  <input id="category" title={translateUi("Category")} type="text" placeholder={translateUi("News")} value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="author">Author</label>
-                  <input id="author" title="Author" type="text" placeholder="Admin" value={form.author} onChange={e => setForm({...form, author: e.target.value})} />
+                  <label htmlFor="author">{translateUi("Author")}</label>
+                  <input id="author" title={translateUi("Author")} type="text" placeholder={translateUi("Admin")} value={form.author} onChange={e => setForm({...form, author: e.target.value})} />
                 </div>
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="image">Image URL</label>
+                <label htmlFor="image">{translateUi("Image URL")}</label>
                 <div className="admin-blog-upload-row">
-                  <input id="image" title="Image URL" type="text" placeholder="https://example.com/image.jpg" value={form.image} onChange={e => setForm({...form, image: e.target.value})} className="admin-blog-upload-input" />
+                  <input id="image" title={translateUi("Image URL")} type="text" placeholder="https://example.com/image.jpg" value={form.image} onChange={e => setForm({...form, image: e.target.value})} className="admin-blog-upload-input" />
                   <label className={`admin-btn admin-btn-outline admin-blog-upload-btn${isUploading ? ' is-uploading' : ''}`}>
-                    {isUploading ? 'Uploading...' : 'Choose File'}
+                    {isUploading ? translateUi("Uploading...") : translateUi("Choose File")}
                     <input type="file" accept="image/*" onChange={handleFileUpload} className="admin-blog-hidden-input" disabled={isUploading} />
                   </label>
                 </div>
                 {form.image && (
                   <div className="admin-blog-preview-container">
-                    <img 
-                      src={getImageUrl(form.image)} 
-                      alt="Preview" 
-                      className="admin-blog-preview-image" 
+                    <img
+                      src={getImageUrl(form.image)}
+                      alt={translateUi("Preview")}
+                      className="admin-blog-preview-image"
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="admin-blog-preview-remove"
-                      title="Remove image"
+                      title={translateUi("Remove image")}
                       onClick={() => setForm(prev => ({ ...prev, image: '' }))}
                     >
                       <X size={14} />
@@ -263,7 +266,7 @@ export default function AdminBlog() {
 
               <div className="admin-form-group">
                 <div className="admin-ai-field-header">
-                  <label htmlFor="excerpt">Excerpt</label>
+                  <label htmlFor="excerpt">{translateUi("Excerpt")}</label>
                   <AdminAiGeneratorButton
                     target="BLOG_EXCERPT"
                     context={blogAiContext}
@@ -276,14 +279,14 @@ export default function AdminBlog() {
                   ariaLabel="Excerpt"
                   value={form.excerpt}
                   onChange={(value) => setForm((prev) => ({ ...prev, excerpt: value }))}
-                  placeholder="Short description..."
+                  placeholder={translateUi("Short description...")}
                   size="sm"
                 />
               </div>
 
               <div className="admin-form-group">
                 <div className="admin-ai-field-header">
-                  <label htmlFor="content">Content</label>
+                  <label htmlFor="content">{translateUi("Content")}</label>
                   <AdminAiGeneratorButton
                     target="BLOG_CONTENT"
                     context={blogAiContext}
@@ -298,21 +301,21 @@ export default function AdminBlog() {
                   ariaLabel="Content"
                   value={form.content}
                   onChange={(value) => setForm((prev) => ({ ...prev, content: value }))}
-                  placeholder="Main blog content..."
+                  placeholder={translateUi("Main blog content...")}
                   size="lg"
                 />
               </div>
 
               <div className="admin-form-row admin-blog-publish-row">
                 <label className="admin-blog-publish-label">
-                  <input type="checkbox" id="isPublished" title="Publish Post" checked={form.isPublished} onChange={e => setForm({...form, isPublished: e.target.checked})} className="admin-blog-publish-checkbox" />
-                  <span>Publish Post</span>
+                  <input type="checkbox" id="isPublished" title={translateUi("Publish Post")} checked={form.isPublished} onChange={e => setForm({...form, isPublished: e.target.checked})} className="admin-blog-publish-checkbox" />
+                  <span>{translateUi("Publish Post")}</span>
                 </label>
               </div>
 
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={closeModal}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary">{editingPost ? 'Update Post' : 'Save Post'}</button>
+                <button type="button" className="admin-btn admin-btn-outline" onClick={closeModal}>{translateUi("Cancel")}</button>
+                <button type="submit" className="admin-btn admin-btn-primary">{editingPost ? translateUi("Update Post") : translateUi("Save Post")}</button>
               </div>
             </form>
           </div>

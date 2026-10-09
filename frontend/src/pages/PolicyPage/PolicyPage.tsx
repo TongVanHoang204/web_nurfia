@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSiteSettings } from '../../contexts/SiteSettingsContext';
@@ -61,6 +63,7 @@ const POLICY_CONTENT: Record<string, { title: string; intro: string; sections: A
 };
 
 export default function PolicyPage() {
+  useTranslation();
   const { policyType = '' } = useParams<{ policyType: string }>();
   const { settings } = useSiteSettings();
 
@@ -73,28 +76,28 @@ export default function PolicyPage() {
     <div className="policy-page">
       <div className="container policy-container">
         <div className="policy-hero">
-          <p className="policy-kicker">Customer Care</p>
-          <h1>{policy.title}</h1>
-          <p>{policy.intro}</p>
+          <p className="policy-kicker">{translateUi("Customer Care")}</p>
+          <h1>{translateUi(policy.title)}</h1>
+          <p>{translateUi(policy.intro)}</p>
         </div>
 
         <div className="policy-grid">
           <section className="policy-card">
             {policy.sections.map((section) => (
               <article key={section.heading} className="policy-section">
-                <h2>{section.heading}</h2>
-                <p>{section.body}</p>
+                <h2>{translateUi(section.heading)}</h2>
+                <p>{translateUi(section.body)}</p>
               </article>
             ))}
           </section>
 
           <aside className="policy-card policy-support">
-            <h2>Support</h2>
-            <p>For order-specific assistance, use the current store support details below.</p>
+            <h2>{translateUi("Support")}</h2>
+            <p>{translateUi("For order-specific assistance, use the current store support details below.")}</p>
             <ul>
-              <li><strong>Email:</strong> {supportEmail}</li>
-              <li><strong>Phone:</strong> {supportPhone}</li>
-              <li><strong>Address:</strong> {supportAddress}</li>
+              <li><strong>{translateUi("Email:")}</strong> {supportEmail}</li>
+              <li><strong>{translateUi("Phone:")}</strong> {supportPhone}</li>
+              <li><strong>{translateUi("Address:")}</strong> {supportAddress}</li>
             </ul>
           </aside>
         </div>

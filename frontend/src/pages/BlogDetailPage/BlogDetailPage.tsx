@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '../../api/client';
@@ -35,6 +37,7 @@ const fallbackPost: BlogPost = {
 };
 
 export default function BlogDetailPage() {
+  useTranslation();
   const { slug } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
@@ -80,9 +83,9 @@ export default function BlogDetailPage() {
     return (
       <div className="blog-page-container">
         <div className="blog-detail-empty">
-          <h1>Post unavailable</h1>
-          <p>{error || 'This blog post does not exist.'}</p>
-          <Link to="/blog" className="blog-btn-readmore">Back to Blog</Link>
+          <h1>{translateUi("Post unavailable")}</h1>
+          <p>{error || translateUi("This blog post does not exist.")}</p>
+          <Link to="/blog" className="blog-btn-readmore">{translateUi("Back to Blog")}</Link>
         </div>
       </div>
     );
@@ -97,7 +100,7 @@ export default function BlogDetailPage() {
     <div className="blog-page-container">
       <div className="blog-layout">
         <article className="blog-main blog-detail-main">
-          <Link to="/blog" className="blog-detail-back-link">Back to Articles</Link>
+          <Link to="/blog" className="blog-detail-back-link">{translateUi("Back to Articles")}</Link>
 
           {heroImageUrl && (
             <div className="blog-post-image blog-detail-hero">
@@ -106,11 +109,11 @@ export default function BlogDetailPage() {
           )}
 
           <div className="blog-detail-meta-top">
-            <span>{post.category || 'General'}</span>
+            <span>{post.category || translateUi("General")}</span>
             <span className="meta-separator">|</span>
-            <span>{post.author || 'Nurfia Editorial'}</span>
+            <span>{post.author || translateUi("Nurfia Editorial")}</span>
             <span className="meta-separator">|</span>
-            <span>{new Date(post.publishedAt || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            <span>{new Date(post.publishedAt || Date.now()).toLocaleDateString(getLocale(), { month: 'long', day: 'numeric', year: 'numeric' })}</span>
           </div>
 
           <h1 className="blog-detail-title">{post.title}</h1>
@@ -130,7 +133,7 @@ export default function BlogDetailPage() {
 
         <aside className="blog-sidebar">
           <div className="sidebar-widget">
-            <h3 className="widget-title">Recent Posts</h3>
+            <h3 className="widget-title">{translateUi("Recent Posts")}</h3>
             <div className="recent-posts-list">
               {(recentPosts.length ? recentPosts : [fallbackPost]).map((item) => (
                 <div className="recent-post-item" key={`detail-${item.id}-${item.slug}`}>
@@ -140,7 +143,7 @@ export default function BlogDetailPage() {
                   <div className="recent-post-info">
                     <h4><Link to={`/blog/${item.slug}`}>{item.title}</Link></h4>
                     <span className="recent-post-date">
-                      {new Date(item.publishedAt || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      {new Date(item.publishedAt || Date.now()).toLocaleDateString(getLocale(), { month: 'long', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
                 </div>
@@ -149,11 +152,9 @@ export default function BlogDetailPage() {
           </div>
 
           <div className="sidebar-widget">
-            <h3 className="widget-title">Continue Reading</h3>
-            <p className="blog-detail-side-copy">
-              Explore new arrivals, seasonal styling ideas, and practical care guides curated for the Nurfia storefront.
-            </p>
-            <Link to="/shop" className="blog-btn-readmore">Shop New In</Link>
+            <h3 className="widget-title">{translateUi("Continue Reading")}</h3>
+            <p className="blog-detail-side-copy">{translateUi("Explore new arrivals, seasonal styling ideas, and practical care guides curated for the Nurfia storefront.")}</p>
+            <Link to="/shop" className="blog-btn-readmore">{translateUi("Shop New In")}</Link>
           </div>
         </aside>
       </div>

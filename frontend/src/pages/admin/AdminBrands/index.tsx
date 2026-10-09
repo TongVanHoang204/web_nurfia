@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { Edit2, Plus, Search, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -32,6 +34,7 @@ const toSlug = (value: string) => String(value || '')
   .replace(/(^-|-$)+/g, '');
 
 export default function AdminBrands() {
+  useTranslation();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -222,32 +225,31 @@ export default function AdminBrands() {
     <div className="brands-admin-page">
       <section className="ap-card brands-hero-card">
         <div className="brands-hero-copy">
-          <p className="brands-hero-overline">Catalog Setup</p>
-          <h1 className="brands-hero-title">Brands Directory</h1>
-          <p className="brands-admin-subtitle">Organize brand labels for storefront filters and product assignments.</p>
+          <p className="brands-hero-overline">{translateUi("Catalog Setup")}</p>
+          <h1 className="brands-hero-title">{translateUi("Brands Directory")}</h1>
+          <p className="brands-admin-subtitle">{translateUi("Organize brand labels for storefront filters and product assignments.")}</p>
         </div>
         <div className="brands-hero-actions">
           <button className="admin-btn admin-btn-primary" onClick={openCreateModal}>
-            <Plus size={16} /> Add Brand
-          </button>
+            <Plus size={16} />{translateUi("Add Brand")}</button>
         </div>
       </section>
 
       <section className="brands-metrics-grid">
         <div className="ap-card brands-metric-card">
-          <span className="brands-metric-label">Total Brands</span>
+          <span className="brands-metric-label">{translateUi("Total Brands")}</span>
           <strong className="brands-metric-value">{brands.length}</strong>
         </div>
         <div className="ap-card brands-metric-card">
-          <span className="brands-metric-label">Active</span>
+          <span className="brands-metric-label">{translateUi("Active")}</span>
           <strong className="brands-metric-value">{activeCount}</strong>
         </div>
         <div className="ap-card brands-metric-card">
-          <span className="brands-metric-label">Inactive</span>
+          <span className="brands-metric-label">{translateUi("Inactive")}</span>
           <strong className="brands-metric-value">{inactiveCount}</strong>
         </div>
         <div className="ap-card brands-metric-card">
-          <span className="brands-metric-label">Assigned Products</span>
+          <span className="brands-metric-label">{translateUi("Assigned Products")}</span>
           <strong className="brands-metric-value">{totalAssignedProducts}</strong>
         </div>
       </section>
@@ -258,44 +260,42 @@ export default function AdminBrands() {
             <Search size={16} />
             <input
               type="text"
-              placeholder="Search by brand name or slug"
+              placeholder={translateUi("Search by brand name or slug")}
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
           </div>
 
           <select
-            title="Brand status filter"
-            aria-label="Brand status filter"
+            title={translateUi("Brand status filter")}
+            aria-label={translateUi("Brand status filter")}
             className="brands-filter-select"
             value={filter}
             onChange={(event) => setFilter(event.target.value as BrandFilter)}
           >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="all">{translateUi("All statuses")}</option>
+            <option value="active">{translateUi("Active")}</option>
+            <option value="inactive">{translateUi("Inactive")}</option>
           </select>
 
           <select
-            title="Brand sort"
-            aria-label="Brand sort"
+            title={translateUi("Brand sort")}
+            aria-label={translateUi("Brand sort")}
             className="brands-filter-select"
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as BrandSort)}
           >
-            <option value="manual">Sort: Manual</option>
-            <option value="name-asc">Sort: Name A-Z</option>
-            <option value="name-desc">Sort: Name Z-A</option>
-            <option value="products-desc">Sort: Most Products</option>
+            <option value="manual">{translateUi("Sort: Manual")}</option>
+            <option value="name-asc">{translateUi("Sort: Name A-Z")}</option>
+            <option value="name-desc">{translateUi("Sort: Name Z-A")}</option>
+            <option value="products-desc">{translateUi("Sort: Most Products")}</option>
           </select>
         </div>
 
         <div className="brands-controls-summary">
-          <span>{filteredBrands.length} result(s)</span>
+          <span>{filteredBrands.length} {translateUi("result(s)")}</span>
           {hasFilters && (
-            <button type="button" className="admin-btn admin-btn-outline brands-reset-btn" onClick={resetFilters}>
-              Reset Filters
-            </button>
+            <button type="button" className="admin-btn admin-btn-outline brands-reset-btn" onClick={resetFilters}>{translateUi("Reset Filters")}</button>
           )}
         </div>
       </section>
@@ -304,19 +304,19 @@ export default function AdminBrands() {
         {isLoading ? (
           <div className="loading-page"><div className="spinner" /></div>
         ) : filteredBrands.length === 0 ? (
-          <div className="brands-empty-state">No brands matched your search/filter.</div>
+          <div className="brands-empty-state">{translateUi("No brands matched your search/filter.")}</div>
         ) : (
           <>
             <div className="ap-table-wrap">
               <table className="ap-table">
                 <thead>
                   <tr>
-                    <th>BRAND</th>
-                    <th>SLUG</th>
-                    <th>PRODUCTS</th>
-                    <th>SORT</th>
-                    <th>STATUS</th>
-                    <th className="text-right">ACTIONS</th>
+                    <th>{translateUi("BRAND")}</th>
+                    <th>{translateUi("SLUG")}</th>
+                    <th>{translateUi("PRODUCTS")}</th>
+                    <th>{translateUi("SORT")}</th>
+                    <th>{translateUi("STATUS")}</th>
+                    <th className="text-right">{translateUi("ACTIONS")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -338,15 +338,15 @@ export default function AdminBrands() {
                           className={`brands-status-chip ${brand.isActive ? 'is-active' : 'is-inactive'}`}
                           onClick={() => handleToggleActive(brand)}
                         >
-                          {brand.isActive ? 'Active' : 'Inactive'}
+                          {brand.isActive ? translateUi("Active") : translateUi("Inactive")}
                         </button>
                       </td>
                       <td className="text-right">
                         <div className="ap-btn-group brands-actions">
-                          <button className="ap-action-btn" onClick={() => openEditModal(brand)} title="Edit Brand" aria-label="Edit Brand">
+                          <button className="ap-action-btn" onClick={() => openEditModal(brand)} title={translateUi("Edit Brand")} aria-label={translateUi("Edit Brand")}>
                             <Edit2 size={14} />
                           </button>
-                          <button className="ap-action-btn ap-action-btn-danger" onClick={() => handleDelete(brand)} title="Delete Brand" aria-label="Delete Brand">
+                          <button className="ap-action-btn ap-action-btn-danger" onClick={() => handleDelete(brand)} title={translateUi("Delete Brand")} aria-label={translateUi("Delete Brand")}>
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -366,8 +366,8 @@ export default function AdminBrands() {
                   </div>
 
                   <div className="brands-mobile-meta">
-                    <span>Products: {brand._count?.products || 0}</span>
-                    <span>Sort: {brand.sortOrder}</span>
+                    <span>{translateUi("Products:")} {brand._count?.products || 0}</span>
+                    <span>{translateUi("Sort:")} {brand.sortOrder}</span>
                   </div>
 
                   <div className="brands-mobile-footer">
@@ -376,14 +376,14 @@ export default function AdminBrands() {
                       className={`brands-status-chip ${brand.isActive ? 'is-active' : 'is-inactive'}`}
                       onClick={() => handleToggleActive(brand)}
                     >
-                      {brand.isActive ? 'Active' : 'Inactive'}
+                      {brand.isActive ? translateUi("Active") : translateUi("Inactive")}
                     </button>
 
                     <div className="ap-btn-group brands-actions">
-                      <button className="ap-action-btn" onClick={() => openEditModal(brand)} title="Edit Brand" aria-label="Edit Brand">
+                      <button className="ap-action-btn" onClick={() => openEditModal(brand)} title={translateUi("Edit Brand")} aria-label={translateUi("Edit Brand")}>
                         <Edit2 size={14} />
                       </button>
-                      <button className="ap-action-btn ap-action-btn-danger" onClick={() => handleDelete(brand)} title="Delete Brand" aria-label="Delete Brand">
+                      <button className="ap-action-btn ap-action-btn-danger" onClick={() => handleDelete(brand)} title={translateUi("Delete Brand")} aria-label={translateUi("Delete Brand")}>
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -399,8 +399,8 @@ export default function AdminBrands() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content brands-modal-content">
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">{currentBrand ? 'Edit Brand' : 'Add Brand'}</h2>
-              <button className="admin-modal-close" onClick={closeModal} title="Close" aria-label="Close">
+              <h2 className="admin-modal-title">{currentBrand ? translateUi("Edit Brand") : translateUi("Add Brand")}</h2>
+              <button className="admin-modal-close" onClick={closeModal} title={translateUi("Close")} aria-label={translateUi("Close")}>
                 <X size={18} />
               </button>
             </div>
@@ -410,7 +410,7 @@ export default function AdminBrands() {
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Brand Name *</label>
+                  <label>{translateUi("Brand Name *")}</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -422,17 +422,17 @@ export default function AdminBrands() {
                         slug: currentBrand ? prev.slug : toSlug(nextName),
                       }));
                     }}
-                    placeholder="e.g. Calvin Klein"
+                    placeholder={translateUi("e.g. Calvin Klein")}
                     required
                   />
                 </div>
                 <div className="admin-form-group">
-                  <label>Slug *</label>
+                  <label>{translateUi("Slug *")}</label>
                   <input
                     type="text"
                     value={formData.slug}
                     onChange={(event) => setFormData((prev) => ({ ...prev, slug: toSlug(event.target.value) }))}
-                    placeholder="e.g. calvin-klein"
+                    placeholder={translateUi("e.g. calvin-klein")}
                     required
                   />
                 </div>
@@ -440,12 +440,12 @@ export default function AdminBrands() {
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Sort Order</label>
+                  <label>{translateUi("Sort Order")}</label>
                   <input
                     type="number"
                     min="0"
-                    title="Sort Order"
-                    aria-label="Sort Order"
+                    title={translateUi("Sort Order")}
+                    aria-label={translateUi("Sort Order")}
                     value={formData.sortOrder}
                     onChange={(event) => setFormData((prev) => ({ ...prev, sortOrder: Number(event.target.value) || 0 }))}
                   />
@@ -454,22 +454,20 @@ export default function AdminBrands() {
                   <label className="brands-active-toggle">
                     <input
                       type="checkbox"
-                      title="Active"
-                      aria-label="Active"
+                      title={translateUi("Active")}
+                      aria-label={translateUi("Active")}
                       checked={formData.isActive}
                       onChange={(event) => setFormData((prev) => ({ ...prev, isActive: event.target.checked }))}
                     />
-                    <span>Active</span>
+                    <span>{translateUi("Active")}</span>
                   </label>
                 </div>
               </div>
 
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={closeModal} disabled={isSubmitting}>
-                  Cancel
-                </button>
+                <button type="button" className="admin-btn admin-btn-outline" onClick={closeModal} disabled={isSubmitting}>{translateUi("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : currentBrand ? 'Save Changes' : 'Create Brand'}
+                  {isSubmitting ? translateUi("Saving...") : currentBrand ? translateUi("Save Changes") : translateUi("Create Brand")}
                 </button>
               </div>
             </form>

@@ -110,13 +110,13 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
   border-color: var(--color-black);
 }
 .btn-primary:hover {
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--color-black);
+  color: var(--color-text);
   border-color: var(--color-black);
 }
 .btn-outline:hover {
@@ -125,8 +125,8 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
 }
 
 .btn-white {
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
   border-color: var(--color-white);
 }
 .btn-white:hover {
@@ -154,7 +154,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
   border: 1px solid var(--color-border);
   font-size: 14px;
   transition: border-color var(--transition-fast);
-  background: var(--color-white);
+  background: var(--surface);
   color: var(--color-text);
 }
 .form-input:focus {
@@ -167,7 +167,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
   padding: 12px 16px;
   border: 1px solid var(--color-border);
   font-size: 14px;
-  background: var(--color-white);
+  background: var(--surface);
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -217,7 +217,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
 .product-card-image {
   position: relative;
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--surface-soft, #f5f5f5);
   aspect-ratio: 3/4;
 }
 .product-card-image img {
@@ -249,8 +249,8 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
   z-index: 2;
 }
 .product-card-badges .badge-sale {
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
   padding: 4px 8px; font-weight: 600; font-size: 12px; border-radius: 4px;
 }
 
@@ -265,9 +265,9 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
   opacity: 1; transform: translateX(0);
 }
 .product-card-icon-btn {
-  width: 36px; height: 36px; border-radius: 50%; background: var(--color-white);
+  width: 36px; height: 36px; border-radius: 50%; background: var(--surface);
   display: flex; align-items: center; justify-content: center;
-  color: var(--color-black); border: none; cursor: pointer; transition: all var(--transition-fast);
+  color: var(--color-text); border: none; cursor: pointer; transition: all var(--transition-fast);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .product-card-icon-btn:hover {
@@ -288,7 +288,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
   font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
   transition: all var(--transition-fast);
 }
-.select-options-btn:hover { background: var(--color-white); color: var(--color-black); }
+.select-options-btn:hover { background: var(--surface); color: var(--color-text); }
 .product-card-action-btn svg { width: 16px; height: 16px; }
 .product-card-info {
   padding: 14px 0 0;
@@ -383,7 +383,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
   right: -420px;
   width: 420px;
   height: 100vh;
-  background: var(--color-white);
+  background: var(--surface);
   z-index: var(--z-modal);
   transition: right var(--transition-base);
   display: flex;
@@ -423,12 +423,12 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
 .swiper-pagination-bullet {
   width: 10px;
   height: 10px;
-  background: var(--color-white);
+  background: var(--surface);
   opacity: 0.5;
 }
 .swiper-pagination-bullet-active {
   opacity: 1;
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 /* ─── Animations ──────────────────────────────────────────────────────────── */
@@ -453,7 +453,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 400; lin
 
 /* ─── Scrollbar ───────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-track { background: var(--surface-soft, #f1f1f1); }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #999; }
 

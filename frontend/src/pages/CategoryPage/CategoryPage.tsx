@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { ChevronDown, Grid3X3, LayoutGrid, List } from 'lucide-react';
@@ -9,6 +11,7 @@ import { sanitizeRichHtml } from '../../utils/sanitizeHtml';
 import './CategoryPage.css';
 
 export default function CategoryPage() {
+  useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<any[]>([]);
@@ -76,11 +79,11 @@ export default function CategoryPage() {
 
   return (
     <>
-        
+
       {/* Breadcrumb */}
       <div className="category-breadcrumb">
         <div className="container">
-          <Link to="/">Home</Link>
+          <Link to="/">{translateUi("Home")}</Link>
           <span>/</span>
           <span>{displayTitle}</span>
           {category?.parent && (
@@ -97,7 +100,7 @@ export default function CategoryPage() {
         <div className="container">
           <h1 className="category-title">{displayTitle}</h1>
           {category?.description && <div className="category-desc" dangerouslySetInnerHTML={{ __html: sanitizedCategoryDescription }} />}
-          
+
           {(category?.children?.length > 0 || category?.siblingCategories?.length > 0) && (
             <div className="subcategory-links">
               {(category.children || category.siblingCategories).map((sub: any) => (
@@ -115,22 +118,22 @@ export default function CategoryPage() {
           <main className="shop-main">
             <ActiveFilters />
             <div className="category-toolbar">
-          <p className="result-count">Showing {products.length} of {pagination.total} results</p>
+          <p className="result-count">{translateUi("Showing")} {products.length} {translateUi("of")} {pagination.total} {translateUi("results")}</p>
           <div className="toolbar-right">
             <div className="grid-toggle">
-              <button title="3 Columns" aria-label="3 Columns" className={gridCols === 3 ? 'active' : ''} onClick={() => setGridCols(3)}><Grid3X3 size={16} /></button>
-              <button title="4 Columns" aria-label="4 Columns" className={gridCols === 4 ? 'active' : ''} onClick={() => setGridCols(4)}><LayoutGrid size={16} /></button>
-              <button title="5 Columns" aria-label="5 Columns" className={gridCols === 5 ? 'active' : ''} onClick={() => setGridCols(5)}><List size={16} /></button>
+              <button title={translateUi("3 Columns")} aria-label={translateUi("3 Columns")} className={gridCols === 3 ? 'active' : ''} onClick={() => setGridCols(3)}><Grid3X3 size={16} /></button>
+              <button title={translateUi("4 Columns")} aria-label={translateUi("4 Columns")} className={gridCols === 4 ? 'active' : ''} onClick={() => setGridCols(4)}><LayoutGrid size={16} /></button>
+              <button title={translateUi("5 Columns")} aria-label={translateUi("5 Columns")} className={gridCols === 5 ? 'active' : ''} onClick={() => setGridCols(5)}><List size={16} /></button>
             </div>
             <div className="sort-select">
-              <select title="Sort by" aria-label="Sort by" value={sort} onChange={(e) => handleSort(e.target.value)}>
-                <option value="newest">Newest</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="name_asc">Name: A-Z</option>
-                <option value="name_desc">Name: Z-A</option>
-                <option value="popular">Popularity</option>
-                <option value="rating">Rating</option>
+              <select title={translateUi("Sort by")} aria-label={translateUi("Sort by")} value={sort} onChange={(e) => handleSort(e.target.value)}>
+                <option value="newest">{translateUi("Newest")}</option>
+                <option value="price_asc">{translateUi("Price: Low to High")}</option>
+                <option value="price_desc">{translateUi("Price: High to Low")}</option>
+                <option value="name_asc">{translateUi("Name: A-Z")}</option>
+                <option value="name_desc">{translateUi("Name: Z-A")}</option>
+                <option value="popular">{translateUi("Popularity")}</option>
+                <option value="rating">{translateUi("Rating")}</option>
               </select>
               <ChevronDown size={14} className="select-arrow" />
             </div>
@@ -142,9 +145,9 @@ export default function CategoryPage() {
           <div className="loading-page"><div className="spinner" /></div>
         ) : products.length === 0 ? (
           <div className="no-products">
-            <h3>No products found</h3>
-            <p>Try adjusting your search or filter criteria</p>
-            <Link to="/category/all" className="btn btn-primary mt-2">View All Products</Link>
+            <h3>{translateUi("No products found")}</h3>
+            <p>{translateUi("Try adjusting your search or filter criteria")}</p>
+            <Link to="/category/all" className="btn btn-primary mt-2">{translateUi("View All Products")}</Link>
           </div>
         ) : (
           <div className={`grid grid-${gridCols}`}>{products.map(p => <ProductCard key={p.id} product={p} />)}</div>
@@ -153,11 +156,11 @@ export default function CategoryPage() {
         {/* Pagination */}
         {pagination.totalPages > 1 && (
           <div className="pagination">
-            <button disabled={page <= 1} onClick={() => handlePage(page - 1)} className="page-btn">Prev</button>
+            <button disabled={page <= 1} onClick={() => handlePage(page - 1)} className="page-btn">{translateUi("Prev")}</button>
             {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
               <button key={p} className={`page-btn ${page === p ? 'active' : ''}`} onClick={() => handlePage(p)}>{p}</button>
             ))}
-            <button disabled={page >= pagination.totalPages} onClick={() => handlePage(page + 1)} className="page-btn">Next</button>
+            <button disabled={page >= pagination.totalPages} onClick={() => handlePage(page + 1)} className="page-btn">{translateUi("Next")}</button>
           </div>
         )}
 

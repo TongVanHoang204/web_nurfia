@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../../api/client';
@@ -40,6 +42,7 @@ const FALLBACK_BRANDS: BrandFilterOption[] = [
 const toColorClassName = (value: string) => `color-circle color-${String(value || '').trim().toLowerCase().replace(/\s+/g, '-')} mx-2`;
 
 export default function FilterSidebar() {
+  useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -191,15 +194,15 @@ export default function FilterSidebar() {
         }
       `}</style>
       <div className="filter-widget">
-        <h4 className="widget-title">Product Categories</h4>
+        <h4 className="widget-title">{translateUi("Product Categories")}</h4>
         <ul className="category-list">
           {['Dresses', 'Jackets', 'Men', 'T-shirts', 'Tops', 'Women'].map(cat => (
             <li key={cat}>
               <label className="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  aria-label={`Category ${cat}`} 
-                  title={`Category ${cat}`} 
+                <input
+                  type="checkbox"
+                  aria-label={translateUi("Category {{value1}}", { value1: cat })}
+                  title={translateUi("Category {{value1}}", { value1: cat })}
                   checked={slug ? slug === cat.toLowerCase() : searchParams.get('category') === cat.toLowerCase()}
                   onChange={() => handleCategoryChange(cat.toLowerCase())}
                 /> <span className="checkmark" style={(slug ? slug === cat.toLowerCase() : searchParams.get('category') === cat.toLowerCase()) ? { borderRadius: '50%' } : {}}></span> {cat}
@@ -210,7 +213,7 @@ export default function FilterSidebar() {
       </div>
 
       <div className="filter-widget">
-        <h4 className="widget-title">Filter by price</h4>
+        <h4 className="widget-title">{translateUi("Filter by price")}</h4>
         <div className="price-slider-mock relative">
           <div className="slider-track absolute top-0 bottom-0 m-auto w-full h-[4px] bg-gray-200 rounded-[2px]" style={{ '--bg': '#eee', '--h': '4px', '--br': '2px', '--w': '100%', '--pos': 'absolute', '--t': '0', '--b': '0', '--m': 'auto' } as React.CSSProperties}>
             <div className="slider-fill h-full bg-black absolute" style={{ '--left': `${leftPercent}%`, '--right': `${rightPercent}%` } as React.CSSProperties}></div>
@@ -221,7 +224,7 @@ export default function FilterSidebar() {
             max="500"
             step="10"
             className="dual-slider-input"
-            title="Min price range"
+            title={translateUi("Min price range")}
             value={currentMin}
             onChange={(e) => {
               const val = Math.min(Number(e.target.value), currentMax - 10);
@@ -234,7 +237,7 @@ export default function FilterSidebar() {
             max="500"
             step="10"
             className="dual-slider-input"
-            title="Max price range"
+            title={translateUi("Max price range")}
             value={currentMax}
             onChange={(e) => {
               const val = Math.max(Number(e.target.value), currentMin + 10);
@@ -243,48 +246,48 @@ export default function FilterSidebar() {
           />
         </div>
         <div className="price-inputs">
-          <label className="visually-hidden" htmlFor="min-price">Min price</label>
-          <input 
-            type="number" 
-            id="min-price" 
-            title="Minimum price" 
-            placeholder="Min" 
-            aria-label="Minimum price" 
+          <label className="visually-hidden" htmlFor="min-price">{translateUi("Min price")}</label>
+          <input
+            type="number"
+            id="min-price"
+            title={translateUi("Minimum price")}
+            placeholder={translateUi("Min")}
+            aria-label={translateUi("Minimum price")}
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
           />
           <span>-</span>
-          <label className="visually-hidden" htmlFor="max-price">Max price</label>
-          <input 
-            type="number" 
-            id="max-price" 
-            title="Maximum price" 
-            placeholder="Max" 
-            aria-label="Maximum price" 
+          <label className="visually-hidden" htmlFor="max-price">{translateUi("Max price")}</label>
+          <input
+            type="number"
+            id="max-price"
+            title={translateUi("Maximum price")}
+            placeholder={translateUi("Max")}
+            aria-label={translateUi("Maximum price")}
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
           />
         </div>
         <div className="price-action">
-          <span className="price-label">Price: ${minPrice || 0} — ${maxPrice || '∞'}</span>
-          <button className="filter-btn" onClick={applyPriceFilter}>FILTER</button>
+          <span className="price-label">{translateUi("Price: $")}{minPrice || 0} — ${maxPrice || '∞'}</span>
+          <button className="filter-btn" onClick={applyPriceFilter}>{translateUi("FILTER")}</button>
         </div>
       </div>
 
       <div className="filter-widget">
-        <h4 className="widget-title">Filter by Color</h4>
+        <h4 className="widget-title">{translateUi("Filter by Color")}</h4>
         <ul className="color-list">
           {colorOptions.map((color) => {
             return (
             <li key={color.value} className="flex align-center gap-2 mb-2">
               <label className="checkbox-label flex align-center">
-                <input 
-                  type="checkbox" 
-                  title={`Color ${color.value}`} 
+                <input
+                  type="checkbox"
+                  title={translateUi("Color {{value1}}", { value1: color.value })}
                   checked={isChecked('colors', color.value)}
                   onChange={() => handleCheckboxChange('colors', color.value)}
-                /> 
-                <span className="checkmark"></span> 
+                />
+                <span className="checkmark"></span>
                 <span className={toColorClassName(color.value)}></span>
                 <span className="color-name">{color.value}</span>
               </label>
@@ -295,15 +298,15 @@ export default function FilterSidebar() {
       </div>
 
       <div className="filter-widget">
-        <h4 className="widget-title">Filter by Size</h4>
+        <h4 className="widget-title">{translateUi("Filter by Size")}</h4>
         <ul className="size-list">
           {['XS', 'S', 'M', 'L', 'XL'].map(size => (
             <li key={size}>
               <label className="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  aria-label={`Size ${size}`} 
-                  title={`Size ${size}`} 
+                <input
+                  type="checkbox"
+                  aria-label={translateUi("Size {{value1}}", { value1: size })}
+                  title={translateUi("Size {{value1}}", { value1: size })}
                   checked={isChecked('sizes', size)}
                   onChange={() => handleCheckboxChange('sizes', size)}
                 /> <span className="checkmark"></span> {size}
@@ -314,15 +317,15 @@ export default function FilterSidebar() {
       </div>
 
       <div className="filter-widget">
-        <h4 className="widget-title">Filter by Brand</h4>
+        <h4 className="widget-title">{translateUi("Filter by Brand")}</h4>
         <ul className="brand-list">
           {brandOptions.map((brand) => (
             <li key={brand.slug}>
               <label className="checkbox-label">
                 <input
                   type="checkbox"
-                  aria-label={`Brand ${brand.name}`}
-                  title={`Brand ${brand.name}`}
+                  aria-label={translateUi("Brand {{value1}}", { value1: brand.name })}
+                  title={translateUi("Brand {{value1}}", { value1: brand.name })}
                   checked={isChecked('brands', brand.slug)}
                   onChange={() => handleCheckboxChange('brands', brand.slug)}
                 /> <span className="checkmark"></span> {brand.name}

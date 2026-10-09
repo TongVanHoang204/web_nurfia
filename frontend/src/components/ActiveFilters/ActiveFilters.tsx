@@ -1,10 +1,13 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 
 export default function ActiveFilters() {
+  useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
-  
+
   const removeFilter = (key: string, value?: string) => {
     if (key === 'categorySlug') {
       const newParams = new URLSearchParams(searchParams);
@@ -12,7 +15,7 @@ export default function ActiveFilters() {
       navigate(`/shop?${newParams.toString()}`);
       return;
     }
-    
+
     if (value) {
       const current = searchParams.get(key)?.split(',') || [];
       const next = current.filter(v => v !== value);
@@ -67,12 +70,11 @@ export default function ActiveFilters() {
 
   return (
     <div className="active-filters">
-      <button onClick={clearAll} className="active-filter-btn" title="Clear all filters">
-        <strong>×</strong> Clear filters
-      </button>
+      <button onClick={clearAll} className="active-filter-btn" title={translateUi("Clear all filters")}>
+        <strong>{translateUi("×")}</strong>{translateUi("Clear filters")}</button>
       {filters.map(f => (
-        <button 
-          key={`${f.key}-${f.value}`} 
+        <button
+          key={`${f.key}-${f.value}`}
           onClick={() => {
             if (f.key === 'price') {
               searchParams.delete('minPrice');
@@ -84,9 +86,9 @@ export default function ActiveFilters() {
             }
           }}
           className="active-filter-btn"
-          title={`Remove ${f.display}`}
+          title={translateUi("Remove {{value1}}", { value1: f.display })}
         >
-          <strong>×</strong> {f.display}
+          <strong>{translateUi("×")}</strong> {f.display}
         </button>
       ))}
     </div>

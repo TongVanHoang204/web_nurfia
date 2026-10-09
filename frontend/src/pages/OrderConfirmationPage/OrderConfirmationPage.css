@@ -50,7 +50,7 @@
   max-width: 860px;
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
 }
 .oc-summary li {
   display: flex;
@@ -141,8 +141,8 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
-  background: #fff;
-  border: 2px solid #d1d5db;
+  background: var(--surface, #fff);
+  border: 2px solid var(--color-border, #d1d5db);
   color: #9ca3af;
   transition: all 0.3s ease;
 }
@@ -201,7 +201,7 @@
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
   padding: 24px;
-  background: #fff;
+  background: var(--surface, #fff);
   transition: box-shadow 0.2s;
 }
 
@@ -236,7 +236,7 @@
 .card-content p {
   margin: 0 0 4px;
   font-size: 13px;
-  color: #555;
+  color: var(--color-text-light, #555);
   line-height: 1.5;
 }
 
@@ -266,7 +266,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
 }
 
 .order-action-copy {
@@ -338,7 +338,7 @@
   letter-spacing: 0.05em;
 }
 .oc-table tbody td {
-  color: #555;
+  color: var(--color-text-light, #555);
 }
 .oc-table tbody td strong {
   color: var(--color-heading, #111);
@@ -346,7 +346,7 @@
 }
 .oc-table tfoot th {
   font-weight: 400;
-  color: #666;
+  color: var(--color-text-light, #666);
 }
 .oc-table tfoot tr:last-child th,
 .oc-table tfoot tr:last-child td {
@@ -470,7 +470,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface, #fff);
   border: 2px solid var(--color-border, #d1d5db);
   color: #9ca3af;
   display: flex;
@@ -500,7 +500,7 @@
 }
 
 .premium-timeline-content {
-  background: #fff;
+  background: var(--surface, #fff);
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 12px;
   padding: 16px 20px;
@@ -536,10 +536,10 @@
 
 .premium-timeline-note {
   font-size: 13px;
-  color: #555;
+  color: var(--color-text-light, #555);
   margin-top: 6px;
   line-height: 1.4;
-  background: #f9fafb;
+  background: var(--surface-soft, #f9fafb);
   padding: 8px 12px;
   border-radius: 6px;
   border-left: 3px solid var(--color-border, #e5e7eb);
@@ -559,7 +559,7 @@
 
 .premium-timeline-actor {
   font-size: 11px;
-  color: #888;
+  color: var(--color-text-light, #888);
   margin-top: 4px;
   font-style: italic;
   display: flex;

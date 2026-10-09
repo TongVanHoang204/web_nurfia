@@ -1,3 +1,4 @@
+import { getLocale, translateUi } from '../../../i18n';
 export type TeamRole = 'STAFF' | 'MANAGER' | 'ADMIN';
 export type TeamUser = { id: number; role: string; permissions?: string[] };
 export type StaffMember = TeamUser & { username: string; fullName: string; email: string; permissions: string[]; isActive: boolean; createdAt: string; updatedAt: string };
@@ -33,7 +34,7 @@ export const PRESETS = [
   { label: 'Customer Support', description: 'Messages and reviews', permissions: ['MANAGE_CONTACTS', 'MANAGE_REVIEWS'] },
 ];
 export const ROLE_RANK: Record<string, number> = { OWNER: 4, ADMIN: 3, MANAGER: 2, STAFF: 1 };
-export const fullAccess = (role: string) => role === 'OWNER' || role === 'ADMIN';
+export const fullAccess = (role: string) => role === 'OWNER';
 export const canManageMember = (actor: TeamUser | null, member: StaffMember) => Boolean(actor
   && actor.id !== member.id && member.role !== 'OWNER'
   && (ROLE_RANK[actor.role] || 0) > (ROLE_RANK[member.role] || 0)
@@ -42,5 +43,5 @@ export const assignableRoles = (actor: TeamUser | null): TeamRole[] => actor
   && (fullAccess(actor.role) || actor.permissions?.includes('MANAGE_STAFF'))
   ? (['STAFF', 'MANAGER', 'ADMIN'] as TeamRole[]).filter(role => ROLE_RANK[role] < (ROLE_RANK[actor.role] || 0)) : [];
 export const canAssignPermission = (actor: TeamUser, permission: string) => fullAccess(actor.role) || actor.permissions?.includes(permission) === true;
-export const permissionLabel = (value: string) => PERMISSIONS.find(p => p.value === value)?.label || value;
-export const formatDate = (value: string) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+export const permissionLabel = (value: string) => translateUi(PERMISSIONS.find(p => p.value === value)?.label || value);
+export const formatDate = (value: string) => new Date(value).toLocaleDateString(getLocale(), { month: 'short', day: 'numeric', year: 'numeric' });

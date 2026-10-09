@@ -27,7 +27,7 @@
   min-height: 560px;
   display: grid;
   grid-template-columns: minmax(520px, 1.08fr) minmax(420px, 0.92fr);
-  background: var(--color-white);
+  background: var(--surface);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
   animation: fadeInScale 0.28s ease;
 }
@@ -60,8 +60,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
   border: 1px solid var(--color-border);
   transition: all var(--transition-fast);
 }
@@ -93,7 +93,7 @@
   justify-content: center;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--color-black);
+  color: var(--color-text);
   transition: all var(--transition-fast);
 }
 
@@ -173,7 +173,7 @@
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: 0;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .home-promo-text {
@@ -197,7 +197,7 @@
   margin-bottom: 28px;
   padding: 10px 14px;
   border: 1px dashed var(--color-black);
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
 }
 
 .home-promo-code span {
@@ -273,8 +273,8 @@
 
 .hero-swiper .swiper-button-next:hover,
 .hero-swiper .swiper-button-prev:hover {
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
 }
 
 .hero-slide {
@@ -431,7 +431,7 @@
 
 .tab-btn.active,
 .tab-btn:hover {
-  color: var(--color-black);
+  color: var(--color-text);
   border-color: var(--color-black);
 }
 
@@ -442,10 +442,10 @@
 
 .products-swiper .swiper-button-next,
 .products-swiper .swiper-button-prev {
-  color: var(--color-black);
+  color: var(--color-text);
   width: 48px;
   height: 48px;
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid transparent;
   --swiper-navigation-size: 16px;
   top: calc(50% - 60px);
@@ -709,7 +709,7 @@
 /* 9. Sustainability */
 .sustainability-section {
   padding: 120px 0;
-  background: #fff;
+  background: var(--surface, #fff);
 }
 
 .sustainability-grid {
@@ -832,7 +832,7 @@
   grid-column: 1 / -1;
   padding: 26px;
   border: 1px dashed var(--color-border);
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -39,7 +39,7 @@
   min-width: 0;
   padding: 0 12px;
   border: 1px solid var(--color-border);
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
   color: var(--color-text);
   font-size: 13px;
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
@@ -48,7 +48,7 @@
 .admin-ai-prompt-input:focus {
   outline: none;
   border-color: var(--color-black);
-  background: var(--color-white);
+  background: var(--surface);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
 }
 
@@ -64,8 +64,8 @@
   gap: 6px;
   padding: 0 14px;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.5px;

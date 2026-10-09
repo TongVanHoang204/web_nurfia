@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, X, MapPin, ArrowUpDown } from 'lucide-react';
 import api from '../../../api/client';
@@ -36,6 +38,7 @@ const safelyResetVideo = (video: HTMLVideoElement) => {
 };
 
 export default function AdminBanners() {
+  useTranslation();
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { addToast, openConfirm } = useUIStore();
@@ -165,18 +168,17 @@ export default function AdminBanners() {
     <div className="admin-banners-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Manage Banners</h1>
-          <p className="admin-banners-subtitle">Create and manage hero banners, promotional slides, and featured visuals across the storefront.</p>
+          <h1 className="admin-page-title">{translateUi("Manage Banners")}</h1>
+          <p className="admin-banners-subtitle">{translateUi("Create and manage hero banners, promotional slides, and featured visuals across the storefront.")}</p>
         </div>
         <button onClick={openAddModal} className="admin-btn admin-btn-primary">
-          <Plus size={16} /> Add Banner
-        </button>
+          <Plus size={16} />{translateUi("Add Banner")}</button>
       </div>
 
       {isLoading ? (
         <div className="loading-page"><div className="spinner" /></div>
       ) : banners.length === 0 ? (
-        <div className="admin-banners-empty">No banners found. Start by adding one.</div>
+        <div className="admin-banners-empty">{translateUi("No banners found. Start by adding one.")}</div>
       ) : (
         <div className="admin-banners-grid">
           {banners.map((banner) => (
@@ -196,10 +198,10 @@ export default function AdminBanners() {
                 ) : banner.imageUrl ? (
                   <img src={resolveSiteAssetUrl(banner.imageUrl) || banner.imageUrl} alt={banner.title} />
                 ) : (
-                  <div className="admin-banner-no-image">No image / video</div>
+                  <div className="admin-banner-no-image">{translateUi("No image / video")}</div>
                 )}
                 <span className={`admin-banner-status-badge ${banner.isActive ? 'is-active' : 'is-inactive'}`}>
-                  {banner.isActive ? 'Active' : 'Inactive'}
+                  {banner.isActive ? translateUi("Active") : translateUi("Inactive")}
                 </span>
               </div>
 
@@ -209,17 +211,15 @@ export default function AdminBanners() {
 
                 <div className="admin-banner-card-meta">
                   <span><MapPin size={12} /> {banner.position}</span>
-                  <span><ArrowUpDown size={12} /> Order: {banner.sortOrder}</span>
-                  {banner.buttonText && <span>CTA: {banner.buttonText}</span>}
+                  <span><ArrowUpDown size={12} /> {translateUi("Order:")} {banner.sortOrder}</span>
+                  {banner.buttonText && <span>{translateUi("CTA:")} {banner.buttonText}</span>}
                 </div>
 
                 <div className="admin-banner-card-footer">
-                  <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openEditModal(banner)} title="Edit Banner">
-                    <Edit2 size={13} /> Edit
-                  </button>
-                  <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(banner.id)} title="Delete Banner">
-                    <Trash2 size={13} /> Delete
-                  </button>
+                  <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openEditModal(banner)} title={translateUi("Edit Banner")}>
+                    <Edit2 size={13} />{translateUi("Edit")}</button>
+                  <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(banner.id)} title={translateUi("Delete Banner")}>
+                    <Trash2 size={13} />{translateUi("Delete")}</button>
                 </div>
               </div>
             </article>
@@ -231,35 +231,35 @@ export default function AdminBanners() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content admin-banners-modal">
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">{editingBanner ? 'Edit Banner' : 'Add New Banner'}</h3>
-              <button type="button" onClick={closeModal} className="admin-modal-close" aria-label="Close">
+              <h3 className="admin-modal-title">{editingBanner ? translateUi("Edit Banner") : translateUi("Add New Banner")}</h3>
+              <button type="button" onClick={closeModal} className="admin-modal-close" aria-label={translateUi("Close")}>
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-group">
-                <label htmlFor="banner-title">Title *</label>
+                <label htmlFor="banner-title">{translateUi("Title *")}</label>
                 <input
                   id="banner-title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Enter banner title"
+                  placeholder={translateUi("Enter banner title")}
                   required
                 />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="banner-subtitle">Subtitle</label>
+                <label htmlFor="banner-subtitle">{translateUi("Subtitle")}</label>
                 <input
                   id="banner-subtitle"
                   type="text"
                   value={formData.subtitle || ''}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                  placeholder="Enter banner subtitle"
+                  placeholder={translateUi("Enter banner subtitle")}
                 />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="banner-image-url">Image URL</label>
+                <label htmlFor="banner-image-url">{translateUi("Image URL")}</label>
                 <div className="admin-banners-upload-row">
                   <input
                     id="banner-image-url"
@@ -270,7 +270,7 @@ export default function AdminBanners() {
                     className="admin-banners-upload-input"
                   />
                   <label className={`admin-btn admin-btn-outline admin-banners-upload-button${isUploading ? ' is-uploading' : ''}`} htmlFor="banner-image-file">
-                    {isUploading ? 'Uploading...' : 'Choose File'}
+                    {isUploading ? translateUi("Uploading...") : translateUi("Choose File")}
                     <input
                       id="banner-image-file"
                       type="file"
@@ -284,14 +284,14 @@ export default function AdminBanners() {
                 {formData.imageUrl && (
                   <img
                     src={getImageUrl(formData.imageUrl)}
-                    alt="Preview"
+                    alt={translateUi("Preview")}
                     className="admin-banners-preview-image"
                     onError={(e: any) => e.target.style.display = 'none'}
                   />
                 )}
               </div>
               <div className="admin-form-group">
-                <label htmlFor="banner-video-url">Video URL</label>
+                <label htmlFor="banner-video-url">{translateUi("Video URL")}</label>
                 <div className="admin-banners-upload-row">
                   <input
                     id="banner-video-url"
@@ -302,7 +302,7 @@ export default function AdminBanners() {
                     className="admin-banners-upload-input"
                   />
                   <label className={`admin-btn admin-btn-outline admin-banners-upload-button${isUploading ? ' is-uploading' : ''}`} htmlFor="banner-video-file">
-                    {isUploading ? 'Uploading...' : 'Choose Video'}
+                    {isUploading ? translateUi("Uploading...") : translateUi("Choose Video")}
                     <input
                       id="banner-video-file"
                       type="file"
@@ -319,11 +319,11 @@ export default function AdminBanners() {
                       src={resolveSiteAssetUrl(formData.videoUrl)}
                       controls
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setFormData({ ...formData, videoUrl: '' })}
                       className="admin-banners-video-remove-btn"
-                      title="Remove video"
+                      title={translateUi("Remove video")}
                     >
                       <X size={14} />
                     </button>
@@ -332,7 +332,7 @@ export default function AdminBanners() {
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="banner-link-url">Link URL</label>
+                  <label htmlFor="banner-link-url">{translateUi("Link URL")}</label>
                   <input
                     id="banner-link-url"
                     type="text"
@@ -342,7 +342,7 @@ export default function AdminBanners() {
                   />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="banner-sort-order">Sort Order</label>
+                  <label htmlFor="banner-sort-order">{translateUi("Sort Order")}</label>
                   <input
                     id="banner-sort-order"
                     type="number"
@@ -354,23 +354,23 @@ export default function AdminBanners() {
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="banner-button-text">Button Text</label>
+                  <label htmlFor="banner-button-text">{translateUi("Button Text")}</label>
                   <input
                     id="banner-button-text"
                     type="text"
                     value={formData.buttonText || ''}
                     onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
-                    placeholder="Shop Now"
+                    placeholder={translateUi("Shop Now")}
                   />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="banner-position">Position *</label>
+                  <label htmlFor="banner-position">{translateUi("Position *")}</label>
                   <input
                     id="banner-position"
                     type="text"
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    placeholder="homepage"
+                    placeholder={translateUi("homepage")}
                     required
                   />
                 </div>
@@ -382,13 +382,13 @@ export default function AdminBanners() {
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                 />
-                <span>Active</span>
+                <span>{translateUi("Active")}</span>
               </label>
 
               <div className="admin-modal-actions">
-                <button type="button" onClick={closeModal} className="admin-btn admin-btn-outline">Cancel</button>
+                <button type="button" onClick={closeModal} className="admin-btn admin-btn-outline">{translateUi("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary">
-                  {editingBanner ? 'Update Banner' : 'Save Banner'}
+                  {editingBanner ? translateUi("Update Banner") : translateUi("Save Banner")}
                 </button>
               </div>
             </form>

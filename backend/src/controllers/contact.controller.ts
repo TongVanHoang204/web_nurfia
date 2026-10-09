@@ -37,7 +37,7 @@ export const contactController = {
     try {
       const { name, email, subject, message } = req.body;
 
-      await prisma.contactMessage.create({
+      const contact = await prisma.contactMessage.create({
         data: { name, email, subject, message }
       });
 
@@ -52,7 +52,7 @@ export const contactController = {
             'CONTACT',
             'New Contact Message',
             `Message from ${name} (${email}): ${subject}`,
-            `/admin/contacts`
+            `/admin/contacts?contactId=${contact.id}`
           ).catch((err: unknown) => console.error('[Notification] Failed to notify admin on contact message:', err));
         }
       }).catch((err: unknown) => console.error('[Notification] Failed to fetch admins:', err));
@@ -147,6 +147,16 @@ export const contactController = {
           filteredTotal: total,
         },
       });
+    } catch (err) { next(err); }
+  },
+
+  getMessageById: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id <= 0) throw new AppError('Invalid message ID.', 400);
+      const message = await prisma.contactMessage.findUnique({ where: { id } });
+      if (!message) throw new AppError('Message not found', 404);
+      res.json({ success: true, data: message });
     } catch (err) { next(err); }
   },
 

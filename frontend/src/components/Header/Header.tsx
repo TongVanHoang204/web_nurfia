@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import './Header.css';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Heart, User, ShoppingBag, Menu, X, ChevronDown, ArrowRightLeft } from 'lucide-react';
@@ -11,6 +13,7 @@ import { useState, useEffect, useRef } from 'react';
 import NotificationBell from '../Notifications/NotificationBell';
 import SearchAutocomplete from '../SearchAutocomplete/SearchAutocomplete';
 import api from '../../api/client';
+import HeaderPreferences from '../HeaderPreferences/HeaderPreferences';
 
 type SubLink = { label: string; href: string };
 type NavGroup = { group: string; items: SubLink[] };
@@ -70,6 +73,7 @@ const FALLBACK_CHILDREN: Record<string, NavGroup[]> = {
 };
 
 export default function Header() {
+  useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,7 +152,7 @@ export default function Header() {
       <div className="topbar">
         <div className="container topbar-inner">
           <div className="topbar-left">
-            <span>Free shipping on orders over $500</span>
+            <span>{translateUi("Free shipping on orders over $500")}</span>
           </div>
           <div className="topbar-right">
             <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
@@ -162,7 +166,7 @@ export default function Header() {
       <header className={`site-header ${isScrolled ? 'scrolled' : ''} ${isHome ? 'is-transparent' : ''}`}>
         <div className="container header-inner">
           {/* Mobile menu toggle */}
-          <button className="mobile-menu-toggle" onClick={toggleMobileMenu} aria-label="Toggle menu">
+          <button className="mobile-menu-toggle" onClick={toggleMobileMenu} aria-label={translateUi("Toggle menu")}>
             {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
@@ -182,7 +186,7 @@ export default function Header() {
                 onMouseLeave={() => setActiveMenu(null)}
               >
                 <Link to={item.href} className="nav-link">
-                  {item.label}
+                  {translateUi(item.label)}
                   {item.mega && <ChevronDown size={12} className="nav-arrow" />}
                 </Link>
                 {item.mega && item.children && activeMenu === item.label && (
@@ -194,7 +198,7 @@ export default function Header() {
                           <ul>
                             {group.items.map((sub) => (
                               <li key={sub.href}>
-                                <Link to={sub.href} onClick={() => setActiveMenu(null)}>{sub.label}</Link>
+                                <Link to={sub.href} onClick={() => setActiveMenu(null)}>{translateUi(sub.label)}</Link>
                               </li>
                             ))}
                           </ul>
@@ -203,7 +207,7 @@ export default function Header() {
                       <div className="mega-menu-banner">
                         <img
                           src={item.label === 'Women' ? '/assets/images/mega-menu-banner-01.webp' : '/assets/images/mega-menu-banner-02.webp'}
-                          alt={`${item.label} collection`}
+                          alt={translateUi("{{value1}} collection", { value1: item.label })}
                         />
                       </div>
                     </div>
@@ -215,22 +219,23 @@ export default function Header() {
 
           {/* Actions */}
           <div className="header-actions">
-            <button className="action-btn" onClick={toggleSearch} aria-label="Search">
+            <HeaderPreferences />
+            <button className="action-btn" onClick={toggleSearch} aria-label={translateUi("Search")}>
               <Search size={18} />
             </button>
             <NotificationBell />
-            <Link to={isAuthenticated ? '/account' : '/login'} className="action-btn" aria-label="Account">
+            <Link to={isAuthenticated ? '/account' : '/login'} className="action-btn" aria-label={translateUi("Account")}>
               <User size={18} />
             </Link>
-            <Link to={isAuthenticated ? '/account/wishlist' : '/login'} className="action-btn wishlist-btn" aria-label="Wishlist">
+            <Link to={isAuthenticated ? '/account/wishlist' : '/login'} className="action-btn wishlist-btn" aria-label={translateUi("Wishlist")}>
               <Heart size={18} />
               {wishlistItems.length > 0 && <span className="cart-count">{wishlistItems.length}</span>}
             </Link>
-            <Link to="/compare" className="action-btn compare-btn" aria-label="Compare">
+            <Link to="/compare" className="action-btn compare-btn" aria-label={translateUi("Compare")}>
               <ArrowRightLeft size={18} />
               {compareItems.length > 0 && <span className="cart-count">{compareItems.length}</span>}
             </Link>
-            <button className="action-btn cart-btn" onClick={openCart} aria-label="Cart">
+            <button className="action-btn cart-btn" onClick={openCart} aria-label={translateUi("Cart")}>
               <ShoppingBag size={18} />
               <span className="cart-count">{cartItems.length}</span>
             </button>
@@ -245,13 +250,13 @@ export default function Header() {
               <input
                 ref={searchRef}
                 type="text"
-                placeholder="Search for products..."
+                placeholder={translateUi("Search for products...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
                 autoComplete="off"
               />
-              <button type="button" className="search-close" onClick={closeSearch} title="Close search" aria-label="Close search"><X size={18} /></button>
+              <button type="button" className="search-close" onClick={closeSearch} title={translateUi("Close search")} aria-label={translateUi("Close search")}><X size={18} /></button>
             </form>
             <SearchAutocomplete
               query={searchQuery}
@@ -277,14 +282,14 @@ export default function Header() {
           {navItems.map((item) => (
             <div key={item.label} className="mobile-nav-item">
               <Link to={item.href} className="mobile-nav-link" onClick={closeMobileMenu}>
-                {item.label}
+                {translateUi(item.label)}
               </Link>
               {item.children && (
                 <div className="mobile-submenu">
                   {item.children.map((group) =>
                     group.items.map((sub) => (
                       <Link key={sub.href} to={sub.href} className="mobile-sub-link" onClick={closeMobileMenu}>
-                        {sub.label}
+                        {translateUi(sub.label)}
                       </Link>
                     ))
                   )}
@@ -293,6 +298,10 @@ export default function Header() {
             </div>
           ))}
         </nav>
+        <div className="mobile-utilities">
+          <Link to={isAuthenticated ? '/account/wishlist' : '/login'} onClick={closeMobileMenu}><Heart size={16} />{translateUi('Wishlist')}</Link>
+          <Link to="/compare" onClick={closeMobileMenu}><ArrowRightLeft size={16} />{translateUi('Compare')}</Link>
+        </div>
       </div>
 
       {/* Overlay */}

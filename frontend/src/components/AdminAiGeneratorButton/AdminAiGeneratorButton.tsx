@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Info, Zap } from 'lucide-react';
 import api from '../../api/client';
@@ -28,6 +30,7 @@ export default function AdminAiGeneratorButton({
   showPrompt = false,
   promptPlaceholder = 'Add direction for AI...',
 }: AdminAiGeneratorButtonProps) {
+  useTranslation();
   const [isGenerating, setIsGenerating] = useState(false);
   const [prompt, setPrompt] = useState('');
   const { addToast } = useUIStore();
@@ -64,7 +67,7 @@ export default function AdminAiGeneratorButton({
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
             placeholder={promptPlaceholder}
-            aria-label="Prompt for AI generation"
+            aria-label={translateUi("Prompt for AI generation")}
             disabled={disabled || isGenerating}
           />
         )}
@@ -75,15 +78,15 @@ export default function AdminAiGeneratorButton({
           disabled={disabled || isGenerating}
         >
           <Zap size={13} />
-          {isGenerating ? 'Generating...' : 'AI Generate'}
+          {isGenerating ? translateUi("Generating...") : translateUi("AI Generate")}
         </button>
       </div>
       <p className="admin-ai-helper">
         <Info size={12} />
         <span>
           {showPrompt
-            ? 'Optional prompt refines long content. AI also uses the current form values.'
-            : 'AI uses the current form values. Fill the main title first.'}
+            ? translateUi("Optional prompt refines long content. AI also uses the current form values.")
+            : translateUi("AI uses the current form values. Fill the main title first.")}
         </span>
       </p>
     </div>

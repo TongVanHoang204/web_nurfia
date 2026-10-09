@@ -20,7 +20,7 @@
 
 /* Banner Card */
 .admin-banner-card {
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   overflow: hidden;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -97,7 +97,7 @@
 .admin-banner-card-title {
   font-family: var(--font-heading);
   font-size: 20px;
-  color: var(--color-black);
+  color: var(--color-text);
   line-height: 1.3;
 }
 

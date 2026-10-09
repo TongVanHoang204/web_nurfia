@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, User, Loader2, ShoppingBag, Maximize2, Minimize2, RefreshCw, ThumbsUp, ThumbsDown, Headphones } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -69,7 +71,7 @@ const renderMessageContent = (content: string) => {
     if (part.startsWith('[PRODUCT|') && part.endsWith(']')) {
       const data = part.substring(9, part.length - 1).split('|');
       const [, name, price, image, slug] = data; // Ignored 'id' parameter
-      
+
       return (
         <Link to={`/product/${slug}`} key={idx} className="ai-product-card">
           <div className="ai-product-img">
@@ -93,11 +95,11 @@ const formatTime = (timestamp?: number) => {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  
+
   if (diffMins < 1) return 'Just now';
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
-  return date.toLocaleDateString();
+  return date.toLocaleDateString(getLocale());
 };
 
 const WELCOME = {
@@ -108,6 +110,7 @@ const WELCOME = {
 };
 
 export default function AIChatbot() {
+  useTranslation();
   const { isAuthenticated, user } = useAuthStore();
   const { openConfirm } = useUIStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -246,14 +249,14 @@ export default function AIChatbot() {
   return (
     <div className={`ai-chatbot-wrapper ${isOpen ? 'is-open' : ''}`}>
       {/* Chat Toggle Button */}
-      <button 
-        className="ai-chatbot-toggle" 
+      <button
+        className="ai-chatbot-toggle"
         onClick={() => setIsOpen(!isOpen)}
-        title="AI Assistant Chat"
-        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        title={translateUi("AI Assistant Chat")}
+        aria-label={isOpen ? translateUi("Close AI Assistant") : translateUi("Open AI Assistant")}
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-        {!isOpen && <span className="ai-chatbot-badge" aria-hidden="true">AI</span>}
+        {!isOpen && <span className="ai-chatbot-badge" aria-hidden="true">{translateUi("AI")}</span>}
       </button>
 
       {/* Chat Window */}
@@ -264,27 +267,25 @@ export default function AIChatbot() {
               <GeminiIcon size={20} />
             </div>
             <div>
-              <h3>Nurfia AI</h3>
-              <span className="online-indicator">Online Assistant</span>
+              <h3>{translateUi("Nurfia AI")}</h3>
+              <span className="online-indicator">{translateUi("Online Assistant")}</span>
             </div>
           </div>
           <div className="header-actions">
-            <button onClick={handleClearHistory} className="close-btn" title="Clear chat history" aria-label="Clear chat history">
+            <button onClick={handleClearHistory} className="close-btn" title={translateUi("Clear chat history")} aria-label={translateUi("Clear chat history")}>
               <RefreshCw size={18} />
             </button>
-            <button onClick={() => setIsMaximized(!isMaximized)} className="close-btn" title={isMaximized ? "Minimize chat" : "Maximize chat"} aria-label={isMaximized ? "Minimize chat" : "Maximize chat"}>
+            <button onClick={() => setIsMaximized(!isMaximized)} className="close-btn" title={isMaximized ? translateUi("Minimize chat") : translateUi("Maximize chat")} aria-label={isMaximized ? translateUi("Minimize chat") : translateUi("Maximize chat")}>
               {isMaximized ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
-            <button onClick={() => setIsOpen(false)} className="close-btn" title="Close chat" aria-label="Close AI Assistant">
+            <button onClick={() => setIsOpen(false)} className="close-btn" title={translateUi("Close chat")} aria-label={translateUi("Close AI Assistant")}>
               <X size={20} />
             </button>
           </div>
         </header>
 
         <div className="ai-chatbot-messages" ref={scrollRef}>
-          <div className="ai-chat-note">
-            Chat history will be deleted within 30 days.
-          </div>
+          <div className="ai-chat-note">{translateUi("Chat history will be deleted within 30 days.")}</div>
           {messages.map((msg) => (
             <div key={msg.id} className={`ai-chat-msg ${msg.role}`}>
               <div className="msg-icon">
@@ -298,13 +299,13 @@ export default function AIChatbot() {
                 )}
                 {msg.timestamp && <span className="msg-timestamp">{formatTime(msg.timestamp)}</span>}
                 {msg.role === 'assistant' && msg.id !== WELCOME.id && (
-                  <div className="ai-feedback-actions" aria-label="Rate AI response">
+                  <div className="ai-feedback-actions" aria-label={translateUi("Rate AI response")}>
                     <button
                       type="button"
                       className={feedback[msg.id] === 'up' ? 'is-active' : ''}
                       onClick={() => handleFeedback(msg.id, 'up')}
-                      title="Helpful"
-                      aria-label="Mark response as helpful"
+                      title={translateUi("Helpful")}
+                      aria-label={translateUi("Mark response as helpful")}
                     >
                       <ThumbsUp size={13} />
                     </button>
@@ -312,8 +313,8 @@ export default function AIChatbot() {
                       type="button"
                       className={feedback[msg.id] === 'down' ? 'is-active' : ''}
                       onClick={() => handleFeedback(msg.id, 'down')}
-                      title="Not helpful"
-                      aria-label="Mark response as not helpful"
+                      title={translateUi("Not helpful")}
+                      aria-label={translateUi("Mark response as not helpful")}
                     >
                       <ThumbsDown size={13} />
                     </button>
@@ -327,7 +328,7 @@ export default function AIChatbot() {
               <div className="msg-icon"><GeminiIcon size={14} /></div>
               <div className="msg-bubble">
                 <Loader2 size={16} className="spinner" />
-                <span>AI is thinking...</span>
+                <span>{translateUi("AI is thinking...")}</span>
               </div>
             </div>
           )}
@@ -335,14 +336,14 @@ export default function AIChatbot() {
 
         <div className="ai-chatbot-footer">
           {!isTyping && (
-            <div className="quick-replies" aria-label="Quick chatbot actions">
+            <div className="quick-replies" aria-label={translateUi("Quick chatbot actions")}>
               {QUICK_INTENTS.map((intent) => (
-                <button 
+                <button
                   key={intent.label}
                   className="quick-reply-btn"
                   onClick={() => handleSend(intent.prompt)}
                 >
-                  {intent.label}
+                  {translateUi(intent.label)}
                 </button>
               ))}
               <button
@@ -350,22 +351,20 @@ export default function AIChatbot() {
                 className="quick-reply-btn human-handoff-btn"
                 onClick={handleHumanHandoff}
               >
-                <Headphones size={13} />
-                Contact Staff
-              </button>
+                <Headphones size={13} />{translateUi("Contact Staff")}</button>
             </div>
           )}
           <div className="ai-chatbot-input">
-            <input 
-              type="text" 
-              placeholder="Ask me anything in any language..."
+            <input
+              type="text"
+              placeholder={translateUi("Ask me anything in any language...")}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              aria-label="Chat message input"
-              title="Type your message and press Enter"
+              aria-label={translateUi("Chat message input")}
+              title={translateUi("Type your message and press Enter")}
             />
-            <button onClick={() => handleSend()} disabled={!input.trim() || isTyping} title="Send message" aria-label="Send message">
+            <button onClick={() => handleSend()} disabled={!input.trim() || isTyping} title={translateUi("Send message")} aria-label={translateUi("Send message")}>
               <Send size={18} />
             </button>
           </div>

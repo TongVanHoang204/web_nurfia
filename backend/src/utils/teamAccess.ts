@@ -1,10 +1,11 @@
 import { AppError } from '../middlewares/errorHandler.js';
+import { resolveAdminPermissions } from './adminPermissions.js';
 
 export const TEAM_ROLES = ['OWNER', 'ADMIN', 'MANAGER', 'STAFF'] as const;
 const ROLE_RANK: Record<string, number> = { OWNER: 4, ADMIN: 3, MANAGER: 2, STAFF: 1 };
 export const effectiveRole = (user: { role: string; isOwner?: boolean }) =>
   user.role === 'ADMIN' && user.isOwner ? 'OWNER' : user.role;
-export const hasFullAdminAccess = (role?: string) => role === 'OWNER' || role === 'ADMIN';
+export const hasFullAdminAccess = (role?: string) => role === 'OWNER';
 
 type Actor = { userId?: number; userRole?: string; userPermissions?: readonly string[] };
 type Member = { id: number; role: string; isOwner?: boolean };
@@ -31,7 +32,7 @@ export const assertTeamManagement = (
   }
 };
 
-export const publicTeamMember = <T extends { role: string; isOwner?: boolean }>(user: T) => {
-  const { isOwner: _isOwner, ...publicUser } = user;
-  return { ...publicUser, role: effectiveRole(user) };
+export const publicTeamMember = <T extends { role: string; isOwner?: boolean; adminPermissionsRestricted?: boolean; permissions?: unknown }>(user: T) => {
+  const { isOwner: _isOwner, adminPermissionsRestricted: _restricted, ...publicUser } = user;
+  return { ...publicUser, role: effectiveRole(user), permissions: resolveAdminPermissions(user) };
 };

@@ -80,7 +80,7 @@ const applyHeadSettings = (settings: SiteSettingsMap) => {
   }
 
   document.querySelectorAll("link[rel*='icon']").forEach(el => el.remove());
-  
+
   const link = document.createElement('link');
   if (resolvedFavicon.endsWith('.svg')) {
     link.type = 'image/svg+xml';
@@ -93,7 +93,7 @@ const applyHeadSettings = (settings: SiteSettingsMap) => {
   } else {
     link.removeAttribute('type'); // Let the browser infer
   }
-  
+
   link.rel = 'shortcut icon';
   link.href = resolvedFavicon;
   document.head.appendChild(link);

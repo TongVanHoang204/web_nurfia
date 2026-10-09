@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -9,11 +11,12 @@ import './LoginPage.css';
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset';
 
 export default function LoginPage() {
+  useTranslation();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const resetToken = searchParams.get('resetToken') || searchParams.get('token') || '';
   const redirect = searchParams.get('redirect') || '/';
-  
+
   const getInitialMode = (): AuthMode => {
     if (resetToken || location.pathname.includes('/reset-password')) return 'reset';
     if (location.pathname.includes('/forgot-password')) return 'forgot';
@@ -204,16 +207,16 @@ export default function LoginPage() {
         <div className="login-wrapper">
           <div className="login-card">
             <h1 className="login-title">
-              {mode === 'login' && 'Sign In'}
-              {mode === 'register' && 'Create Account'}
-              {mode === 'forgot' && 'Forgot Password'}
-              {mode === 'reset' && 'Set New Password'}
+              {mode === 'login' && translateUi("Sign In")}
+              {mode === 'register' && translateUi("Create Account")}
+              {mode === 'forgot' && translateUi("Forgot Password")}
+              {mode === 'reset' && translateUi("Set New Password")}
             </h1>
             <p className="login-subtitle">
-              {mode === 'login' && 'Welcome back. Enter your credentials to access your account.'}
-              {mode === 'register' && 'Join Nurfia for exclusive access to new arrivals, sales, and more.'}
-              {mode === 'forgot' && 'Enter your email and we will send you a reset link.'}
-              {mode === 'reset' && 'Choose a new password for your account.'}
+              {mode === 'login' && translateUi("Welcome back. Enter your credentials to access your account.")}
+              {mode === 'register' && translateUi("Join Nurfia for exclusive access to new arrivals, sales, and more.")}
+              {mode === 'forgot' && translateUi("Enter your email and we will send you a reset link.")}
+              {mode === 'reset' && translateUi("Choose a new password for your account.")}
             </p>
 
             {error && <div className="login-error">{error}</div>}
@@ -224,11 +227,11 @@ export default function LoginPage() {
               {mode === 'login' && (
                 <>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="login-username">Username / Email</label>
+                    <label className="form-label" htmlFor="login-username">{translateUi("Username / Email")}</label>
                     <input id="login-username" className="form-input" type="text" value={form.username} onChange={(e) => update('username', e.target.value)} required />
                   </div>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="password">Password</label>
+                    <label className="form-label" htmlFor="password">{translateUi("Password")}</label>
                     <div className="password-field-wrap">
                       <input
                         id="password"
@@ -242,17 +245,15 @@ export default function LoginPage() {
                       <button
                         type="button"
                         className="password-toggle-btn"
-                        aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
-                        title={showLoginPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showLoginPassword ? translateUi("Hide password") : translateUi("Show password")}
+                        title={showLoginPassword ? translateUi("Hide password") : translateUi("Show password")}
                         onClick={() => setShowLoginPassword((prev) => !prev)}
                       >
                         {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                   </div>
-                  <button type="button" className="login-text-btn" onClick={() => switchMode('forgot')}>
-                    Forgot your password?
-                  </button>
+                  <button type="button" className="login-text-btn" onClick={() => switchMode('forgot')}>{translateUi("Forgot your password?")}</button>
                 </>
               )}
 
@@ -260,20 +261,20 @@ export default function LoginPage() {
                 <>
                   <div className="form-row">
                     <div className="form-group">
-                      <label className="form-label" htmlFor="reg-username">Username</label>
+                      <label className="form-label" htmlFor="reg-username">{translateUi("Username")}</label>
                       <input id="reg-username" className="form-input" type="text" value={form.username} onChange={(e) => update('username', e.target.value)} required />
                     </div>
                     <div className="form-group">
-                      <label className="form-label" htmlFor="reg-fullname">Full Name</label>
+                      <label className="form-label" htmlFor="reg-fullname">{translateUi("Full Name")}</label>
                       <input id="reg-fullname" className="form-input" type="text" value={form.fullName} onChange={(e) => update('fullName', e.target.value)} required />
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="reg-email">Email Address</label>
+                    <label className="form-label" htmlFor="reg-email">{translateUi("Email Address")}</label>
                     <input id="reg-email" className="form-input" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required />
                   </div>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="reg-password">Password</label>
+                    <label className="form-label" htmlFor="reg-password">{translateUi("Password")}</label>
                     <div className="password-field-wrap">
                       <input
                         id="reg-password"
@@ -292,8 +293,8 @@ export default function LoginPage() {
                       <button
                         type="button"
                         className="password-toggle-btn"
-                        aria-label={showRegisterPassword ? 'Hide password' : 'Show password'}
-                        title={showRegisterPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showRegisterPassword ? translateUi("Hide password") : translateUi("Show password")}
+                        title={showRegisterPassword ? translateUi("Hide password") : translateUi("Show password")}
                         onClick={() => setShowRegisterPassword((prev) => !prev)}
                       >
                         {showRegisterPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -301,7 +302,7 @@ export default function LoginPage() {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="reg-confirm-password">Confirm Password</label>
+                    <label className="form-label" htmlFor="reg-confirm-password">{translateUi("Confirm Password")}</label>
                     <div className="password-field-wrap">
                       <input
                         id="reg-confirm-password"
@@ -320,8 +321,8 @@ export default function LoginPage() {
                       <button
                         type="button"
                         className="password-toggle-btn"
-                        aria-label={showRegisterConfirmPassword ? 'Hide password' : 'Show password'}
-                        title={showRegisterConfirmPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showRegisterConfirmPassword ? translateUi("Hide password") : translateUi("Show password")}
+                        title={showRegisterConfirmPassword ? translateUi("Hide password") : translateUi("Show password")}
                         onClick={() => setShowRegisterConfirmPassword((prev) => !prev)}
                       >
                         {showRegisterConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -333,7 +334,7 @@ export default function LoginPage() {
 
               {mode === 'forgot' && (
                 <div className="form-group">
-                  <label className="form-label" htmlFor="forgot-email">Email Address</label>
+                  <label className="form-label" htmlFor="forgot-email">{translateUi("Email Address")}</label>
                   <input id="forgot-email" className="form-input" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required />
                 </div>
               )}
@@ -341,7 +342,7 @@ export default function LoginPage() {
               {mode === 'reset' && (
                 <>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="reset-password">New Password</label>
+                    <label className="form-label" htmlFor="reset-password">{translateUi("New Password")}</label>
                     <div className="password-field-wrap">
                       <input
                         id="reset-password"
@@ -355,8 +356,8 @@ export default function LoginPage() {
                       <button
                         type="button"
                         className="password-toggle-btn"
-                        aria-label={showResetNewPassword ? 'Hide password' : 'Show password'}
-                        title={showResetNewPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showResetNewPassword ? translateUi("Hide password") : translateUi("Show password")}
+                        title={showResetNewPassword ? translateUi("Hide password") : translateUi("Show password")}
                         onClick={() => setShowResetNewPassword((prev) => !prev)}
                       >
                         {showResetNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -364,7 +365,7 @@ export default function LoginPage() {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="form-label" htmlFor="reset-confirm-password">Confirm Password</label>
+                    <label className="form-label" htmlFor="reset-confirm-password">{translateUi("Confirm Password")}</label>
                     <div className="password-field-wrap">
                       <input
                         id="reset-confirm-password"
@@ -378,8 +379,8 @@ export default function LoginPage() {
                       <button
                         type="button"
                         className="password-toggle-btn"
-                        aria-label={showResetConfirmPassword ? 'Hide password' : 'Show password'}
-                        title={showResetConfirmPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showResetConfirmPassword ? translateUi("Hide password") : translateUi("Show password")}
+                        title={showResetConfirmPassword ? translateUi("Hide password") : translateUi("Show password")}
                         onClick={() => setShowResetConfirmPassword((prev) => !prev)}
                       >
                         {showResetConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -390,35 +391,35 @@ export default function LoginPage() {
               )}
 
               <button type="submit" className="btn btn-primary login-submit-btn" disabled={busy}>
-                {busy ? 'Please wait...' : submitLabel}
+                {busy ? translateUi("Please wait...") : submitLabel}
               </button>
             </form>
 
             <div className="login-switch">
               {mode === 'login' && (
-                <p>Don't have an account? <button type="button" onClick={() => switchMode('register')}>Create one</button></p>
+                <p>{translateUi("Don't have an account?")} <button type="button" onClick={() => switchMode('register')}>{translateUi("Create one")}</button></p>
               )}
               {mode === 'register' && (
-                <p>Already have an account? <button type="button" onClick={() => switchMode('login')}>Sign in</button></p>
+                <p>{translateUi("Already have an account?")} <button type="button" onClick={() => switchMode('login')}>{translateUi("Sign in")}</button></p>
               )}
               {mode === 'forgot' && (
-                <p>Remembered your password? <button type="button" onClick={() => switchMode('login')}>Back to sign in</button></p>
+                <p>{translateUi("Remembered your password?")} <button type="button" onClick={() => switchMode('login')}>{translateUi("Back to sign in")}</button></p>
               )}
               {mode === 'reset' && (
-                <p>Need a different reset link? <button type="button" onClick={() => switchMode('forgot')}>Request a new one</button></p>
+                <p>{translateUi("Need a different reset link?")} <button type="button" onClick={() => switchMode('forgot')}>{translateUi("Request a new one")}</button></p>
               )}
             </div>
           </div>
 
           <div className="login-side">
             <div className="login-side-content">
-              <h2>Nurfia</h2>
-              <p>Premium Fashion for Women & Men</p>
+              <h2>{translateUi("Nurfia")}</h2>
+              <p>{translateUi("Premium Fashion for Women & Men")}</p>
               <div className="login-features">
-                <div className="login-feature">Exclusive Collections</div>
-                <div className="login-feature">Free Shipping on $500+</div>
-                <div className="login-feature">30-Day Easy Returns</div>
-                <div className="login-feature">Members-Only Discounts</div>
+                <div className="login-feature">{translateUi("Exclusive Collections")}</div>
+                <div className="login-feature">{translateUi("Free Shipping on $500+")}</div>
+                <div className="login-feature">{translateUi("30-Day Easy Returns")}</div>
+                <div className="login-feature">{translateUi("Members-Only Discounts")}</div>
               </div>
             </div>
           </div>

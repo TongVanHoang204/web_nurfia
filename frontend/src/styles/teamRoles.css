@@ -1,0 +1,31 @@
+.team-role-badge {
+  --role-ink: #166534;
+  --role-border: #86c99b;
+  --role-bg: #edf9f0;
+  --role-highlight: #c6f2d4;
+  --role-glow: #22c55e40;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 1px solid var(--role-border);
+  border-radius: 3px;
+  color: var(--role-ink);
+  background: linear-gradient(110deg, var(--role-bg) 15%, var(--role-highlight) 45%, var(--role-bg) 75%);
+  background-size: 240% 100%;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  animation: team-role-shimmer 4s linear infinite, team-role-glow 3s ease-in-out infinite;
+}
+.team-role-owner { --role-ink: #80530b; --role-border: #dcba67; --role-bg: #fff8e5; --role-highlight: #f9df92; --role-glow: #eab30855; }
+.team-role-admin { --role-ink: #6b21a8; --role-border: #bc91e3; --role-bg: #f7f0ff; --role-highlight: #e5cbff; --role-glow: #a855f744; }
+.team-role-manager { --role-ink: #1e40af; --role-border: #86afe2; --role-bg: #eff6ff; --role-highlight: #bedcff; --role-glow: #3b82f644; }
+.team-role-staff { --role-ink: #166534; --role-border: #86c99b; --role-bg: #edf9f0; --role-highlight: #c6f2d4; --role-glow: #22c55e40; }
+.team-role-badge.team-role-owner, .team-role-badge.team-role-admin,
+.team-role-badge.team-role-manager, .team-role-badge.team-role-staff { color: var(--role-ink); }
+@keyframes team-role-shimmer { from { background-position: 0% 50%; } to { background-position: 240% 50%; } }
+@keyframes team-role-glow { 0%, 100% { box-shadow: 0 0 3px var(--role-glow); } 50% { box-shadow: 0 0 11px var(--role-glow); } }
+@media (prefers-reduced-motion: reduce) { .team-role-badge { animation: none; } }

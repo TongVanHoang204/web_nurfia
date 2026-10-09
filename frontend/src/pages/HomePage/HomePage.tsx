@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
@@ -57,7 +59,7 @@ interface HomePopup {
 const formatBlogDate = (value: string) => {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleDateString('en-GB', {
+  return parsed.toLocaleDateString(getLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -67,6 +69,7 @@ const formatBlogDate = (value: string) => {
 const HOME_PROMO_POPUP_KEY = 'nurfia_home_promo_popup_seen';
 
 export default function HomePage() {
+  useTranslation();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newProducts, setNewProducts] = useState<Product[]>([]);
@@ -219,18 +222,18 @@ export default function HomePage() {
     <div className="homepage">
       {showPromoPopup && activePopup && (
         <div className="home-promo-popup" role="dialog" aria-modal="true" aria-labelledby="home-promo-title">
-          <button className="home-promo-backdrop" type="button" aria-label="Close promotion popup" onClick={closePromoPopup} />
+          <button className="home-promo-backdrop" type="button" aria-label={translateUi("Close promotion popup")} onClick={closePromoPopup} />
           <div className={`home-promo-panel ${activePopupType === 'NOTICE' ? 'home-promo-panel-notice' : ''} ${shouldShowPopupImage ? '' : 'home-promo-panel-text-only'}`}>
-            <button className="home-promo-close" type="button" aria-label="Close promotion popup" onClick={closePromoPopup}>
+            <button className="home-promo-close" type="button" aria-label={translateUi("Close promotion popup")} onClick={closePromoPopup}>
               <X size={18} strokeWidth={1.8} />
             </button>
             {homePopups.length > 1 && (
-              <div className="home-promo-navigation" aria-label="Homepage popup navigation">
-                <button type="button" aria-label="Previous popup" onClick={() => goToPromoPopup('previous')}>
+              <div className="home-promo-navigation" aria-label={translateUi("Homepage popup navigation")}>
+                <button type="button" aria-label={translateUi("Previous popup")} onClick={() => goToPromoPopup('previous')}>
                   <ChevronLeft size={18} strokeWidth={1.8} />
                 </button>
                 <span>{activePopupIndex + 1} / {homePopups.length}</span>
-                <button type="button" aria-label="Next popup" onClick={() => goToPromoPopup('next')}>
+                <button type="button" aria-label={translateUi("Next popup")} onClick={() => goToPromoPopup('next')}>
                   <ChevronRight size={18} strokeWidth={1.8} />
                 </button>
               </div>
@@ -249,24 +252,24 @@ export default function HomePage() {
               <h2 id="home-promo-title" className="home-promo-title">{activePopup.title}</h2>
               {activePopup.message && <p className="home-promo-text">{activePopup.message}</p>}
               {activePopupType === 'OFFER' && activePopup.offerCode && (
-                <div className="home-promo-code" aria-label="Promotion code">
-                  <span>Use code</span>
+                <div className="home-promo-code" aria-label={translateUi("Promotion code")}>
+                  <span>{translateUi("Use code")}</span>
                   <strong>{activePopup.offerCode}</strong>
                 </div>
               )}
               {activePopup.linkUrl && (
                 <Link to={activePopup.linkUrl} className="btn btn-primary home-promo-cta" onClick={closePromoPopup}>
-                  {activePopup.buttonText || 'Shop now'}
+                  {activePopup.buttonText || translateUi("Shop now")}
                 </Link>
               )}
               {homePopups.length > 1 && (
-                <div className="home-promo-dots" aria-label="Popup slides">
+                <div className="home-promo-dots" aria-label={translateUi("Popup slides")}>
                   {homePopups.map((popup, index) => (
                     <button
                       key={popup.id}
                       type="button"
                       className={index === activePopupIndex ? 'is-active' : ''}
-                      aria-label={`Show popup ${index + 1}`}
+                      aria-label={translateUi("Show popup {{value1}}", { value1: index + 1 })}
                       aria-current={index === activePopupIndex ? 'true' : undefined}
                       onClick={() => {
                         setActivePopupIndex(index);
@@ -307,14 +310,14 @@ export default function HomePage() {
                   <div className="hero-content">
                     <h2 className="hero-title animate-fadeIn">{banner.title}</h2>
                     <div className="hero-slider-logo animate-fadeIn">
-                      <img src="/assets/images/slider-logo.png" alt="Nurfia" />
+                      <img src="/assets/images/slider-logo.png" alt={translateUi("Nurfia")} />
                     </div>
                     {banner.subtitle && (
                       <p className="hero-excerpt animate-fadeIn">{banner.subtitle}</p>
                     )}
                     {(banner.linkUrl || banner.buttonText) && (
                       <Link to={banner.linkUrl || "/category/all"} className="btn btn-white btn-lg animate-fadeIn">
-                        {banner.buttonText || "Shop Now"}
+                        {banner.buttonText || translateUi("Shop Now")}
                       </Link>
                     )}
                   </div>
@@ -329,14 +332,12 @@ export default function HomePage() {
                 </video>
                 <div className="hero-overlay" />
                 <div className="hero-content">
-                  <h2 className="hero-title animate-fadeIn">The Looks You'll Love</h2>
+                  <h2 className="hero-title animate-fadeIn">{translateUi("The Looks You'll Love")}</h2>
                   <div className="hero-slider-logo animate-fadeIn">
-                    <img src="/assets/images/slider-logo.png" alt="Nurfia" />
+                    <img src="/assets/images/slider-logo.png" alt={translateUi("Nurfia")} />
                   </div>
-                  <p className="hero-excerpt animate-fadeIn">
-                    Style that feels personal. Thoughtful design, refined materials, and looks made to last. Clean lines crafted for everyday sophistication.
-                  </p>
-                  <Link to="/category/all" className="btn btn-white btn-lg animate-fadeIn">View Collection</Link>
+                  <p className="hero-excerpt animate-fadeIn">{translateUi("Style that feels personal. Thoughtful design, refined materials, and looks made to last. Clean lines crafted for everyday sophistication.")}</p>
+                  <Link to="/category/all" className="btn btn-white btn-lg animate-fadeIn">{translateUi("View Collection")}</Link>
                 </div>
               </div>
             </SwiperSlide>
@@ -349,7 +350,7 @@ export default function HomePage() {
         <div className="marquee-track">
           <div className="marquee-content">
             {Array(8).fill(null).map((_, i) => (
-              <span key={i} className="marquee-text">CHOOSE YOUR<span className="marquee-dot">&bull;</span>SUMMER STYLE</span>
+              <span key={i} className="marquee-text">{translateUi("CHOOSE YOUR")}<span className="marquee-dot">&bull;</span>{translateUi("SUMMER STYLE")}</span>
             ))}
           </div>
         </div>
@@ -359,12 +360,12 @@ export default function HomePage() {
       <section className="products-section py-section">
         <div className="container">
           <div className="products-section-header">
-            <h2 className="section-title section-title-left">Redefine Your Wardrobe</h2>
+            <h2 className="section-title section-title-left">{translateUi("Redefine Your Wardrobe")}</h2>
             <div className="product-tabs">
-              <button className={`tab-btn ${activeTab1 === 'women' ? 'active' : ''}`} onClick={() => setActiveTab1('women')}>Women</button>
-              <button className={`tab-btn ${activeTab1 === 'dresses' ? 'active' : ''}`} onClick={() => setActiveTab1('dresses')}>Dresses</button>
-              <button className={`tab-btn ${activeTab1 === 'men' ? 'active' : ''}`} onClick={() => setActiveTab1('men')}>Men</button>
-              <button className={`tab-btn ${activeTab1 === 'tshirts' ? 'active' : ''}`} onClick={() => setActiveTab1('tshirts')}>T-shirts</button>
+              <button className={`tab-btn ${activeTab1 === 'women' ? 'active' : ''}`} onClick={() => setActiveTab1('women')}>{translateUi("Women")}</button>
+              <button className={`tab-btn ${activeTab1 === 'dresses' ? 'active' : ''}`} onClick={() => setActiveTab1('dresses')}>{translateUi("Dresses")}</button>
+              <button className={`tab-btn ${activeTab1 === 'men' ? 'active' : ''}`} onClick={() => setActiveTab1('men')}>{translateUi("Men")}</button>
+              <button className={`tab-btn ${activeTab1 === 'tshirts' ? 'active' : ''}`} onClick={() => setActiveTab1('tshirts')}>{translateUi("T-shirts")}</button>
             </div>
           </div>
           {isLoading ? (
@@ -399,15 +400,15 @@ export default function HomePage() {
           <Link to="/category/women" className="banner-card-full banner-women">
             <div className="banner-overlay-gradient" />
             <div className="banner-card-content">
-              <h2 className="banner-card-title">WOMEN</h2>
-              <p className="banner-card-excerpt">Soft strength, refined details, and a confident silhouette shaped for contemporary style.</p>
+              <h2 className="banner-card-title">{translateUi("WOMEN")}</h2>
+              <p className="banner-card-excerpt">{translateUi("Soft strength, refined details, and a confident silhouette shaped for contemporary style.")}</p>
             </div>
           </Link>
           <Link to="/category/men" className="banner-card-full banner-men">
             <div className="banner-overlay-gradient" />
             <div className="banner-card-content">
-              <h2 className="banner-card-title">MEN</h2>
-              <p className="banner-card-excerpt">Clean structure, modern attitude, and effortless pieces designed for everyday confidence.</p>
+              <h2 className="banner-card-title">{translateUi("MEN")}</h2>
+              <p className="banner-card-excerpt">{translateUi("Clean structure, modern attitude, and effortless pieces designed for everyday confidence.")}</p>
             </div>
           </Link>
         </div>
@@ -417,24 +418,20 @@ export default function HomePage() {
       <section className="elevate-section py-section">
         <div className="container">
           <div className="elevate-text">
-            <h2 className="elevate-title">
-              Elevate your {' '}
+            <h2 className="elevate-title">{translateUi("Elevate your")}{' '}
               <span className="elevate-hover-wrapper">
-                <em className="elevate-italic">style</em>
-                <img src="/assets/images/image-01.webp" alt="style" className="elevate-hover-img" />
+                <em className="elevate-italic">{translateUi("style")}</em>
+                <img src="/assets/images/image-01.webp" alt={translateUi("style")} className="elevate-hover-img" />
               </span>
-              <br />
-              with {' '}
+              <br />{translateUi("with")}{' '}
               <span className="elevate-hover-wrapper">
-                <em className="elevate-italic">timeless</em>
-                <img src="/assets/images/image-02.webp" alt="timeless" className="elevate-hover-img" />
+                <em className="elevate-italic">{translateUi("timeless")}</em>
+                <img src="/assets/images/image-02.webp" alt={translateUi("timeless")} className="elevate-hover-img" />
               </span>
-              {' '}elegance
-              <br />
-              in the new {' '}
+              {' '}{translateUi("elegance")}<br />{translateUi("in the new")}{' '}
               <span className="elevate-hover-wrapper">
-                <em className="elevate-italic">collection</em>
-                <img src="/assets/images/banner-01.webp" alt="collection" className="elevate-hover-img" />
+                <em className="elevate-italic">{translateUi("collection")}</em>
+                <img src="/assets/images/banner-01.webp" alt={translateUi("collection")} className="elevate-hover-img" />
               </span>
             </h2>
           </div>
@@ -445,21 +442,21 @@ export default function HomePage() {
       <section className="promo-banner">
         <div className="promo-overlay" />
         <div className="promo-content">
-          <h2 className="promo-title">The Looks You'll Love</h2>
-          <p className="promo-excerpt">Style that feels personal. Thoughtful design, refined materials, and looks made to last.</p>
+          <h2 className="promo-title">{translateUi("The Looks You'll Love")}</h2>
+          <p className="promo-excerpt">{translateUi("Style that feels personal. Thoughtful design, refined materials, and looks made to last.")}</p>
         </div>
-        <Link to="/category/all" className="promo-wrap-link" aria-label="Shop the look" />
+        <Link to="/category/all" className="promo-wrap-link" aria-label={translateUi("Shop the look")} />
       </section>
 
       {/* 7. Featured Products Carousel */}
       <section className="products-section py-section">
         <div className="container">
           <div className="products-section-header">
-            <h2 className="section-title section-title-left">Featured Products</h2>
+            <h2 className="section-title section-title-left">{translateUi("Featured Products")}</h2>
             <div className="product-tabs">
-              <button className={`tab-btn ${activeTab2 === 'new' ? 'active' : ''}`} onClick={() => setActiveTab2('new')}>New Arrival</button>
-              <button className={`tab-btn ${activeTab2 === 'featured' ? 'active' : ''}`} onClick={() => setActiveTab2('featured')}>Featured</button>
-              <button className={`tab-btn ${activeTab2 === 'bestsellers' ? 'active' : ''}`} onClick={() => setActiveTab2('bestsellers')}>Bestsellers</button>
+              <button className={`tab-btn ${activeTab2 === 'new' ? 'active' : ''}`} onClick={() => setActiveTab2('new')}>{translateUi("New Arrival")}</button>
+              <button className={`tab-btn ${activeTab2 === 'featured' ? 'active' : ''}`} onClick={() => setActiveTab2('featured')}>{translateUi("Featured")}</button>
+              <button className={`tab-btn ${activeTab2 === 'bestsellers' ? 'active' : ''}`} onClick={() => setActiveTab2('bestsellers')}>{translateUi("Bestsellers")}</button>
             </div>
           </div>
           {isLoading ? (
@@ -500,16 +497,12 @@ export default function HomePage() {
           >
             <SwiperSlide>
               <div className="testimonial-inner">
-                <p className="testimonial-text">
-                  We focus on well-designed, quality clothing that fits your lifestyle. Thoughtfully made for comfort, versatility, and everyday wear.
-                </p>
+                <p className="testimonial-text">{translateUi("We focus on well-designed, quality clothing that fits your lifestyle. Thoughtfully made for comfort, versatility, and everyday wear.")}</p>
               </div>
             </SwiperSlide>
             <SwiperSlide>
               <div className="testimonial-inner">
-                <p className="testimonial-text">
-                  Fashion is not just about clothes. It's about feeling confident, expressing yourself, and embracing the beauty of who you are.
-                </p>
+                <p className="testimonial-text">{translateUi("Fashion is not just about clothes. It's about feeling confident, expressing yourself, and embracing the beauty of who you are.")}</p>
               </div>
             </SwiperSlide>
           </Swiper>
@@ -521,17 +514,15 @@ export default function HomePage() {
         <div className="container">
           <div className="sustainability-grid">
             <div className="sustainability-content">
-              <h2 className="sustainability-title">FASHION<br />THAT<br />LOVES THE<br />EARTH</h2>
-              <p className="sustainability-text">
-                Designed responsibly for everyday life. Clean silhouettes, natural materials, and style that lasts beyond seasons.
-              </p>
-              <Link to="/category/all" className="btn btn-primary btn-lg">DISCOVER NOW</Link>
+              <h2 className="sustainability-title">{translateUi("FASHION")}<br />{translateUi("THAT")}<br />{translateUi("LOVES THE")}<br />{translateUi("EARTH")}</h2>
+              <p className="sustainability-text">{translateUi("Designed responsibly for everyday life. Clean silhouettes, natural materials, and style that lasts beyond seasons.")}</p>
+              <Link to="/category/all" className="btn btn-primary btn-lg">{translateUi("DISCOVER NOW")}</Link>
             </div>
             <div className="sustainability-image sustainability-image-1">
-              <img src="/assets/images/image-01.webp" alt="Sustainable fashion" />
+              <img src="/assets/images/image-01.webp" alt={translateUi("Sustainable fashion")} />
             </div>
             <div className="sustainability-image sustainability-image-2">
-              <img src="/assets/images/image-02.webp" alt="Sustainable materials" />
+              <img src="/assets/images/image-02.webp" alt={translateUi("Sustainable materials")} />
             </div>
           </div>
         </div>
@@ -542,7 +533,7 @@ export default function HomePage() {
         <div className="marquee-track">
           <div className="marquee-content">
             {Array(8).fill(null).map((_, i) => (
-              <span key={i} className="marquee-text">CHOOSE YOUR<span className="marquee-dot">&bull;</span>SUMMER STYLE</span>
+              <span key={i} className="marquee-text">{translateUi("CHOOSE YOUR")}<span className="marquee-dot">&bull;</span>{translateUi("SUMMER STYLE")}</span>
             ))}
           </div>
         </div>
@@ -570,7 +561,7 @@ export default function HomePage() {
                         <Link to={`/blog/${post.slug}`}>{post.title}</Link>
                       </h3>
                       <div className="blog-card-meta">
-                        <span>by {author}</span>
+                        <span>{translateUi("by")} {author}</span>
                         {publishedDate && <span>{publishedDate}</span>}
                       </div>
                     </div>
@@ -579,8 +570,8 @@ export default function HomePage() {
               })
             ) : (
               <div className="blog-empty-state">
-                <p>No published blog posts yet.</p>
-                <Link to="/blog" className="btn btn-outline btn-sm">View Blog</Link>
+                <p>{translateUi("No published blog posts yet.")}</p>
+                <Link to="/blog" className="btn btn-outline btn-sm">{translateUi("View Blog")}</Link>
               </div>
             )}
           </div>
@@ -592,7 +583,7 @@ export default function HomePage() {
         <section className="products-section py-section">
           <div className="container">
             <div className="products-section-header">
-              <h2 className="section-title section-title-left">Recently viewed</h2>
+              <h2 className="section-title section-title-left">{translateUi("Recently viewed")}</h2>
             </div>
             <Swiper
               modules={[Navigation, Autoplay]}

@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '../../stores/cartStore';
@@ -6,6 +8,7 @@ import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import './CartPage.css';
 
 export default function CartPage() {
+  useTranslation();
   const { items, updateQuantity, removeItem, getSubtotal, isLoading } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
   const canCheckout = user?.role === 'CUSTOMER';
@@ -16,8 +19,8 @@ export default function CartPage() {
         <div className="container">
           <div className="cart-empty-page">
             <ShoppingBag size={64} strokeWidth={1} />
-            <h2>Please login to view your cart</h2>
-            <Link to="/login" className="btn btn-primary">Sign In</Link>
+            <h2>{translateUi("Please login to view your cart")}</h2>
+            <Link to="/login" className="btn btn-primary">{translateUi("Sign In")}</Link>
           </div>
         </div>
       </div>
@@ -30,9 +33,9 @@ export default function CartPage() {
         <div className="container">
           <div className="cart-empty-page">
             <ShoppingBag size={64} strokeWidth={1} />
-            <h2>Your Cart is Empty</h2>
-            <p>Looks like you haven't added anything yet.</p>
-            <Link to="/category/women" className="btn btn-primary">Start Shopping</Link>
+            <h2>{translateUi("Your Cart is Empty")}</h2>
+            <p>{translateUi("Looks like you haven't added anything yet.")}</p>
+            <Link to="/category/women" className="btn btn-primary">{translateUi("Start Shopping")}</Link>
           </div>
         </div>
       </div>
@@ -46,14 +49,14 @@ export default function CartPage() {
   return (
     <div className="cart-page">
       <div className="container">
-        <h1 className="cart-page-title">Shopping Cart</h1>
+        <h1 className="cart-page-title">{translateUi("Shopping Cart")}</h1>
         <div className="cart-layout">
           <div className="cart-items-list">
             <div className="cart-table-header">
-              <span className="col-product">Product</span>
-              <span className="col-price">Price</span>
-              <span className="col-qty">Quantity</span>
-              <span className="col-total">Total</span>
+              <span className="col-product">{translateUi("Product")}</span>
+              <span className="col-price">{translateUi("Price")}</span>
+              <span className="col-qty">{translateUi("Quantity")}</span>
+              <span className="col-total">{translateUi("Total")}</span>
               <span className="col-remove"></span>
             </div>
             {items.map((item) => {
@@ -82,8 +85,8 @@ export default function CartPage() {
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         disabled={isLoading}
-                        title="Decrease quantity"
-                        aria-label="Decrease quantity"
+                        title={translateUi("Decrease quantity")}
+                        aria-label={translateUi("Decrease quantity")}
                       >
                         <Minus size={12} />
                       </button>
@@ -91,8 +94,8 @@ export default function CartPage() {
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         disabled={isLoading}
-                        title="Increase quantity"
-                        aria-label="Increase quantity"
+                        title={translateUi("Increase quantity")}
+                        aria-label={translateUi("Increase quantity")}
                       >
                         <Plus size={12} />
                       </button>
@@ -103,8 +106,8 @@ export default function CartPage() {
                     <button
                       onClick={() => removeItem(item.id)}
                       className="remove-btn"
-                      title="Remove item"
-                      aria-label="Remove item"
+                      title={translateUi("Remove item")}
+                      aria-label={translateUi("Remove item")}
                     >
                       <X size={16} />
                     </button>
@@ -115,24 +118,24 @@ export default function CartPage() {
           </div>
 
           <div className="cart-summary">
-            <h3>Order Summary</h3>
-            <div className="summary-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+            <h3>{translateUi("Order Summary")}</h3>
+            <div className="summary-row"><span>{translateUi("Subtotal")}</span><span>${subtotal.toFixed(2)}</span></div>
             <div className="summary-row">
-              <span>Shipping</span>
-              <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+              <span>{translateUi("Shipping")}</span>
+              <span>{shipping === 0 ? translateUi("Free") : `$${shipping.toFixed(2)}`}</span>
             </div>
-            {shipping > 0 && <p className="free-ship-note">Free shipping on orders over $500</p>}
+            {shipping > 0 && <p className="free-ship-note">{translateUi("Free shipping on orders over $500")}</p>}
             <div className="summary-divider" />
-            <div className="summary-row summary-total"><span>Total</span><span>${total.toFixed(2)}</span></div>
+            <div className="summary-row summary-total"><span>{translateUi("Total")}</span><span>${total.toFixed(2)}</span></div>
             {canCheckout ? (
-              <Link to="/checkout" className="btn btn-primary cart-checkout-btn">Proceed to Checkout</Link>
+              <Link to="/checkout" className="btn btn-primary cart-checkout-btn">{translateUi("Proceed to Checkout")}</Link>
             ) : (
               <>
-                <button type="button" className="btn btn-primary cart-checkout-disabled-btn" disabled>Proceed to Checkout</button>
-                <p className="cart-role-note">Only customer accounts can place orders.</p>
+                <button type="button" className="btn btn-primary cart-checkout-disabled-btn" disabled>{translateUi("Proceed to Checkout")}</button>
+                <p className="cart-role-note">{translateUi("Only customer accounts can place orders.")}</p>
               </>
             )}
-            <Link to="/category/all" className="btn btn-outline cart-continue-btn">Continue Shopping</Link>
+            <Link to="/category/all" className="btn btn-outline cart-continue-btn">{translateUi("Continue Shopping")}</Link>
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useCompareStore } from '../../stores/compareStore';
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
@@ -6,6 +8,7 @@ import { resolveSiteAssetUrl } from '../../contexts/SiteSettingsContext';
 import './ComparePage.css';
 
 export default function ComparePage() {
+  useTranslation();
   const { items, removeFromCompare, clearCompare } = useCompareStore();
 
   const renderRating = (rating: number) => {
@@ -25,12 +28,12 @@ export default function ComparePage() {
   const compareRows = [
     {
       label: 'SKU',
-      render: (item: typeof items[number]) => <span className="compare-muted">{item.sku || 'N/A'}</span>,
+      render: (item: typeof items[number]) => <span className="compare-muted">{item.sku || translateUi("N/A")}</span>,
     },
     {
       label: 'Rating',
       render: (item: typeof items[number]) => (
-        <div className="compare-rating" aria-label={`${Number(item.rating || 0).toFixed(1)} out of 5 stars`}>
+        <div className="compare-rating" aria-label={translateUi("{{value1}} out of 5 stars", { value1: Number(item.rating || 0).toFixed(1) })}>
           {renderRating(item.rating || 0)}
           <span>{Number(item.rating || 0).toFixed(1)}</span>
         </div>
@@ -55,9 +58,9 @@ export default function ComparePage() {
       label: 'Stock',
       render: (item: typeof items[number]) => (
         item.stock > 0 ? (
-          <span className="compare-stock is-in">{item.stock} in stock</span>
+          <span className="compare-stock is-in">{item.stock} {translateUi("in stock")}</span>
         ) : (
-          <span className="compare-stock is-out">Out of stock</span>
+          <span className="compare-stock is-out">{translateUi("Out of stock")}</span>
         )
       ),
     },
@@ -73,9 +76,7 @@ export default function ComparePage() {
               event.preventDefault();
             }
           }}
-        >
-          Select Options
-          <ArrowRight size={14} />
+        >{translateUi("Select Options")}<ArrowRight size={14} />
         </Link>
       ),
     },
@@ -88,11 +89,9 @@ export default function ComparePage() {
           <div className="compare-empty-icon">
             <Scale size={28} strokeWidth={1.6} />
           </div>
-          <h1>Compare Products</h1>
-          <p>Add products to compare price, rating, stock, and key details side by side.</p>
-          <Link to="/category/all" className="compare-primary-link">
-            Start Shopping
-            <ArrowRight size={15} />
+          <h1>{translateUi("Compare Products")}</h1>
+          <p>{translateUi("Add products to compare price, rating, stock, and key details side by side.")}</p>
+          <Link to="/category/all" className="compare-primary-link">{translateUi("Start Shopping")}<ArrowRight size={15} />
           </Link>
         </div>
       </div>
@@ -103,28 +102,24 @@ export default function ComparePage() {
     <div className="compare-page container">
       <header className="compare-hero">
         <div>
-          <h1>Compare Products</h1>
-          <p>{items.length} product{items.length > 1 ? 's' : ''} selected for side-by-side review.</p>
+          <h1>{translateUi("Compare Products")}</h1>
+          <p>{items.length} {translateUi("product")}{items.length > 1 ? translateUi("s") : ''} {translateUi("selected for side-by-side review.")}</p>
         </div>
         <div className="compare-hero-actions">
           <Link to="/category/all" className="compare-secondary-link">
-            <ShoppingBag size={15} />
-            Add More
-          </Link>
+            <ShoppingBag size={15} />{translateUi("Add More")}</Link>
           <button className="compare-clear-btn" type="button" onClick={clearCompare}>
-            <Trash2 size={15} />
-            Clear All
-          </button>
+            <Trash2 size={15} />{translateUi("Clear All")}</button>
         </div>
       </header>
 
       <div className="compare-board" style={{ '--compare-columns': items.length } as CSSProperties}>
         <div className="compare-board-scroll">
           <div className="compare-products-row">
-            <div className="compare-feature-label">Products</div>
+            <div className="compare-feature-label">{translateUi("Products")}</div>
             {items.map(item => (
               <article key={item.id} className="compare-product-card">
-                <button className="compare-remove-icon" type="button" aria-label={`Remove ${item.name}`} onClick={() => removeFromCompare(item.id)}>
+                <button className="compare-remove-icon" type="button" aria-label={translateUi("Remove {{value1}}", { value1: item.name })} onClick={() => removeFromCompare(item.id)}>
                   <X size={15} />
                 </button>
                 <Link to={`/product/${item.slug}`} className="compare-image-link">
@@ -140,7 +135,7 @@ export default function ComparePage() {
           <div className="compare-spec-list">
             {compareRows.map((row) => (
               <div key={row.label} className="compare-spec-row">
-                <div className="compare-feature-label">{row.label}</div>
+                <div className="compare-feature-label">{translateUi(row.label)}</div>
                 {items.map(item => (
                   <div key={`${row.label}-${item.id}`} className="compare-spec-cell">
                     {row.render(item)}

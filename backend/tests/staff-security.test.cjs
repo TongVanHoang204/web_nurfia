@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../src/models/prisma').default;
 const config = require('../src/config').default;
-const { authenticate, requireAdminAccess, requirePermission } = require('../src/middlewares/auth');
+const { authenticate, requireAdminAccess, requirePermission, ADMIN_PERMISSIONS } = require('../src/middlewares/auth');
 const { validate } = require('../src/middlewares/validate');
 const { createStaffSchema, updateStaffSchema } = require('../src/validators/admin.validator');
 const { staffController } = require('../src/controllers/staff.controller');
@@ -28,7 +28,7 @@ function app() {
   return server;
 }
 beforeEach(() => {
-  actor = { userId: 10, userRole: 'ADMIN', userPermissions: ['MANAGE_STAFF', 'MANAGE_ORDERS'] };
+  actor = { userId: 10, userRole: 'ADMIN', userPermissions: [...ADMIN_PERMISSIONS] };
   target = { id: 20, username: 'worker', email: 'worker@example.test', fullName: 'Worker', role: 'STAFF', isOwner: false, permissions: ['MANAGE_ORDERS'], isActive: true, tokenVersion: 0 };
   written = [];
   jest.spyOn(prisma.user, 'findFirst').mockImplementation(async () => ({ ...target }));
@@ -55,6 +55,44 @@ test('Owner can edit an Admin account', async () => {
   actor.userRole = 'OWNER'; target.role = 'ADMIN';
   expect((await request(app()).put('/staff/20').send({ fullName: 'New Name' })).status).toBe(200);
 });
+
+test('Owner can remove every Admin permission without restoring full access', async () => {
+  actor.userRole = 'OWNER'; target.role = 'ADMIN';
+  const response = await request(app()).put('/staff/20').send({ permissions: [] });
+  expect(response.status).toBe(200);
+  expect(response.body.data.permissions).toEqual([]);
+  expect(written[0].adminPermissionsRestricted).toBe(true);
+  expect(written[0].tokenVersion).toEqual({ increment: 1 });
+  expect(response.body.data.adminPermissionsRestricted).toBeUndefined();
+});
+
+test('a restricted Admin can use assigned modules but cannot bypass removed permissions', async () => {
+  target.role = 'ADMIN'; target.adminPermissionsRestricted = true;
+  const server = express();
+  server.get('/orders', authenticate, requirePermission('MANAGE_ORDERS'), (_req, res) => res.sendStatus(200));
+  server.get('/settings', authenticate, requirePermission('MANAGE_SETTINGS'), (_req, res) => res.sendStatus(200));
+  server.use(errorHandler);
+  const token = jwt.sign({ userId: 20, tokenVersion: 0 }, config.jwt.secret, { expiresIn: '1h' });
+  expect((await request(server).get('/orders').set('Authorization', `Bearer ${token}`)).status).toBe(200);
+  expect((await request(server).get('/settings').set('Authorization', `Bearer ${token}`)).status).toBe(403);
+});
+
+test('legacy Admins retain all module access until Owner changes their permissions', async () => {
+  target.role = 'ADMIN'; target.permissions = [];
+  const server = express();
+  server.get('/settings', authenticate, requirePermission('MANAGE_SETTINGS'), (req, res) => res.json({ permissions: req.userPermissions }));
+  server.use(errorHandler);
+  const token = jwt.sign({ userId: 20, tokenVersion: 0 }, config.jwt.secret, { expiresIn: '1h' });
+  const response = await request(server).get('/settings').set('Authorization', `Bearer ${token}`);
+  expect(response.status).toBe(200);
+  expect(response.body.permissions).toContain('MANAGE_SETTINGS');
+});
+
+test('an Admin cannot delegate permissions Owner has withheld', async () => {
+  actor.userPermissions = ['MANAGE_STAFF', 'MANAGE_ORDERS'];
+  expect((await request(app()).put('/staff/20').send({ permissions: ['MANAGE_SETTINGS'] })).status).toBe(403);
+  expect(written).toEqual([]);
+});
 test.each(['ADMIN', 'MANAGER', 'STAFF'])('%s cannot edit an Owner account', async role => {
   actor.userRole = role; target.role = 'ADMIN'; target.isOwner = true;
   expect((await request(app()).put('/staff/20').send({ fullName: 'Changed' })).status).toBe(403);
@@ -66,21 +104,21 @@ test('Owner cannot disable or delete the Owner through staff routes', async () =
   expect((await request(app()).delete('/staff/20')).status).toBe(403);
 });
 test('self modification cannot grant new permissions', async () => {
-  target.id = actor.userId; target.role = 'MANAGER'; actor.userRole = 'MANAGER';
+  target.id = actor.userId; target.role = 'MANAGER'; actor.userRole = 'MANAGER'; actor.userPermissions = ['MANAGE_STAFF', 'MANAGE_ORDERS'];
   expect((await request(app()).put('/staff/10').send({ permissions: ['MANAGE_SETTINGS'] })).status).toBe(403);
   expect(written).toEqual([]);
 });
 test('a delegated Manager cannot edit a peer Manager', async () => {
-  actor.userRole = 'MANAGER'; target.role = 'MANAGER';
+  actor.userRole = 'MANAGER'; actor.userPermissions = ['MANAGE_STAFF', 'MANAGE_ORDERS']; target.role = 'MANAGER';
   expect((await request(app()).put('/staff/20').send({ fullName: 'Changed' })).status).toBe(403);
 });
 test('a delegated Manager cannot grant permissions they do not hold', async () => {
-  actor.userRole = 'MANAGER';
+  actor.userRole = 'MANAGER'; actor.userPermissions = ['MANAGE_STAFF', 'MANAGE_ORDERS'];
   expect((await request(app()).put('/staff/20').send({ permissions: ['MANAGE_SETTINGS'] })).status).toBe(403);
   expect(written).toEqual([]);
 });
 test('a delegated Manager can assign a subset of their permissions to Staff', async () => {
-  actor.userRole = 'MANAGER';
+  actor.userRole = 'MANAGER'; actor.userPermissions = ['MANAGE_STAFF', 'MANAGE_ORDERS'];
   expect((await request(app()).put('/staff/20').send({ permissions: ['MANAGE_ORDERS'] })).status).toBe(200);
 });
 test('only Owner can create an Admin', async () => {
@@ -118,7 +156,7 @@ test('staff history is scoped to the target and excludes credential material', a
   expect(prisma.activityLog.findMany.mock.calls[0][0].where).toMatchObject({ entityId: 20, entityType: { in: ['STAFF', 'ROLE'] } });
 });
 test('activity rollback cannot bypass the delegation hierarchy', async () => {
-  actor.userRole = 'MANAGER';
+  actor.userRole = 'MANAGER'; actor.userPermissions = ['MANAGE_STAFF', 'MANAGE_ORDERS'];
   const response = await request(app()).post('/rollback/5').send({});
   expect(response.status).toBe(403);
   expect(written).toEqual([]);

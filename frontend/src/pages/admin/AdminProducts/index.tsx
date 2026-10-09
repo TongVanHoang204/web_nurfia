@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 ﻿import { useState, useEffect, useMemo, Fragment } from 'react';
 import { Plus, Edit2, Trash2, X, Search, Zap, ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import api from '../../../api/client';
@@ -7,8 +9,12 @@ import AdminAiGeneratorButton from '../../../components/AdminAiGeneratorButton/A
 import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
 import { getImageUrl } from '../../../utils/url';
 import './AdminProducts.css';
+import { useSearchParams } from 'react-router-dom';
 
 export default function AdminProducts() {
+  useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const productId = searchParams.get('productId');
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
@@ -24,7 +30,7 @@ export default function AdminProducts() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [brandFilter, setBrandFilter] = useState('All');
   const [sortFilter] = useState('Newest');
-  
+
   const filteredProducts = products.filter(p => {
     if (statusFilter !== 'All') {
       if (statusFilter === 'Active' && !p.isActive) return false;
@@ -58,7 +64,7 @@ export default function AdminProducts() {
       tone: 'danger',
     });
     if (!shouldDelete) return;
-    
+
     try {
       await Promise.all(selectedIds.map(id => api.delete(`/admin/products/${id}`)));
       addToast('Selected products deleted successfully', 'success');
@@ -115,7 +121,7 @@ export default function AdminProducts() {
   const hierarchicalCategories = useMemo(() => {
     const roots = categories.filter(c => !c.parentId);
     const result: any[] = [];
-    
+
     const traverse = (parentId: number, level: number) => {
       const children = categories.filter(c => c.parentId === parentId);
       children.forEach(child => {
@@ -208,7 +214,15 @@ export default function AdminProducts() {
     }
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  useEffect(() => {
+    if (!productId) return;
+    if (!/^[1-9]\d*$/.test(productId)) { addToast(translateUi('Invalid product ID'), 'error'); return; }
+    void openEditModal({ id: Number(productId) });
+  }, [productId]);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    if (productId) setSearchParams(current => { const next = new URLSearchParams(current); next.delete('productId'); return next; }, { replace: true });
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -456,14 +470,14 @@ export default function AdminProducts() {
       return;
     }
     const saveFormData = formData.autoGenerateVariantSku ? { ...formData, variants: buildVariantsWithMissingColorSize(formData.variants, true).variants } : formData;
-    
+
     try {
       const payload: any = { ...saveFormData, price: Number(saveFormData.price), stock: hasVariantStocks ? totalStockFromVariants : Number(saveFormData.stock) };
       if (saveFormData.salePrice) payload.salePrice = Number(saveFormData.salePrice);
       if (saveFormData.categoryId) payload.categoryId = Number(saveFormData.categoryId);
       payload.brandId = saveFormData.brandId ? Number(saveFormData.brandId) : null;
       if (saveFormData.images?.length) payload.images = saveFormData.images.map((url: string) => ({ url, alt: saveFormData.name }));
-      
+
       if (payload.variants?.length) {
         payload.variants = payload.variants.map((v: any) => ({
           ...v,
@@ -476,7 +490,7 @@ export default function AdminProducts() {
 
       if (editingProduct) await api.put(`/admin/products/${editingProduct.id}`, payload);
       else await api.post('/admin/products', payload);
-      
+
       addToast('Saved successfully', 'success');
       closeModal();
       fetchProducts(pagination.page);
@@ -526,34 +540,34 @@ export default function AdminProducts() {
     <div className="admin-products-page">
       <header className="admin-products-header">
         <div>
-          <h1 className="admin-page-title">Product Catalog</h1>
-          <p className="admin-order-badge-stat"><span>Inventory Status:</span> <strong>{pagination.total} Items Listed</strong></p>
+          <h1 className="admin-page-title">{translateUi("Product Catalog")}</h1>
+          <p className="admin-order-badge-stat"><span>{translateUi("Inventory Status:")}</span> <strong>{pagination.total} {translateUi("Items Listed")}</strong></p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={openAddModal}><Plus size={16} className="mr-2" /> Add New Product</button>
+        <button type="button" className="btn btn-primary" onClick={openAddModal}><Plus size={16} className="mr-2" /> {translateUi("Add New Product")}</button>
       </header>
 
       <div className="ap-toolbar">
         <div className="ap-search-box">
           <Search size={18} className="ap-search-icon" />
-          <input type="text" placeholder="Search by name or SKU..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          <input type="text" placeholder={translateUi("Search by name or SKU...")} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
-        
+
         <div className="ap-toolbar-actions">
           {selectedIds.length > 0 && (
-            <button className="btn btn-error btn-sm" onClick={handleBulkDelete}>Delete Selected ({selectedIds.length})</button>
+            <button className="btn btn-error btn-sm" onClick={handleBulkDelete}>{translateUi("Delete Selected (")}{selectedIds.length})</button>
           )}
           <div className="ap-filter-group">
-            <span className="ap-filter-label">Status</span>
-            <select className="ap-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} title="Filter by Status">
-              <option value="All">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+            <span className="ap-filter-label">{translateUi("Status")}</span>
+            <select className="ap-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} title={translateUi("Filter by Status")}>
+              <option value="All">{translateUi("All Status")}</option>
+              <option value="Active">{translateUi("Active")}</option>
+              <option value="Inactive">{translateUi("Inactive")}</option>
             </select>
           </div>
           <div className="ap-filter-group">
-            <span className="ap-filter-label">Brand</span>
-            <select className="ap-filter-select" value={brandFilter} onChange={e => setBrandFilter(e.target.value)} title="Filter by Brand">
-              <option value="All">All Brands</option>
+            <span className="ap-filter-label">{translateUi("Brand")}</span>
+            <select className="ap-filter-select" value={brandFilter} onChange={e => setBrandFilter(e.target.value)} title={translateUi("Filter by Brand")}>
+              <option value="All">{translateUi("All Brands")}</option>
               {brands.map((b: any) => <option key={b.id} value={b.slug}>{b.name}</option>)}
             </select>
           </div>
@@ -564,20 +578,20 @@ export default function AdminProducts() {
         <table className="ap-table">
           <thead>
             <tr>
-              <th className="w-10"><input type="checkbox" title="Select all products" checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length} onChange={e => setSelectedIds(e.target.checked ? filteredProducts.map(p => p.id) : [])} /></th>
-              <th>Product Information</th>
-              <th>SKU</th>
-              <th>Quick Brand</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Status</th>
-              <th className="text-right">Actions</th>
+              <th className="w-10"><input type="checkbox" title={translateUi("Select all products")} checked={selectedIds.length > 0 && selectedIds.length === filteredProducts.length} onChange={e => setSelectedIds(e.target.checked ? filteredProducts.map(p => p.id) : [])} /></th>
+              <th>{translateUi("Product Information")}</th>
+              <th>{translateUi("SKU")}</th>
+              <th>{translateUi("Quick Brand")}</th>
+              <th>{translateUi("Price")}</th>
+              <th>{translateUi("Stock")}</th>
+              <th>{translateUi("Status")}</th>
+              <th className="text-right">{translateUi("Actions")}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? <tr><td colSpan={8} className="text-center"><div className="spinner" /></td></tr> : filteredProducts.map(p => (
               <tr key={p.id}>
-                <td><input type="checkbox" title={`Select ${p.name}`} checked={selectedIds.includes(p.id)} onChange={e => setSelectedIds(e.target.checked ? [...selectedIds, p.id] : selectedIds.filter(id => id !== p.id))} /></td>
+                <td><input type="checkbox" title={translateUi("Select {{value1}}", { value1: p.name })} checked={selectedIds.includes(p.id)} onChange={e => setSelectedIds(e.target.checked ? [...selectedIds, p.id] : selectedIds.filter(id => id !== p.id))} /></td>
                 <td>
                   <div className="ap-product-cell">
                     <div className="ap-product-img-box">
@@ -585,24 +599,24 @@ export default function AdminProducts() {
                     </div>
                     <div className="ap-product-info">
                       <strong className="ap-product-name">{p.name}</strong>
-                      <span className="ap-product-category">{p.category?.name || 'General'}</span>
+                      <span className="ap-product-category">{p.category?.name || translateUi("General")}</span>
                     </div>
                   </div>
                 </td>
                 <td className="ap-text-muted">{p.sku}</td>
                 <td>
-                  <select className="ap-filter-select min-w-[120px]" title="Quick Select Brand" value={p.brandId || ''} onChange={e => handleQuickBrandChange(p, e.target.value)}>
-                    <option value="">Unassigned</option>
+                  <select className="ap-filter-select min-w-[120px]" title={translateUi("Quick Select Brand")} value={p.brandId || ''} onChange={e => handleQuickBrandChange(p, e.target.value)}>
+                    <option value="">{translateUi("Unassigned")}</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select>
                 </td>
                 <td><strong className="ap-price-bold">${Number(p.salePrice || p.price).toFixed(0)}</strong></td>
-                <td><span className={`ap-badge ${p.stock < 10 ? 'ap-badge-inactive' : 'ap-badge-active'}`}>{p.stock} Units</span></td>
-                <td><span className={`ap-badge ${p.isActive ? 'ap-badge-active' : 'ap-badge-inactive'}`}>{p.isActive ? 'Live' : 'Hidden'}</span></td>
+                <td><span className={`ap-badge ${p.stock < 10 ? 'ap-badge-inactive' : 'ap-badge-active'}`}>{p.stock} {translateUi("Units")}</span></td>
+                <td><span className={`ap-badge ${p.isActive ? 'ap-badge-active' : 'ap-badge-inactive'}`}>{p.isActive ? translateUi("Live") : translateUi("Hidden")}</span></td>
                 <td className="text-right">
                   <div className="ap-btn-group">
-                    <button type="button" className="ap-action-btn" title="Edit Product" aria-label="Edit Product" onClick={() => openEditModal(p)}><Edit2 size={14} /></button>
-                    <button type="button" className="ap-action-btn ap-action-btn-danger" title="Delete Product" aria-label="Delete Product" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
+                    <button type="button" className="ap-action-btn" title={translateUi("Edit Product")} aria-label={translateUi("Edit Product")} onClick={() => openEditModal(p)}><Edit2 size={14} /></button>
+                    <button type="button" className="ap-action-btn ap-action-btn-danger" title={translateUi("Delete Product")} aria-label={translateUi("Delete Product")} onClick={() => handleDelete(p.id)}><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>
@@ -612,7 +626,7 @@ export default function AdminProducts() {
       </div>
 
       <div className="ap-footer">
-        <span className="ap-footer-text">Showing <strong>{filteredProducts.length}</strong> of <strong>{pagination.total}</strong> products</span>
+        <span className="ap-footer-text">{translateUi("Showing")} <strong>{filteredProducts.length}</strong> {translateUi("of")} <strong>{pagination.total}</strong> {translateUi("products")}</span>
         <div className="ap-pagination">
           {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
             <button key={p} className={`ap-page-btn ${p === pagination.page ? 'ap-page-active' : ''}`} onClick={() => fetchProducts(p)}>{p}</button>
@@ -624,45 +638,45 @@ export default function AdminProducts() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content max-w-[900px]">
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">{editingProduct ? 'Update Product' : 'Create New Product'}</h2>
-              <button type="button" className="admin-modal-close" title="Close Modal" aria-label="Close Modal" onClick={closeModal}><X size={20} /></button>
+              <h2 className="admin-modal-title">{editingProduct ? translateUi("Update Product") : translateUi("Create New Product")}</h2>
+              <button type="button" className="admin-modal-close" title={translateUi("Close Modal")} aria-label={translateUi("Close Modal")} onClick={closeModal}><X size={20} /></button>
             </div>
-            
+
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="product-title">Title</label>
-                  <input id="product-title" type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} title="Product Title" />
+                  <label htmlFor="product-title">{translateUi("Title")}</label>
+                  <input id="product-title" type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} title={translateUi("Product Title")} />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="product-sku">SKU</label>
-                  <input id="product-sku" type="text" required value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} title="Product SKU" />
-                </div>
-              </div>
-
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label htmlFor="product-base-price">Base Price</label>
-                  <input id="product-base-price" type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} title="Base Price" />
-                </div>
-                <div className="admin-form-group">
-                  <label htmlFor="product-sale-price">Sale Price</label>
-                  <input id="product-sale-price" type="number" value={formData.salePrice} onChange={e => setFormData({...formData, salePrice: e.target.value})} title="Sale Price" />
+                  <label htmlFor="product-sku">{translateUi("SKU")}</label>
+                  <input id="product-sku" type="text" required value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} title={translateUi("Product SKU")} />
                 </div>
               </div>
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="product-category">Category</label>
-                  <select id="product-category" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} title="Product Category">
-                    <option value="">Select Category</option>
+                  <label htmlFor="product-base-price">{translateUi("Base Price")}</label>
+                  <input id="product-base-price" type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} title={translateUi("Base Price")} />
+                </div>
+                <div className="admin-form-group">
+                  <label htmlFor="product-sale-price">{translateUi("Sale Price")}</label>
+                  <input id="product-sale-price" type="number" value={formData.salePrice} onChange={e => setFormData({...formData, salePrice: e.target.value})} title={translateUi("Sale Price")} />
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="product-category">{translateUi("Category")}</label>
+                  <select id="product-category" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} title={translateUi("Product Category")}>
+                    <option value="">{translateUi("Select Category")}</option>
                     {hierarchicalCategories.map((c: any) => <option key={c.id} value={c.id}>{c.displayName || c.name}</option>)}
                   </select>
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="product-brand">Brand</label>
-                  <select id="product-brand" value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})} title="Product Brand">
-                    <option value="">Unassigned</option>
+                  <label htmlFor="product-brand">{translateUi("Brand")}</label>
+                  <select id="product-brand" value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})} title={translateUi("Product Brand")}>
+                    <option value="">{translateUi("Unassigned")}</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select>
                 </div>
@@ -670,7 +684,7 @@ export default function AdminProducts() {
 
               <div className="admin-form-group">
                 <div className="admin-ai-field-header">
-                  <label htmlFor="product-short-desc">Short Description</label>
+                  <label htmlFor="product-short-desc">{translateUi("Short Description")}</label>
                   <AdminAiGeneratorButton
                     target="PRODUCT_SHORT_DESCRIPTION"
                     context={productAiContext}
@@ -678,12 +692,12 @@ export default function AdminProducts() {
                     disabled={!formData.name.trim()}
                   />
                 </div>
-                <textarea id="product-short-desc" rows={3} value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} placeholder="Brief summary of the product..." title="Short Description" />
+                <textarea id="product-short-desc" rows={3} value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} placeholder={translateUi("Brief summary of the product...")} title={translateUi("Short Description")} />
               </div>
 
               <div className="admin-form-group">
                 <div className="admin-ai-field-header">
-                  <label>Full Description</label>
+                  <label>{translateUi("Full Description")}</label>
                   <AdminAiGeneratorButton
                     target="PRODUCT_FULL_DESCRIPTION"
                     context={productAiContext}
@@ -697,17 +711,17 @@ export default function AdminProducts() {
               </div>
 
               <div className="admin-form-group">
-                <label>Product Images</label>
+                <label>{translateUi("Product Images")}</label>
                 <div className="ap-image-grid">
                   {formData.images.map((url, idx) => (
                     <div key={idx} className="ap-image-item">
                       <img src={getImageUrl(url)} alt="" />
-                      <button type="button" className="ap-image-remove" title="Remove Image" aria-label="Remove Image" onClick={() => removeImage(url)}><X size={12} /></button>
+                      <button type="button" className="ap-image-remove" title={translateUi("Remove Image")} aria-label={translateUi("Remove Image")} onClick={() => removeImage(url)}><X size={12} /></button>
                     </div>
                   ))}
-                  <label className="ap-image-upload" title="Upload Image">
+                  <label className="ap-image-upload" title={translateUi("Upload Image")}>
                     {isUploading ? <div className="spinner" /> : <Upload size={24} />}
-                    <input type="file" title="Upload Image Input" multiple accept="image/*" hidden onChange={handleImageUpload} />
+                    <input type="file" title={translateUi("Upload Image Input")} multiple accept="image/*" hidden onChange={handleImageUpload} />
                   </label>
                 </div>
               </div>
@@ -718,7 +732,7 @@ export default function AdminProducts() {
                   <div className="ap-variant-collapse-header" onClick={() => setIsMatrixExpanded(!isMatrixExpanded)}>
                     <div className="ap-variant-collapse-title">
                       <span className="ap-section-num">1</span>
-                      <h3>Select Variants</h3>
+                      <h3>{translateUi("Select Variants")}</h3>
                       {existingVariantKeys.size > 0 && (
                         <span className="ap-variant-count">{existingVariantKeys.size} / {variantColorValues.length * variantSizeValues.length}</span>
                       )}
@@ -731,14 +745,13 @@ export default function AdminProducts() {
                         <div className="ap-variant-matrix">
                           <div className="ap-matrix-header">
                             <div className="ap-matrix-title">
-                              <h4>{colorAttr?.name || 'Color'} <span className="ap-matrix-times">×</span> {sizeAttr?.name || 'Size'}</h4>
+                              <h4>{colorAttr?.name || translateUi("Color")} <span className="ap-matrix-times">{translateUi("×")}</span> {sizeAttr?.name || translateUi("Size")}</h4>
                             </div>
-                            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={regenerateAllSkus} title="Regenerate SKUs from matrix labels">
-                              <Zap size={13} /> Regenerate SKUs
-                            </button>
+                            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={regenerateAllSkus} title={translateUi("Regenerate SKUs from matrix labels")}>
+                              <Zap size={13} />{translateUi("Regenerate SKUs")}</button>
                           </div>
                           <div className="ap-matrix-grid" style={{ gridTemplateColumns: `140px repeat(${variantSizeValues.length}, 1fr)` }}>
-                            <div className="ap-matrix-corner">{colorAttr?.name || 'Color'} ↓ / {sizeAttr?.name || 'Size'} →</div>
+                            <div className="ap-matrix-corner">{colorAttr?.name || translateUi("Color")} ↓ / {sizeAttr?.name || translateUi("Size")} →</div>
                             {variantSizeValues.map((sv: any) => (
                               <div key={sv.id} className="ap-matrix-col-header">{sv.value}</div>
                             ))}
@@ -773,7 +786,7 @@ export default function AdminProducts() {
                         </div>
                       ) : (
                         <div className="ap-variant-matrix-empty">
-                          <p>No Color or Size attributes defined yet.</p>
+                          <p>{translateUi("No Color or Size attributes defined yet.")}</p>
                         </div>
                       )}
                     </div>
@@ -785,16 +798,14 @@ export default function AdminProducts() {
                   <div className="ap-variant-collapse-header" onClick={() => setIsSkuExpanded(!isSkuExpanded)}>
                     <div className="ap-variant-collapse-title">
                       <span className="ap-section-num">2</span>
-                      <h3>SKU Details</h3>
+                      <h3>{translateUi("SKU Details")}</h3>
                       {formData.variants.length > 0 && (
                         <span className="ap-variant-count">{formData.variants.length}</span>
                       )}
                     </div>
                     <div className="ap-variant-collapse-actions" onClick={e => e.stopPropagation()}>
                       <label className="ap-variant-auto-label">
-                        <input type="checkbox" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />
-                        Auto SKU
-                      </label>
+                        <input type="checkbox" checked={formData.autoGenerateVariantSku} onChange={e => setFormData({...formData, autoGenerateVariantSku: e.target.checked})} />{translateUi("Auto SKU")}</label>
                     </div>
                     {isSkuExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
@@ -802,25 +813,24 @@ export default function AdminProducts() {
                     <div className="ap-variant-collapse-body">
                       {duplicateSkuCount > 0 && (
                         <div className="ap-variant-warning">
-                          ⚠️ {duplicateSkuCount} duplicate SKU(s) detected. Each variant must have a unique SKU.
-                        </div>
+                          ⚠️ {duplicateSkuCount}{translateUi("duplicate SKU(s) detected. Each variant must have a unique SKU.")}</div>
                       )}
 
                       {formData.variants.length === 0 ? (
                         <div className="ap-variant-matrix-empty">
-                          <p>No variants yet. Select combinations from the matrix above.</p>
+                          <p>{translateUi("No variants yet. Select combinations from the matrix above.")}</p>
                         </div>
                       ) : (
                         <div className="ap-sku-table-wrap">
                           <table className="ap-sku-table">
                             <thead>
                               <tr>
-                                <th>Color</th>
-                                <th>Size</th>
-                                <th>SKU</th>
-                                <th>Stock</th>
-                                <th>Price</th>
-                                <th>Sale Price</th>
+                                <th>{translateUi("Color")}</th>
+                                <th>{translateUi("Size")}</th>
+                                <th>{translateUi("SKU")}</th>
+                                <th>{translateUi("Stock")}</th>
+                                <th>{translateUi("Price")}</th>
+                                <th>{translateUi("Sale Price")}</th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -842,15 +852,15 @@ export default function AdminProducts() {
                                         value={v.sku}
                                         onChange={e => updateVariant(idx, 'sku', e.target.value)}
                                         disabled={formData.autoGenerateVariantSku}
-                                        title="SKU"
+                                        title={translateUi("SKU")}
                                         className={isSkuDuplicate ? 'ap-input-error' : 'ap-sku-input'}
                                       />
                                     </td>
-                                    <td><input type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title="Stock" className="ap-sku-input-num" /></td>
-                                    <td><input type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder="Base" title="Price" className="ap-sku-input-num" /></td>
-                                    <td><input type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder="None" title="Sale Price" className="ap-sku-input-num" /></td>
+                                    <td><input type="number" value={v.stock} onChange={e => updateVariant(idx, 'stock', e.target.value)} title={translateUi("Stock")} className="ap-sku-input-num" /></td>
+                                    <td><input type="number" value={v.price} onChange={e => updateVariant(idx, 'price', e.target.value)} placeholder={translateUi("Base")} title={translateUi("Price")} className="ap-sku-input-num" /></td>
+                                    <td><input type="number" value={v.salePrice} onChange={e => updateVariant(idx, 'salePrice', e.target.value)} placeholder={translateUi("None")} title={translateUi("Sale Price")} className="ap-sku-input-num" /></td>
                                     <td>
-                                      <button type="button" className="ap-action-btn ap-action-btn-danger" title="Remove" aria-label="Remove Variant" onClick={() => removeVariant(idx)}><Trash2 size={14} /></button>
+                                      <button type="button" className="ap-action-btn ap-action-btn-danger" title={translateUi("Remove")} aria-label={translateUi("Remove Variant")} onClick={() => removeVariant(idx)}><Trash2 size={14} /></button>
                                     </td>
                                   </tr>
                                 );
@@ -865,8 +875,8 @@ export default function AdminProducts() {
               </div>
 
               <div className="admin-modal-actions">
-                <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
-                <button type="submit" className="btn btn-primary">{editingProduct ? 'Update Product' : 'Create Product'}</button>
+                <button type="button" className="btn btn-outline" onClick={closeModal}>{translateUi("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{editingProduct ? translateUi("Update Product") : translateUi("Create Product")}</button>
               </div>
             </form>
           </div>

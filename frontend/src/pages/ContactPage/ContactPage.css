@@ -100,7 +100,7 @@
 }
 
 .contact-right {
-  background-color: #f6f6f6;
+  background-color: var(--surface-soft, #f6f6f6);
   padding: 40px;
   border-radius: 4px;
 }
@@ -124,16 +124,16 @@
 
 .contact-form label {
   font-size: 13px;
-  color: #333;
+  color: var(--color-text, #333);
   margin-bottom: 8px;
 }
 
 .contact-form input, .contact-form textarea {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border, #e0e0e0);
   padding: 12px 16px;
   font-family: inherit;
   font-size: 14px;
-  background-color: #fff;
+  background-color: var(--surface, #fff);
   border-radius: 2px;
   outline: none;
   transition: border-color 0.2s ease;

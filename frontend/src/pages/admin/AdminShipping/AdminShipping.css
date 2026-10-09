@@ -11,7 +11,7 @@
 
 .shipping-admin-subtitle {
   margin: 4px 0 0;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   font-size: 14px;
 }
 
@@ -33,22 +33,22 @@
 .shipping-stat-pill {
   min-width: 70px;
   padding: 8px 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface, #fff);
   text-align: center;
 }
 
 .shipping-stat-pill strong {
   display: block;
   font-size: 15px;
-  color: #111827;
+  color: var(--color-text, #111827);
   line-height: 1.2;
 }
 
 .shipping-stat-pill span {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -82,7 +82,7 @@
   user-select: none;
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text, #374151);
 }
 
 .shipping-status-toggle input {
@@ -120,7 +120,7 @@
   border: 1px solid #eef2f7;
   border-radius: 10px;
   padding: 10px;
-  background: #f9fafb;
+  background: var(--surface-soft, #f9fafb);
 }
 
 .shipping-zone-input {
@@ -130,7 +130,7 @@
 .shipping-zone-input label {
   font-size: 12px;
   margin-bottom: 5px;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
 }
 
 .shipping-zone-input input {
@@ -150,7 +150,7 @@
 }
 
 .shipping-modal-actions {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border, #e5e7eb);
   padding-top: 14px;
   margin-top: 6px;
 }
@@ -166,9 +166,9 @@
 }
 
 .shipping-method-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   overflow: hidden;
 }
 
@@ -183,13 +183,13 @@
 .shipping-method-title {
   margin: 0;
   font-size: 15px;
-  color: #111827;
+  color: var(--color-text, #111827);
 }
 
 .shipping-method-desc {
   margin: 4px 0 0;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   line-height: 1.4;
 }
 
@@ -211,7 +211,7 @@
 
 .shipping-zone-summary-wrap {
   border-top: 1px solid #eef2f7;
-  background: #f9fafb;
+  background: var(--surface-soft, #f9fafb);
 }
 
 .shipping-zone-summary-head,
@@ -226,13 +226,13 @@
 .shipping-zone-summary-head {
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .shipping-zone-summary-row {
-  color: #1f2937;
+  color: var(--color-text, #1f2937);
   border-top: 1px solid #edf0f5;
 }
 
@@ -242,8 +242,8 @@
 
 .shipping-zone-empty {
   border-top: 1px solid #eef2f7;
-  background: #f9fafb;
-  color: #6b7280;
+  background: var(--surface-soft, #f9fafb);
+  color: var(--color-text-light, #6b7280);
   font-size: 13px;
   padding: 12px;
 }

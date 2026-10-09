@@ -2,7 +2,7 @@
   padding: 72px 0;
   background:
     radial-gradient(circle at top left, rgba(222, 231, 239, 0.7), transparent 35%),
-    linear-gradient(180deg, #f7f4ee 0%, #ffffff 100%);
+    linear-gradient(180deg, #f7f4ee 0%, var(--surface, #ffffff) 100%);
 }
 
 .policy-container {

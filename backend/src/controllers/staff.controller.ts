@@ -95,6 +95,7 @@ export const staffController = {
             fullName: true,
             role: true,
             isOwner: true,
+          adminPermissionsRestricted: true,
             permissions: true,
             isActive: true,
             createdAt: true,
@@ -112,10 +113,7 @@ export const staffController = {
 
       res.status(200).json({
         success: true,
-        data: staffs.map((staff) => ({
-          ...publicTeamMember(staff),
-          permissions: normalizeAdminPermissions(staff.permissions),
-        })),
+        data: staffs.map(publicTeamMember),
         pagination: {
           page,
           limit,
@@ -190,6 +188,7 @@ export const staffController = {
           fullName: String(fullName).trim(),
           role: role as any,
           permissions: normalizedPermissions,
+          adminPermissionsRestricted: role === 'ADMIN',
           isActive: isActive ?? true,
         },
         select: {
@@ -230,6 +229,7 @@ export const staffController = {
           id: true,
           role: true,
           isOwner: true,
+          adminPermissionsRestricted: true,
           username: true,
           email: true,
           fullName: true,
@@ -285,9 +285,10 @@ export const staffController = {
       }
 
       assertTeamManagement(req, existingStaff, nextRole, updateData.permissions as string[] | undefined);
+      if (nextRole === 'ADMIN' && updateData.permissions !== undefined) updateData.adminPermissionsRestricted = true;
       const permissionsChanged = updateData.permissions !== undefined
-        && JSON.stringify([...(updateData.permissions as string[])].sort()) !== JSON.stringify(normalizeAdminPermissions(existingStaff.permissions).sort());
-      const revokeSessions = Boolean(updateData.password) || nextRole !== existingStaff.role || permissionsChanged
+        && JSON.stringify([...(updateData.permissions as string[])].sort()) !== JSON.stringify(publicTeamMember(existingStaff).permissions.sort());
+      const revokeSessions = (updateData.adminPermissionsRestricted === true && !existingStaff.adminPermissionsRestricted) || Boolean(updateData.password) || nextRole !== existingStaff.role || permissionsChanged
         || (typeof isActive === 'boolean' && isActive !== existingStaff.isActive);
       if (revokeSessions) updateData.tokenVersion = { increment: 1 };
 
@@ -301,6 +302,7 @@ export const staffController = {
           fullName: true,
           role: true,
           isOwner: true,
+          adminPermissionsRestricted: true,
           permissions: true,
           isActive: true,
           createdAt: true,
@@ -317,7 +319,7 @@ export const staffController = {
           current: {
             role: staff.role,
             fullName: staff.fullName,
-            permissions: staff.permissions,
+            permissions: publicTeamMember(staff).permissions,
             isActive: staff.isActive,
           }
         }, req.ip);
@@ -347,6 +349,7 @@ export const staffController = {
           fullName: true,
           role: true,
           isOwner: true,
+          adminPermissionsRestricted: true,
           permissions: true,
           isActive: true,
         }

@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Clock, ArrowRight, Grid3X3 } from 'lucide-react';
@@ -57,6 +59,7 @@ interface Props {
 }
 
 export default function SearchAutocomplete({ query, isOpen, onClose, onSearch }: Props) {
+  useTranslation();
   const [results, setResults] = useState<SuggestResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -158,8 +161,8 @@ export default function SearchAutocomplete({ query, isOpen, onClose, onSearch }:
       {showRecent && (
         <div className="search-ac-section">
           <div className="search-ac-section-header">
-            <span className="search-ac-section-title">Recent Searches</span>
-            <button type="button" className="search-ac-clear-btn" onClick={handleClearRecent}>Clear</button>
+            <span className="search-ac-section-title">{translateUi("Recent Searches")}</span>
+            <button type="button" className="search-ac-clear-btn" onClick={handleClearRecent}>{translateUi("Clear")}</button>
           </div>
           <div className="search-ac-recent-list">
             {recentSearches.map((term) => (
@@ -229,7 +232,7 @@ export default function SearchAutocomplete({ query, isOpen, onClose, onSearch }:
           {results.categories.length > 0 && (
             <div className="search-ac-categories">
               <div className="search-ac-section" style={{ padding: '8px 12px 4px' }}>
-                <span className="search-ac-section-title">Categories</span>
+                <span className="search-ac-section-title">{translateUi("Categories")}</span>
               </div>
               {results.categories.map((cat, index) => {
                 const catIndex = (results.products?.length || 0) + index;
@@ -245,7 +248,7 @@ export default function SearchAutocomplete({ query, isOpen, onClose, onSearch }:
                       <Grid3X3 size={14} />
                     </div>
                     <span className="search-ac-category-name">{cat.name}</span>
-                    <span className="search-ac-category-label">Category</span>
+                    <span className="search-ac-category-label">{translateUi("Category")}</span>
                   </button>
                 );
               })}
@@ -258,8 +261,7 @@ export default function SearchAutocomplete({ query, isOpen, onClose, onSearch }:
               className="search-ac-view-all"
               onClick={() => handleNavigate(`/category/all?search=${encodeURIComponent(trimmedQuery)}`, trimmedQuery)}
             >
-              <Search size={14} />
-              View all results for "{trimmedQuery}"
+              <Search size={14} />{translateUi("View all results for \"")}{trimmedQuery}"
               <ArrowRight size={14} />
             </button>
           </div>
@@ -267,8 +269,7 @@ export default function SearchAutocomplete({ query, isOpen, onClose, onSearch }:
       )}
 
       {showEmpty && (
-        <div className="search-ac-empty">
-          No results found for "{trimmedQuery}"
+        <div className="search-ac-empty">{translateUi("No results found for \"")}{trimmedQuery}"
         </div>
       )}
     </div>

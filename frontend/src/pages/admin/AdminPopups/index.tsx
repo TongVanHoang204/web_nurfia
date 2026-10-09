@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { Bell, Edit2, Megaphone, Plus, Trash2, Upload, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -59,6 +61,7 @@ const normalizeAssetInput = (value: string) => {
 };
 
 export default function AdminPopups() {
+  useTranslation();
   const [popups, setPopups] = useState<HomePopup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -189,17 +192,16 @@ export default function AdminPopups() {
     <div className="admin-popups-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Homepage Popups</h1>
+          <h1 className="admin-page-title">{translateUi("Homepage Popups")}</h1>
         </div>
         <button onClick={openAddModal} className="admin-btn admin-btn-primary">
-          <Plus size={16} /> Add Popup
-        </button>
+          <Plus size={16} />{translateUi("Add Popup")}</button>
       </div>
 
       {isLoading ? (
         <div className="loading-page"><div className="spinner" /></div>
       ) : popups.length === 0 ? (
-        <div className="admin-popups-empty">No popups found. Create one to show it on the homepage.</div>
+        <div className="admin-popups-empty">{translateUi("No popups found. Create one to show it on the homepage.")}</div>
       ) : (
         <div className="admin-popups-grid">
           {popups.map((popup) => (
@@ -208,30 +210,28 @@ export default function AdminPopups() {
                 {popup.imageUrl ? (
                   <img src={resolveSiteAssetUrl(popup.imageUrl)} alt={popup.title} />
                 ) : (
-                  <div className="admin-popup-no-image">Text only</div>
+                  <div className="admin-popup-no-image">{translateUi("Text only")}</div>
                 )}
                 <span className={`admin-popup-status ${popup.isActive ? 'is-active' : 'is-inactive'}`}>
-                  {popup.isActive ? 'Active' : 'Inactive'}
+                  {popup.isActive ? translateUi("Active") : translateUi("Inactive")}
                 </span>
               </div>
               <div className="admin-popup-card-body">
                 <span className="admin-popup-kicker">
-                  {popup.popupType === 'NOTICE' ? 'Notification' : 'Offer'}{popup.subtitle ? ` / ${popup.subtitle}` : ''}
+                  {popup.popupType === 'NOTICE' ? translateUi("Notification") : translateUi("Offer")}{popup.subtitle ? ` / ${popup.subtitle}` : ''}
                 </span>
                 <h3>{popup.title}</h3>
                 {popup.message && <p>{popup.message}</p>}
                 <div className="admin-popup-meta">
-                  {popup.offerCode && <span>Code: {popup.offerCode}</span>}
-                  <span>Delay: {popup.displayDelayMs}ms</span>
-                  <span>Order: {popup.sortOrder}</span>
+                  {popup.offerCode && <span>{translateUi("Code:")} {popup.offerCode}</span>}
+                  <span>{translateUi("Delay:")} {popup.displayDelayMs}{translateUi("ms")}</span>
+                  <span>{translateUi("Order:")} {popup.sortOrder}</span>
                 </div>
                 <div className="admin-popup-card-footer">
                   <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openEditModal(popup)}>
-                    <Edit2 size={13} /> Edit
-                  </button>
+                    <Edit2 size={13} />{translateUi("Edit")}</button>
                   <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(popup.id)}>
-                    <Trash2 size={13} /> Delete
-                  </button>
+                    <Trash2 size={13} />{translateUi("Delete")}</button>
                 </div>
               </div>
             </article>
@@ -243,48 +243,44 @@ export default function AdminPopups() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content admin-popups-modal">
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">{editingPopup ? 'Edit Popup' : 'Add Popup'}</h3>
-              <button type="button" onClick={closeModal} className="admin-modal-close" aria-label="Close">
+              <h3 className="admin-modal-title">{editingPopup ? translateUi("Edit Popup") : translateUi("Add Popup")}</h3>
+              <button type="button" onClick={closeModal} className="admin-modal-close" aria-label={translateUi("Close")}>
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleSave} className="admin-form">
               <div className="admin-form-group">
-                <label>Popup Type</label>
+                <label>{translateUi("Popup Type")}</label>
                 <div className="admin-popup-type-toggle">
                   <button
                     type="button"
                     className={formData.popupType === 'OFFER' ? 'is-active' : ''}
                     onClick={() => setFormData({ ...formData, popupType: 'OFFER', subtitle: formData.subtitle || 'Limited Offer' })}
                   >
-                    <Megaphone size={16} />
-                    Offer
-                  </button>
+                    <Megaphone size={16} />{translateUi("Offer")}</button>
                   <button
                     type="button"
                     className={formData.popupType === 'NOTICE' ? 'is-active' : ''}
                     onClick={() => setFormData({ ...formData, popupType: 'NOTICE', subtitle: formData.subtitle || 'Announcement', offerCode: '' })}
                   >
-                    <Bell size={16} />
-                    Notification
-                  </button>
+                    <Bell size={16} />{translateUi("Notification")}</button>
                 </div>
               </div>
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="popup-title">Title *</label>
+                  <label htmlFor="popup-title">{translateUi("Title *")}</label>
                   <input id="popup-title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="popup-subtitle">Subtitle</label>
+                  <label htmlFor="popup-subtitle">{translateUi("Subtitle")}</label>
                   <input id="popup-subtitle" value={formData.subtitle} onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })} />
                 </div>
               </div>
 
               <div className="admin-form-group">
                 <div className="admin-ai-field-header">
-                  <label htmlFor="popup-message">Message</label>
+                  <label htmlFor="popup-message">{translateUi("Message")}</label>
                   <AdminAiGeneratorButton
                     target="POPUP_MESSAGE"
                     context={popupAiContext}
@@ -296,11 +292,11 @@ export default function AdminPopups() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="popup-image-url">Image URL</label>
+                <label htmlFor="popup-image-url">{translateUi("Image URL")}</label>
                 <div className="admin-popups-upload-row">
                   <input id="popup-image-url" value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} placeholder="/uploads/example.jpg" />
                   <label className={`admin-btn admin-btn-outline admin-popups-upload-button${isUploading ? ' is-uploading' : ''}`} htmlFor="popup-image-file">
-                    <Upload size={14} /> {isUploading ? 'Uploading...' : 'Upload'}
+                    <Upload size={14} /> {isUploading ? translateUi("Uploading...") : translateUi("Upload")}
                     <input id="popup-image-file" type="file" accept="image/*" onChange={handleFileUpload} hidden disabled={isUploading} />
                   </label>
                 </div>
@@ -308,7 +304,7 @@ export default function AdminPopups() {
                   <div className="admin-popups-preview-frame">
                     <img
                       src={resolveSiteAssetUrl(formData.imageUrl)}
-                      alt="Popup preview"
+                      alt={translateUi("Popup preview")}
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).style.display = 'none';
                       }}
@@ -320,58 +316,54 @@ export default function AdminPopups() {
               <div className="admin-form-row">
                 {formData.popupType === 'OFFER' && (
                   <div className="admin-form-group">
-                    <label htmlFor="popup-code">Offer Code</label>
+                    <label htmlFor="popup-code">{translateUi("Offer Code")}</label>
                     <input id="popup-code" value={formData.offerCode} onChange={(e) => setFormData({ ...formData, offerCode: e.target.value })} />
                   </div>
                 )}
                 <div className="admin-form-group">
-                  <label htmlFor="popup-button">Button Text</label>
+                  <label htmlFor="popup-button">{translateUi("Button Text")}</label>
                   <input id="popup-button" value={formData.buttonText} onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })} />
                 </div>
               </div>
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="popup-link">Link URL</label>
+                  <label htmlFor="popup-link">{translateUi("Link URL")}</label>
                   <input id="popup-link" value={formData.linkUrl} onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })} placeholder="/category/all" />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="popup-delay">Delay (ms)</label>
+                  <label htmlFor="popup-delay">{translateUi("Delay (ms)")}</label>
                   <input id="popup-delay" type="number" min="0" max="60000" value={formData.displayDelayMs} onChange={(e) => setFormData({ ...formData, displayDelayMs: Number(e.target.value) || 0 })} />
                 </div>
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="popup-start">Start Time</label>
+                  <label htmlFor="popup-start">{translateUi("Start Time")}</label>
                   <input id="popup-start" type="datetime-local" value={formData.startAt} onChange={(e) => setFormData({ ...formData, startAt: e.target.value })} />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="popup-end">End Time</label>
+                  <label htmlFor="popup-end">{translateUi("End Time")}</label>
                   <input id="popup-end" type="datetime-local" value={formData.endAt} onChange={(e) => setFormData({ ...formData, endAt: e.target.value })} />
                 </div>
               </div>
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="popup-order">Sort Order</label>
+                  <label htmlFor="popup-order">{translateUi("Sort Order")}</label>
                   <input id="popup-order" type="number" min="0" value={formData.sortOrder} onChange={(e) => setFormData({ ...formData, sortOrder: Number(e.target.value) || 0 })} />
                 </div>
                 <div className="admin-popups-switches">
                   <label>
-                    <input type="checkbox" checked={formData.isActive} onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })} />
-                    Active
-                  </label>
+                    <input type="checkbox" checked={formData.isActive} onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })} />{translateUi("Active")}</label>
                   <label>
-                    <input type="checkbox" checked={formData.showOnceSession} onChange={(e) => setFormData({ ...formData, showOnceSession: e.target.checked })} />
-                    Show once per session
-                  </label>
+                    <input type="checkbox" checked={formData.showOnceSession} onChange={(e) => setFormData({ ...formData, showOnceSession: e.target.checked })} />{translateUi("Show once per session")}</label>
                 </div>
               </div>
 
               <div className="admin-modal-actions">
-                <button type="button" onClick={closeModal} className="admin-btn admin-btn-outline">Cancel</button>
+                <button type="button" onClick={closeModal} className="admin-btn admin-btn-outline">{translateUi("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary">
-                  {editingPopup ? 'Update Popup' : 'Save Popup'}
+                  {editingPopup ? translateUi("Update Popup") : translateUi("Save Popup")}
                 </button>
               </div>
             </form>

@@ -18,7 +18,7 @@
 .reports-analytics-loading-icon {
   width: 32px;
   height: 32px;
-  color: var(--color-black);
+  color: var(--color-text);
   animation: reports-analytics-spin 1s linear infinite;
 }
 
@@ -41,7 +41,7 @@
   font-family: var(--font-heading);
   font-size: 34px;
   font-weight: 400;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-header p {
@@ -66,7 +66,7 @@
   width: 180px;
   height: 42px;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 0 34px 0 12px;
   font-size: 12px;
   font-weight: 700;
@@ -116,7 +116,7 @@
   height: 42px;
   min-width: 148px;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 0 12px;
   font-size: 13px;
   color: var(--color-text);
@@ -146,7 +146,7 @@
 }
 
 .reports-analytics-toolbar-btn.is-secondary {
-  background: var(--color-white);
+  background: var(--surface);
   border-color: var(--color-border);
   color: var(--color-text);
 }
@@ -154,12 +154,12 @@
 .reports-analytics-toolbar-btn:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .reports-analytics-ai-panel {
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 24px;
 }
 
@@ -190,7 +190,7 @@
   font-size: 28px;
   font-weight: 400;
   line-height: 1.2;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-ai-head p {
@@ -206,7 +206,7 @@
   gap: 8px;
   border: 1px solid var(--color-border);
   background: var(--color-bg-alt);
-  color: var(--color-black);
+  color: var(--color-text);
   padding: 0 12px;
   font-size: 11px;
   font-weight: 800;
@@ -225,7 +225,7 @@
   min-height: 138px;
   border: 1px solid var(--color-border);
   border-left: 3px solid var(--color-accent);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 16px;
 }
 
@@ -241,7 +241,7 @@
 
 .reports-analytics-ai-card h3 {
   margin: 0;
-  color: var(--color-black);
+  color: var(--color-text);
   font-size: 14px;
   line-height: 1.35;
 }
@@ -285,7 +285,7 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 20px;
 }
 
@@ -325,7 +325,7 @@
 
 .reports-analytics-metric-icon.violet {
   background: var(--color-bg-alt);
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-metric-icon.emerald {
@@ -364,7 +364,7 @@
   font-size: 30px;
   font-weight: 400;
   line-height: 1.2;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-metric-value-wrap p {
@@ -403,7 +403,7 @@
 
 .reports-analytics-overview-card {
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 20px;
 }
 
@@ -412,7 +412,7 @@
   font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 400;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-overview-card > p {
@@ -446,7 +446,7 @@
 }
 
 .reports-analytics-overview-row strong {
-  color: var(--color-black);
+  color: var(--color-text);
   font-size: 13px;
 }
 
@@ -466,7 +466,7 @@
 
 .reports-analytics-overview-icon.blue {
   background: var(--color-bg-alt);
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-overview-icon.emerald {
@@ -484,7 +484,7 @@
 .reports-analytics-card {
   min-width: 0;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -508,7 +508,7 @@
   font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 400;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-card-head p {
@@ -538,7 +538,7 @@
   font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 400;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-chart {
@@ -560,7 +560,7 @@
   font-family: var(--font-heading);
   font-size: 34px;
   font-weight: 400;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-sales-overview p {
@@ -618,7 +618,7 @@
   height: 34px;
   border: 1px solid var(--color-border);
   background: var(--color-bg-alt);
-  color: var(--color-black);
+  color: var(--color-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -630,7 +630,7 @@
 .reports-analytics-customer-main h4 {
   margin: 0;
   font-size: 13px;
-  color: var(--color-black);
+  color: var(--color-text);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -692,7 +692,7 @@
 }
 
 .reports-analytics-status-row strong {
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-status-dot {
@@ -733,7 +733,7 @@
 .reports-analytics-tab-wrap {
   padding: 2px;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   display: inline-flex;
   gap: 2px;
 }
@@ -809,7 +809,7 @@
 
 .reports-analytics-tooltip {
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   box-shadow: var(--shadow-md);
   padding: 10px;
 }
@@ -818,7 +818,7 @@
   margin: 0 0 8px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reports-analytics-tooltip-list {
@@ -845,7 +845,7 @@
 }
 
 .reports-analytics-tooltip-value {
-  color: var(--color-black);
+  color: var(--color-text);
   font-weight: 700;
 }
 

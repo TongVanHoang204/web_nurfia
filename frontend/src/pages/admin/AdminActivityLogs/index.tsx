@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import api from '../../../api/client';
@@ -124,7 +126,7 @@ const isSameCalendarDay = (dateValue: string, comparedAt = new Date()) => {
 };
 
 const formatDateTime = (value: string) => {
-  return new Date(value).toLocaleString('en-US', {
+  return new Date(value).toLocaleString(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -421,6 +423,7 @@ const escapeCsv = (value: unknown) => {
 };
 
 export default function AdminActivityLogs() {
+  useTranslation();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [stats, setStats] = useState<ActivityStats>({
     totalLogs: 0,
@@ -457,8 +460,8 @@ export default function AdminActivityLogs() {
 
   const { addToast, openConfirm } = useUIStore();
   const { user } = useAuthStore();
-  const canManageRollback = user?.role === 'OWNER' || user?.role === 'ADMIN'
-    || (user?.role === 'MANAGER' || user?.role === 'STAFF')
+  const canManageRollback = user?.role === 'OWNER'
+    || (user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'STAFF')
     && Array.isArray(user?.permissions)
     && user.permissions.includes('MANAGE_SETTINGS');
 
@@ -720,49 +723,42 @@ export default function AdminActivityLogs() {
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title activity-logs-title">
-            <Activity size={24} className="activity-logs-title-icon" />
-            Activity Logs
-          </h1>
-          <p className="activity-logs-subtitle">Track admin actions, audit sensitive operations, and inspect full event details in one place.</p>
+            <Activity size={24} className="activity-logs-title-icon" />{translateUi("Activity Logs")}</h1>
+          <p className="activity-logs-subtitle">{translateUi("Track admin actions, audit sensitive operations, and inspect full event details in one place.")}</p>
         </div>
 
         <div className="activity-logs-header-actions">
           <button type="button" className={`admin-btn admin-btn-outline ${autoRefresh ? 'is-active' : ''}`} onClick={() => setAutoRefresh((current) => !current)}>
-            <RefreshCw size={14} className={isRefreshing ? 'is-spinning' : ''} />
-            Auto-refresh {autoRefresh ? 'On' : 'Off'}
+            <RefreshCw size={14} className={isRefreshing ? 'is-spinning' : ''} />{translateUi("Auto-refresh")}{autoRefresh ? translateUi("On") : translateUi("Off")}
           </button>
           <button type="button" className="admin-btn admin-btn-outline" onClick={() => fetchLogs(true)}>
-            <ListRestart size={14} /> Refresh
-          </button>
+            <ListRestart size={14} />{translateUi("Refresh")}</button>
           <button type="button" className="admin-btn admin-btn-primary" onClick={exportCurrentPageCsv}>
-            <Download size={14} /> Export CSV
-          </button>
+            <Download size={14} />{translateUi("Export CSV")}</button>
         </div>
       </div>
 
       <div className="activity-logs-stats-grid">
         <article className="activity-logs-stat-card">
-          <span>Total Logs</span>
+          <span>{translateUi("Total Logs")}</span>
           <strong>{stats.totalLogs}</strong>
         </article>
         <article className="activity-logs-stat-card">
-          <span>Today</span>
+          <span>{translateUi("Today")}</span>
           <strong>{stats.todayLogs}</strong>
         </article>
         <article className="activity-logs-stat-card">
-          <span>Unique Users</span>
+          <span>{translateUi("Unique Users")}</span>
           <strong>{stats.uniqueUsers}</strong>
         </article>
         <article className="activity-logs-stat-card">
-          <span>Matched Result</span>
+          <span>{translateUi("Matched Result")}</span>
           <strong>{stats.filteredLogs}</strong>
         </article>
       </div>
 
       {!hasAnyActivityData && (
-        <div className="activity-logs-no-data-note">
-          No activity logs found in the system yet. Try updating data in modules like Products, Orders, or Coupons, then come back to view analytics.
-        </div>
+        <div className="activity-logs-no-data-note">{translateUi("No activity logs found in the system yet. Try updating data in modules like Products, Orders, or Coupons, then come back to view analytics.")}</div>
       )}
 
       <div className="admin-card activity-logs-filter-card">
@@ -771,13 +767,13 @@ export default function AdminActivityLogs() {
             <Search size={15} />
             <input
               type="text"
-              placeholder="Search action, entity, IP, user name or email"
+              placeholder={translateUi("Search action, entity, IP, user name or email")}
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
             />
           </div>
 
-          <label className="activity-logs-input-wrap" aria-label="Filter by action">
+          <label className="activity-logs-input-wrap" aria-label={translateUi("Filter by action")}>
             <Filter size={15} />
             <select
               value={actionFilter}
@@ -786,14 +782,14 @@ export default function AdminActivityLogs() {
                 setPage(1);
               }}
             >
-              <option value="">All Actions</option>
+              <option value="">{translateUi("All Actions")}</option>
               {filterOptions.actions.map((action) => (
                 <option key={action} value={action}>{humanizeToken(action)}</option>
               ))}
             </select>
           </label>
 
-          <label className="activity-logs-input-wrap" aria-label="Filter by entity">
+          <label className="activity-logs-input-wrap" aria-label={translateUi("Filter by entity")}>
             <Filter size={15} />
             <select
               value={entityFilter}
@@ -802,14 +798,14 @@ export default function AdminActivityLogs() {
                 setPage(1);
               }}
             >
-              <option value="">All Entities</option>
+              <option value="">{translateUi("All Entities")}</option>
               {filterOptions.entityTypes.map((entityType) => (
                 <option key={entityType} value={entityType}>{humanizeToken(entityType)}</option>
               ))}
             </select>
           </label>
 
-          <label className="activity-logs-input-wrap" aria-label="Start date">
+          <label className="activity-logs-input-wrap" aria-label={translateUi("Start date")}>
             <CalendarDays size={15} />
             <input
               type="date"
@@ -822,7 +818,7 @@ export default function AdminActivityLogs() {
             />
           </label>
 
-          <label className="activity-logs-input-wrap" aria-label="End date">
+          <label className="activity-logs-input-wrap" aria-label={translateUi("End date")}>
             <CalendarDays size={15} />
             <input
               type="date"
@@ -835,37 +831,37 @@ export default function AdminActivityLogs() {
             />
           </label>
 
-          <span className="activity-logs-active-preset-badge">Preset: {activePresetLabel}</span>
+          <span className="activity-logs-active-preset-badge">{translateUi("Preset:")} {activePresetLabel}</span>
 
           <div className="activity-logs-preset-inline">
-            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'TODAY' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('TODAY')}>Today</button>
-            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'LAST_7_DAYS' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('LAST_7_DAYS')}>7 days</button>
-            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'LAST_30_DAYS' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('LAST_30_DAYS')}>30 days</button>
-            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'THIS_MONTH' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('THIS_MONTH')}>This month</button>
-            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'ALL' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('ALL')}>All time</button>
+            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'TODAY' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('TODAY')}>{translateUi("Today")}</button>
+            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'LAST_7_DAYS' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('LAST_7_DAYS')}>{translateUi("7 days")}</button>
+            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'LAST_30_DAYS' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('LAST_30_DAYS')}>{translateUi("30 days")}</button>
+            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'THIS_MONTH' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('THIS_MONTH')}>{translateUi("This month")}</button>
+            <button type="button" className={`admin-btn admin-btn-sm ${datePreset === 'ALL' ? 'admin-btn-primary' : 'admin-btn-outline'}`} onClick={() => applyDatePreset('ALL')}>{translateUi("All time")}</button>
           </div>
 
-          <label className="activity-logs-input-wrap" aria-label="Sort logs">
+          <label className="activity-logs-input-wrap" aria-label={translateUi("Sort logs")}>
             <Filter size={15} />
             <select value={sortOption} onChange={(event) => { setSortOption(event.target.value as SortOption); setPage(1); }}>
-              <option value="NEWEST">Sort: Newest first</option>
-              <option value="OLDEST">Sort: Oldest first</option>
+              <option value="NEWEST">{translateUi("Sort: Newest first")}</option>
+              <option value="OLDEST">{translateUi("Sort: Oldest first")}</option>
             </select>
           </label>
 
-          <label className="activity-logs-input-wrap" aria-label="Page size">
+          <label className="activity-logs-input-wrap" aria-label={translateUi("Page size")}>
             <Users size={15} />
             <select value={limit} onChange={(event) => { setLimit(Number(event.target.value)); setPage(1); }}>
-              <option value={20}>20 / page</option>
-              <option value={50}>50 / page</option>
-              <option value={100}>100 / page</option>
+              <option value={20}>{translateUi("20 / page")}</option>
+              <option value={50}>{translateUi("50 / page")}</option>
+              <option value={100}>{translateUi("100 / page")}</option>
             </select>
           </label>
 
-          <button type="submit" className="admin-btn admin-btn-primary">Search</button>
-          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>Reset</button>
+          <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>
+          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>{translateUi("Reset")}</button>
 
-          {activeFilterCount > 0 && <span className="activity-logs-filter-chip">{activeFilterCount} active filter(s)</span>}
+          {activeFilterCount > 0 && <span className="activity-logs-filter-chip">{activeFilterCount} {translateUi("active filter(s)")}</span>}
         </form>
       </div>
 
@@ -873,7 +869,7 @@ export default function AdminActivityLogs() {
         {loading ? <div className="loading-page"><div className="spinner" /></div> : (
           <>
             {logs.length === 0 ? (
-              <div className="activity-logs-empty-state">No logs found for the current filters.</div>
+              <div className="activity-logs-empty-state">{translateUi("No logs found for the current filters.")}</div>
             ) : (
               <div className="activity-logs-list">
                 {logs.map((log) => (
@@ -884,24 +880,22 @@ export default function AdminActivityLogs() {
                         <span className="activity-log-entity-chip">{getEntityLabel(log.entityType, log.entityId)}</span>
                       </div>
 
-                      <h3 className="activity-log-user-name">{log.user?.fullName || 'System Event'}</h3>
-                      <p className="activity-log-user-email">{log.user?.email || 'No user email'}</p>
+                      <h3 className="activity-log-user-name">{log.user?.fullName || translateUi("System Event")}</h3>
+                      <p className="activity-log-user-email">{log.user?.email || translateUi("No user email")}</p>
 
                       <p className="activity-log-details-preview">{getDetailsPreview(log.details)}</p>
 
                       <div className="activity-log-meta-row">
                         <span>{formatDateTime(log.createdAt)}</span>
-                        <span>IP: {log.ipAddress || '-'}</span>
+                        <span>{translateUi("IP:")} {log.ipAddress || '-'}</span>
                       </div>
                     </div>
 
                     <div className="activity-log-actions">
                       <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setSelectedLog(log)}>
-                        <Eye size={14} /> View Details
-                      </button>
+                        <Eye size={14} />{translateUi("View Details")}</button>
                       <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => copyLogDetails(log)}>
-                        <Download size={14} /> Copy Details
-                      </button>
+                        <Download size={14} />{translateUi("Copy Details")}</button>
                     </div>
                   </article>
                 ))}
@@ -914,9 +908,7 @@ export default function AdminActivityLogs() {
                   className="admin-btn admin-btn-outline admin-btn-sm"
                   disabled={page === 1}
                   onClick={() => setPage((current) => current - 1)}
-                >
-                  Previous
-                </button>
+                >{translateUi("Previous")}</button>
 
                 {pageNumbers.map((pageNumber) => (
                   pageNumber < 0 ? (
@@ -937,11 +929,9 @@ export default function AdminActivityLogs() {
                   className="admin-btn admin-btn-outline admin-btn-sm"
                   disabled={page === pagination.totalPages}
                   onClick={() => setPage((current) => current + 1)}
-                >
-                  Next
-                </button>
+                >{translateUi("Next")}</button>
 
-                <span className="activity-logs-pagination-text">{pagination.total} records</span>
+                <span className="activity-logs-pagination-text">{pagination.total} {translateUi("records")}</span>
               </div>
             )}
           </>
@@ -952,45 +942,45 @@ export default function AdminActivityLogs() {
         <div className="admin-modal-overlay" onClick={() => setSelectedLog(null)}>
           <div className="admin-modal-content activity-log-modal" onClick={(event) => event.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">Activity Detail</h3>
-              <button type="button" className="admin-modal-close" aria-label="Close activity detail modal" title="Close" onClick={() => setSelectedLog(null)}>
+              <h3 className="admin-modal-title">{translateUi("Activity Detail")}</h3>
+              <button type="button" className="admin-modal-close" aria-label={translateUi("Close activity detail modal")} title={translateUi("Close")} onClick={() => setSelectedLog(null)}>
                 <X size={18} />
               </button>
             </div>
 
             <div className="admin-modal-body activity-log-modal-layout">
               <div className="activity-log-modal-grid">
-                <div><span>Time</span><strong>{formatDateTime(selectedLog.createdAt)}</strong></div>
-                <div><span>User</span><strong>{selectedLog.user?.fullName || 'System Event'}</strong></div>
-                <div><span>Action</span><strong>{humanizeToken(selectedLog.action)}</strong></div>
-                <div><span>Entity</span><strong>{getEntityLabel(selectedLog.entityType, selectedLog.entityId)}</strong></div>
-                <div><span>Email</span><strong>{selectedLog.user?.email || '-'}</strong></div>
-                <div><span>IP Address</span><strong>{selectedLog.ipAddress || '-'}</strong></div>
+                <div><span>{translateUi("Time")}</span><strong>{formatDateTime(selectedLog.createdAt)}</strong></div>
+                <div><span>{translateUi("User")}</span><strong>{selectedLog.user?.fullName || translateUi("System Event")}</strong></div>
+                <div><span>{translateUi("Action")}</span><strong>{humanizeToken(selectedLog.action)}</strong></div>
+                <div><span>{translateUi("Entity")}</span><strong>{getEntityLabel(selectedLog.entityType, selectedLog.entityId)}</strong></div>
+                <div><span>{translateUi("Email")}</span><strong>{selectedLog.user?.email || '-'}</strong></div>
+                <div><span>{translateUi("IP Address")}</span><strong>{selectedLog.ipAddress || '-'}</strong></div>
               </div>
 
               <div className="activity-log-modal-json-wrap">
-                <div className="activity-log-modal-json-title">Payload Details</div>
+                <div className="activity-log-modal-json-title">{translateUi("Payload Details")}</div>
 
                 {(detailSectionsByLog[selectedLog.id] || []).length === 0 ? (
-                  <div className="activity-log-empty-payload">No detailed payload for this activity.</div>
+                  <div className="activity-log-empty-payload">{translateUi("No detailed payload for this activity.")}</div>
                 ) : (
                   <div className="activity-log-detail-sections">
                     {buildComparisonRows(detailSectionsByLog[selectedLog.id] || []).length > 0 && (
                       <section className="activity-log-detail-section">
-                        <div className="activity-log-detail-section-title">Before vs After</div>
+                        <div className="activity-log-detail-section-title">{translateUi("Before vs After")}</div>
                         <div className="activity-log-diff-table-wrap">
                           <table className="activity-log-diff-table">
                             <thead>
                               <tr>
-                                <th>Field</th>
-                                <th>Before</th>
-                                <th>After</th>
+                                <th>{translateUi("Field")}</th>
+                                <th>{translateUi("Before")}</th>
+                                <th>{translateUi("After")}</th>
                               </tr>
                             </thead>
                             <tbody>
                               {buildComparisonRows(detailSectionsByLog[selectedLog.id] || []).map((row) => (
                                 <tr key={row.label} className={row.changed ? 'is-changed' : ''}>
-                                  <td>{row.label}</td>
+                                  <td>{translateUi(row.label)}</td>
                                   <td>{row.beforeValue}</td>
                                   <td>{row.afterValue}</td>
                                 </tr>
@@ -1009,7 +999,7 @@ export default function AdminActivityLogs() {
                         <div className="activity-log-detail-list">
                           {section.entries.map((entry, index) => (
                             <div key={`${section.title}-${entry.label}-${index}`} className="activity-log-detail-row">
-                              <span>{entry.label}</span>
+                              <span>{translateUi(entry.label)}</span>
                               <strong>{entry.value}</strong>
                             </div>
                           ))}
@@ -1029,11 +1019,11 @@ export default function AdminActivityLogs() {
                   onClick={() => handleRollback(selectedLog)}
                   disabled={rollbackingLogId === selectedLog.id}
                 >
-                  <RotateCcw size={14} /> {rollbackingLogId === selectedLog.id ? 'Rolling Back...' : 'Rollback'}
+                  <RotateCcw size={14} /> {rollbackingLogId === selectedLog.id ? translateUi("Rolling Back...") : translateUi("Rollback")}
                 </button>
               )}
-              <button type="button" className="admin-btn admin-btn-outline" onClick={() => copyLogDetails(selectedLog)}>Copy Details</button>
-              <button type="button" className="admin-btn admin-btn-primary" onClick={() => setSelectedLog(null)}>Close</button>
+              <button type="button" className="admin-btn admin-btn-outline" onClick={() => copyLogDetails(selectedLog)}>{translateUi("Copy Details")}</button>
+              <button type="button" className="admin-btn admin-btn-primary" onClick={() => setSelectedLog(null)}>{translateUi("Close")}</button>
             </div>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { CalendarDays, CreditCard, Eye, Heart, LogOut, MapPin, Package, PackageCheck, RefreshCw, ShieldCheck, User, XCircle } from 'lucide-react';
@@ -27,13 +29,14 @@ const getOrderStepIndex = (status: string) => {
   return index >= 0 ? index : 0;
 };
 
-const formatOrderDate = (value: string) => new Date(value).toLocaleDateString('en-US', {
+const formatOrderDate = (value: string) => new Date(value).toLocaleDateString(getLocale(), {
   month: 'short',
   day: 'numeric',
   year: 'numeric',
 });
 
 export default function AccountPage() {
+  useTranslation();
   const { user, logout, isAuthenticated, isHydrating } = useAuthStore();
   const navigate = useNavigate();
 
@@ -50,7 +53,7 @@ export default function AccountPage() {
   return (
     <div className="account-page">
       <div className="container">
-        <h1 className="account-title">My Account</h1>
+        <h1 className="account-title">{translateUi("My Account")}</h1>
         <div className="account-layout">
           <div className="account-user-card">
             <div className="account-user-info">
@@ -61,11 +64,11 @@ export default function AccountPage() {
               </div>
             </div>
             <nav className="account-nav">
-              <Link to="/account" className="account-nav-link"><User size={16} /> Profile</Link>
-              <Link to="/account/orders" className="account-nav-link"><Package size={16} /> Orders</Link>
-              <Link to="/account/wishlist" className="account-nav-link"><Heart size={16} /> Wishlist</Link>
-              <Link to="/account/addresses" className="account-nav-link"><MapPin size={16} /> Addresses</Link>
-              <button className="account-nav-link logout-btn" onClick={handleLogout}><LogOut size={16} /> Sign Out</button>
+              <Link to="/account" className="account-nav-link"><User size={16} /> {translateUi("Profile")}</Link>
+              <Link to="/account/orders" className="account-nav-link"><Package size={16} /> {translateUi("Orders")}</Link>
+              <Link to="/account/wishlist" className="account-nav-link"><Heart size={16} /> {translateUi("Wishlist")}</Link>
+              <Link to="/account/addresses" className="account-nav-link"><MapPin size={16} /> {translateUi("Addresses")}</Link>
+              <button className="account-nav-link logout-btn" onClick={handleLogout}><LogOut size={16} /> {translateUi("Sign Out")}</button>
             </nav>
           </div>
           <div className="account-content">
@@ -78,6 +81,7 @@ export default function AccountPage() {
 }
 
 export function ProfileSection() {
+  useTranslation();
   const { user, loadUser } = useAuthStore();
   const { addToast } = useUIStore();
   const [profileForm, setProfileForm] = useState({ fullName: '', phone: '' });
@@ -207,38 +211,38 @@ export function ProfileSection() {
 
   return (
     <div>
-      <h2 className="account-section-title">Profile Information</h2>
+      <h2 className="account-section-title">{translateUi("Profile Information")}</h2>
       <div className="form-row">
-        <div className="form-group"><label className="form-label" htmlFor="profile-username">Username</label><input id="profile-username" className="form-input" value={user?.username || ''} disabled /></div>
-        <div className="form-group"><label className="form-label" htmlFor="profile-fullname">Full Name</label><input id="profile-fullname" className="form-input" value={profileForm.fullName} onChange={(e) => setProfileForm((prev) => ({ ...prev, fullName: e.target.value }))} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="profile-username">{translateUi("Username")}</label><input id="profile-username" className="form-input" value={user?.username || ''} disabled /></div>
+        <div className="form-group"><label className="form-label" htmlFor="profile-fullname">{translateUi("Full Name")}</label><input id="profile-fullname" className="form-input" value={profileForm.fullName} onChange={(e) => setProfileForm((prev) => ({ ...prev, fullName: e.target.value }))} /></div>
       </div>
-      <div className="form-group"><label className="form-label" htmlFor="profile-phone">Phone Number</label><input id="profile-phone" className="form-input" value={profileForm.phone} onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))} /></div>
-      <div className="form-group"><label className="form-label" htmlFor="profile-email">Email</label><input id="profile-email" className="form-input" value={user?.email || ''} disabled /></div>
-      <button className="btn btn-primary mt-2" onClick={handleSaveProfile} disabled={isSavingProfile}>{isSavingProfile ? 'Saving...' : 'Save Changes'}</button>
+      <div className="form-group"><label className="form-label" htmlFor="profile-phone">{translateUi("Phone Number")}</label><input id="profile-phone" className="form-input" value={profileForm.phone} onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))} /></div>
+      <div className="form-group"><label className="form-label" htmlFor="profile-email">{translateUi("Email")}</label><input id="profile-email" className="form-input" value={user?.email || ''} disabled /></div>
+      <button className="btn btn-primary mt-2" onClick={handleSaveProfile} disabled={isSavingProfile}>{isSavingProfile ? translateUi("Saving...") : translateUi("Save Changes")}</button>
 
       <div className="account-password-panel">
         <div className="account-password-header">
           <ShieldCheck size={18} />
-          <h3>Change Password</h3>
+          <h3>{translateUi("Change Password")}</h3>
         </div>
         <form onSubmit={handleChangePassword} className="account-password-form">
-          <div className="form-group"><label className="form-label" htmlFor="current-password">Current Password</label><input id="current-password" className="form-input" type="password" value={passwordForm.currentPassword} onChange={(e) => { resetOtpState(); setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value })); }} required /></div>
+          <div className="form-group"><label className="form-label" htmlFor="current-password">{translateUi("Current Password")}</label><input id="current-password" className="form-input" type="password" value={passwordForm.currentPassword} onChange={(e) => { resetOtpState(); setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value })); }} required /></div>
           <div className="form-row">
-            <div className="form-group"><label className="form-label" htmlFor="new-password">New Password</label><input id="new-password" className="form-input" type="password" value={passwordForm.newPassword} onChange={(e) => { resetOtpState(); setPasswordForm((prev) => ({ ...prev, newPassword: stripWhitespace(e.target.value) })); }} required minLength={6} /></div>
-            <div className="form-group"><label className="form-label" htmlFor="confirm-password">Confirm New Password</label><input id="confirm-password" className="form-input" type="password" value={passwordForm.confirmPassword} onChange={(e) => { resetOtpState(); setPasswordForm((prev) => ({ ...prev, confirmPassword: stripWhitespace(e.target.value) })); }} required minLength={6} /></div>
+            <div className="form-group"><label className="form-label" htmlFor="new-password">{translateUi("New Password")}</label><input id="new-password" className="form-input" type="password" value={passwordForm.newPassword} onChange={(e) => { resetOtpState(); setPasswordForm((prev) => ({ ...prev, newPassword: stripWhitespace(e.target.value) })); }} required minLength={6} /></div>
+            <div className="form-group"><label className="form-label" htmlFor="confirm-password">{translateUi("Confirm New Password")}</label><input id="confirm-password" className="form-input" type="password" value={passwordForm.confirmPassword} onChange={(e) => { resetOtpState(); setPasswordForm((prev) => ({ ...prev, confirmPassword: stripWhitespace(e.target.value) })); }} required minLength={6} /></div>
           </div>
 
           {otpNotice && <p className="account-otp-notice">{otpNotice}</p>}
 
           <div className="form-group">
-            <label className="form-label" htmlFor="password-otp">Email OTP</label>
+            <label className="form-label" htmlFor="password-otp">{translateUi("Email OTP")}</label>
             <input
               id="password-otp"
               className="form-input"
               type="text"
               inputMode="numeric"
               maxLength={6}
-              placeholder="Enter 6-digit OTP"
+              placeholder={translateUi("Enter 6-digit OTP")}
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D+/g, '').slice(0, 6))}
               required
@@ -247,10 +251,10 @@ export function ProfileSection() {
 
           <div className="account-password-actions">
             <button className="btn btn-outline" type="button" onClick={handleRequestPasswordOtp} disabled={isSendingPasswordOtp || isChangingPassword}>
-              {isSendingPasswordOtp ? 'Sending OTP...' : (otpRequested ? 'Resend OTP' : 'Send OTP')}
+              {isSendingPasswordOtp ? translateUi("Sending OTP...") : (otpRequested ? translateUi("Resend OTP") : translateUi("Send OTP"))}
             </button>
             <button className="btn btn-primary" type="submit" disabled={isChangingPassword || !otpRequested}>
-              {isChangingPassword ? 'Updating...' : 'Verify OTP & Update Password'}
+              {isChangingPassword ? translateUi("Updating...") : translateUi("Verify OTP & Update Password")}
             </button>
           </div>
         </form>
@@ -260,6 +264,7 @@ export function ProfileSection() {
 }
 
 export function OrdersSection() {
+  useTranslation();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null);
@@ -319,8 +324,8 @@ export function OrdersSection() {
     <div className="account-orders-section">
       <div className="account-orders-head">
         <div>
-          <h2 className="account-section-title">Order History</h2>
-          <p>Track recent purchases, payment status, and reorder saved items from one place.</p>
+          <h2 className="account-section-title">{translateUi("Order History")}</h2>
+          <p>{translateUi("Track recent purchases, payment status, and reorder saved items from one place.")}</p>
         </div>
       </div>
 
@@ -329,9 +334,9 @@ export function OrdersSection() {
           <div className="orders-empty-icon">
             <PackageCheck size={30} strokeWidth={1.6} />
           </div>
-          <h3>No orders yet</h3>
-          <p>Your order history will appear here after checkout.</p>
-          <Link to="/category/all" className="btn btn-primary">Start Shopping</Link>
+          <h3>{translateUi("No orders yet")}</h3>
+          <p>{translateUi("Your order history will appear here after checkout.")}</p>
+          <Link to="/category/all" className="btn btn-primary">{translateUi("Start Shopping")}</Link>
         </div>
       ) : (
         <div className="orders-list">
@@ -346,25 +351,23 @@ export function OrdersSection() {
             <article key={order.id} className="order-card">
               <div className="order-card-header">
                 <div>
-                  <span className="order-label">Order</span>
+                  <span className="order-label">{translateUi("Order")}</span>
                   <strong className="order-number">#{order.orderNumber}</strong>
-                  <span className={`order-status status-${String(order.status).toLowerCase()}`}>{order.status}</span>
+                  <span className={`order-status status-${String(order.status).toLowerCase()}`}>{translateUi(order.status)}</span>
                 </div>
                 <div className="order-card-actions">
                   <span className="order-date"><CalendarDays size={14} /> {formatOrderDate(order.createdAt)}</span>
-                  <Link to={`/order-confirmation/${order.id}`} className="btn btn-outline btn-view-order"><Eye size={14} /> View Details</Link>
+                  <Link to={`/order-confirmation/${order.id}`} className="btn btn-outline btn-view-order"><Eye size={14} /> {translateUi("View Details")}</Link>
                 </div>
               </div>
               <div className={`order-progress ${isCancelled ? 'is-cancelled' : ''}`}>
                 {isCancelled ? (
                   <div className="order-cancelled-note">
-                    <XCircle size={16} />
-                    This order has been cancelled.
-                  </div>
+                    <XCircle size={16} />{translateUi("This order has been cancelled.")}</div>
                 ) : (
                   orderSteps.map((step, index) => {
                     const stepHistory = order.statusHistory?.find((h: any) => String(h.status).toUpperCase() === step);
-                    const timestamp = stepHistory ? new Date(stepHistory.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null;
+                    const timestamp = stepHistory ? new Date(stepHistory.createdAt).toLocaleDateString(getLocale(), { month: 'short', day: 'numeric' }) : null;
                     const isComplete = index <= statusStepIndex || !!stepHistory;
 
                     return (
@@ -383,17 +386,17 @@ export function OrdersSection() {
                 {visibleItems.map((item: any) => (
                   <div key={item.id} className="order-item-row">
                     <span>{item.productName}</span>
-                    <small>Qty {item.quantity}</small>
+                    <small>{translateUi("Qty")} {item.quantity}</small>
                     <strong>${Number(item.totalPrice).toFixed(2)}</strong>
                   </div>
                 ))}
                 {remainingItems > 0 && (
-                  <div className="order-more-items">+ {remainingItems} more item{remainingItems > 1 ? 's' : ''}</div>
+                  <div className="order-more-items">+ {remainingItems} {translateUi("more item")}{remainingItems > 1 ? translateUi("s") : ''}</div>
                 )}
               </div>
               <div className="order-card-footer">
                 <span><CreditCard size={14} /> {getPaymentLabel(order.paymentMethod)}</span>
-                <span className="order-total">Total <strong>${Number(order.totalAmount).toFixed(2)}</strong></span>
+                <span className="order-total">{translateUi("Total")} <strong>${Number(order.totalAmount).toFixed(2)}</strong></span>
               </div>
               <div className="order-card-cta-row">
                 {canCancelOrder(order) && (
@@ -404,7 +407,7 @@ export function OrdersSection() {
                     onClick={() => handleCancelOrder(order.id)}
                   >
                     <XCircle size={14} />
-                    {activeOrderId === order.id ? 'Cancelling...' : 'Cancel Order'}
+                    {activeOrderId === order.id ? translateUi("Cancelling...") : translateUi("Cancel Order")}
                   </button>
                 )}
                 <button
@@ -414,7 +417,7 @@ export function OrdersSection() {
                   onClick={() => handleReorder(order.id)}
                 >
                   <RefreshCw size={14} />
-                  {activeOrderId === order.id ? 'Working...' : 'Buy Again'}
+                  {activeOrderId === order.id ? translateUi("Working...") : translateUi("Buy Again")}
                 </button>
               </div>
             </article>
@@ -427,15 +430,16 @@ export function OrdersSection() {
 }
 
 export function WishlistSection() {
+  useTranslation();
   const { items, isLoading } = useWishlistStore();
 
   return (
     <div>
-      <h2 className="account-section-title">My Wishlist</h2>
+      <h2 className="account-section-title">{translateUi("My Wishlist")}</h2>
       {isLoading ? (
-        <p>Loading wishlist...</p>
+        <p>{translateUi("Loading wishlist...")}</p>
       ) : items.length === 0 ? (
-        <p className="no-data">Your wishlist is empty.</p>
+        <p className="no-data">{translateUi("Your wishlist is empty.")}</p>
       ) : (
         <div className="wishlist-grid">
           {items.map((item) => (
@@ -448,6 +452,7 @@ export function WishlistSection() {
 }
 
 export function AddressesSection() {
+  useTranslation();
   const [addresses, setAddresses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { addToast } = useUIStore();
@@ -528,30 +533,30 @@ export function AddressesSection() {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>{translateUi("Loading...")}</div>;
 
   if (isEditing) {
     return (
       <div>
-        <h2 className="account-section-title">{form.id ? 'Edit Address' : 'Add New Address'}</h2>
+        <h2 className="account-section-title">{form.id ? translateUi("Edit Address") : translateUi("Add New Address")}</h2>
         <form onSubmit={handleSave}>
-          <div className="form-group"><label className="form-label" htmlFor="addr-fullName">Full Name</label><input id="addr-fullName" className="form-input" required value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div>
-          <div className="form-group"><label className="form-label" htmlFor="addr-phone">Phone</label><input id="addr-phone" className="form-input" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="addr-fullName">{translateUi("Full Name")}</label><input id="addr-fullName" className="form-input" required value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="addr-phone">{translateUi("Phone")}</label><input id="addr-phone" className="form-input" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
           <div className="form-row">
-            <div className="form-group"><label className="form-label" htmlFor="addr-province">Province</label><input id="addr-province" className="form-input" required value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} /></div>
-            <div className="form-group"><label className="form-label" htmlFor="addr-district">District</label><input id="addr-district" className="form-input" required value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} /></div>
+            <div className="form-group"><label className="form-label" htmlFor="addr-province">{translateUi("Province")}</label><input id="addr-province" className="form-input" required value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} /></div>
+            <div className="form-group"><label className="form-label" htmlFor="addr-district">{translateUi("District")}</label><input id="addr-district" className="form-input" required value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} /></div>
           </div>
           <div className="form-row">
-            <div className="form-group"><label className="form-label" htmlFor="addr-ward">Ward</label><input id="addr-ward" className="form-input" required value={form.ward} onChange={(e) => setForm({ ...form, ward: e.target.value })} /></div>
-            <div className="form-group"><label className="form-label" htmlFor="addr-streetAddress">Street</label><input id="addr-streetAddress" className="form-input" required value={form.streetAddress} onChange={(e) => setForm({ ...form, streetAddress: e.target.value })} /></div>
+            <div className="form-group"><label className="form-label" htmlFor="addr-ward">{translateUi("Ward")}</label><input id="addr-ward" className="form-input" required value={form.ward} onChange={(e) => setForm({ ...form, ward: e.target.value })} /></div>
+            <div className="form-group"><label className="form-label" htmlFor="addr-streetAddress">{translateUi("Street")}</label><input id="addr-streetAddress" className="form-input" required value={form.streetAddress} onChange={(e) => setForm({ ...form, streetAddress: e.target.value })} /></div>
           </div>
           <label className="account-checkbox-row" htmlFor="addr-default">
             <input type="checkbox" id="addr-default" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} />
-            <span>Set as Default Address</span>
+            <span>{translateUi("Set as Default Address")}</span>
           </label>
           <div className="account-inline-actions">
-            <button type="submit" className="btn btn-primary">Save Address</button>
-            <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary">{translateUi("Save Address")}</button>
+            <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>{translateUi("Cancel")}</button>
           </div>
         </form>
       </div>
@@ -560,18 +565,18 @@ export function AddressesSection() {
 
   return (
     <div>
-      <h2 className="account-section-title">Saved Addresses</h2>
-      {addresses.length === 0 ? <p className="no-data">No saved addresses.</p> : (
+      <h2 className="account-section-title">{translateUi("Saved Addresses")}</h2>
+      {addresses.length === 0 ? <p className="no-data">{translateUi("No saved addresses.")}</p> : (
         <div className="account-address-grid">
           {addresses.map((address) => (
             <div key={address.id} className="account-address-card">
-              {address.isDefault && <span className="account-address-badge">Default</span>}
+              {address.isDefault && <span className="account-address-badge">{translateUi("Default")}</span>}
               <h4>{address.fullName} <span>{address.phone}</span></h4>
               <p>{address.streetAddress}</p>
               <p>{address.ward}, {address.district}, {address.province}</p>
               <div className="account-inline-actions">
-                <button type="button" className="btn btn-outline" onClick={() => handleEdit(address)}>Edit</button>
-                <button type="button" className="btn btn-outline btn-small-danger" onClick={() => handleDelete(address.id, address.isDefault)}>Delete</button>
+                <button type="button" className="btn btn-outline" onClick={() => handleEdit(address)}>{translateUi("Edit")}</button>
+                <button type="button" className="btn btn-outline btn-small-danger" onClick={() => handleDelete(address.id, address.isDefault)}>{translateUi("Delete")}</button>
               </div>
             </div>
           ))}
@@ -580,7 +585,7 @@ export function AddressesSection() {
       <button className="btn btn-outline mt-2" onClick={() => {
         setForm({ id: null, fullName: '', phone: '', province: '', district: '', ward: '', streetAddress: '', isDefault: false });
         setIsEditing(true);
-      }}>Add New Address</button>
+      }}>{translateUi("Add New Address")}</button>
     </div>
   );
 }

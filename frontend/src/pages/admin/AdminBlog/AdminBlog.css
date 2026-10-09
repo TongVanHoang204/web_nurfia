@@ -46,7 +46,7 @@
   font-family: var(--font-heading);
   font-size: 20px;
   font-weight: 400;
-  color: var(--color-black);
+  color: var(--color-text);
   line-height: 1.18;
   max-width: 620px;
 }
@@ -70,7 +70,7 @@
 .admin-blog-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .admin-blog-table-wrap .admin-table {
@@ -165,7 +165,7 @@
 
 .admin-blog-category {
   color: var(--color-text-light);
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .admin-blog-status-badge.is-published {

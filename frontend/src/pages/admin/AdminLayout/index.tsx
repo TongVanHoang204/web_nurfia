@@ -1,11 +1,15 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Ticket, Truck, Settings, LogOut, Menu, X, FileText, Activity, ShieldQuestion, BarChart, Layers, Image as ImageIcon, Mail, Star, Tag, Sliders, Bell, Globe, Megaphone } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
 import NotificationBell from '../../../components/Notifications/NotificationBell';
+import HeaderPreferences from '../../../components/HeaderPreferences/HeaderPreferences';
 import PageLoader from '../../../components/PageLoader/PageLoader';
 import { hasAdminAccess, hasFullAdminAccess } from '../../../utils/teamAccess';
 import './AdminLayout.css';
+import '../../../styles/teamRoles.css';
 import '../admin.css';
 
 const NAV_ITEMS = [
@@ -34,7 +38,7 @@ const NAV_ITEMS = [
 const canAccessItem = (user: { role?: string; permissions?: string[] } | null, permissions: string[]) => {
   if (!user) return false;
   if (hasFullAdminAccess(user.role)) return true;
-  if (user.role !== 'STAFF' && user.role !== 'MANAGER') return false;
+  if (user.role !== 'ADMIN' && user.role !== 'STAFF' && user.role !== 'MANAGER') return false;
   if (permissions.length === 0) return true;
 
   const userPermissions = Array.isArray(user.permissions) ? user.permissions : [];
@@ -42,6 +46,7 @@ const canAccessItem = (user: { role?: string; permissions?: string[] } | null, p
 };
 
 export default function AdminLayout() {
+  useTranslation();
   const { user, isAuthenticated, isHydrating, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -99,8 +104,8 @@ export default function AdminLayout() {
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
         <div className="admin-sidebar-header">
           <Link to="/admin" className="admin-logo">
-            <span className="admin-logo-text">Nurfia</span>
-            <span className="admin-logo-sub">Admin</span>
+            <span className="admin-logo-text">{translateUi("Nurfia")}</span>
+            <span className="admin-logo-sub">{translateUi("Admin")}</span>
           </Link>
         </div>
 
@@ -110,7 +115,7 @@ export default function AdminLayout() {
             return (
               <Link key={item.path} to={item.path} className={`admin-nav-item ${isActive ? 'active' : ''}`} onClick={handleNavClick}>
                 <item.icon size={18} />
-                <span>{item.label}</span>
+                <span>{translateUi(item.label)}</span>
               </Link>
             );
           })}
@@ -119,11 +124,11 @@ export default function AdminLayout() {
         <div className="admin-sidebar-footer">
           <Link to="/" className="admin-nav-item" target="_blank">
             <Globe size={18} />
-            <span>View Store</span>
+            <span>{translateUi("View Store")}</span>
           </Link>
           <button className="admin-nav-item logout" onClick={handleLogout}>
             <LogOut size={18} />
-            <span>Sign Out</span>
+            <span>{translateUi("Sign Out")}</span>
           </button>
         </div>
       </aside>
@@ -132,8 +137,8 @@ export default function AdminLayout() {
         type="button"
         className={`admin-sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
         onClick={() => setSidebarOpen(false)}
-        title="Close sidebar"
-        aria-label="Close sidebar"
+        title={translateUi("Close sidebar")}
+        aria-label={translateUi("Close sidebar")}
       />
 
       {/* Main Content */}
@@ -143,11 +148,12 @@ export default function AdminLayout() {
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <div className="admin-topbar-right">
+            <HeaderPreferences />
             <NotificationBell />
             <div className="admin-user-profile">
               <span className="admin-user-name">{user?.fullName}</span>
-              <span className={`admin-user-role admin-user-role-${String(user?.role || 'staff').toLowerCase()}`}>
-                {user?.role === 'OWNER' ? 'Owner' : user?.role === 'ADMIN' ? 'Admin' : user?.role === 'MANAGER' ? 'Manager' : 'Staff'}
+              <span className={`admin-user-role team-role-badge team-role-${String(user?.role || 'staff').toLowerCase()}`}>
+                {user?.role === 'OWNER' ? translateUi("Owner") : user?.role === 'ADMIN' ? translateUi("Admin") : user?.role === 'MANAGER' ? translateUi("Manager") : translateUi("Staff")}
               </span>
             </div>
             <div className="admin-user-avatar">{user?.fullName?.[0]}</div>

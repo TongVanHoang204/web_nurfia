@@ -16,7 +16,7 @@
 .admin-attributes-header h1 {
   font-family: var(--font-heading);
   font-size: 42px;
-  color: var(--color-black);
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 
@@ -51,12 +51,12 @@
 .admin-attr-stat-card strong {
   font-family: var(--font-heading);
   font-size: 32px;
-  color: var(--color-black);
+  color: var(--color-text);
   font-weight: 400;
 }
 
 .admin-attributes-content {
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
 }
 
@@ -95,14 +95,14 @@
   font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 500;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-attr-slug {
   font-family: 'Courier New', Courier, monospace;
   font-size: 12px;
   color: var(--color-text-muted);
-  background: #f0f0f0;
+  background: var(--surface-soft, #f0f0f0);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -118,7 +118,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   font-size: 12px;
   color: var(--color-text);
@@ -137,7 +137,7 @@
 }
 
 .admin-attr-expand-btn:hover {
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 /* Expanded Section */
@@ -147,7 +147,7 @@
 }
 
 .admin-attr-terms-card {
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   padding: 24px;
   box-shadow: var(--shadow-sm);
@@ -163,7 +163,7 @@
 .admin-attr-terms-header h4 {
   font-family: var(--font-heading);
   font-size: 20px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-terms-table {
@@ -190,7 +190,7 @@
 
 .admin-term-label {
   font-weight: 600;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-term-hex {
@@ -225,7 +225,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-form-row input {
@@ -328,7 +328,7 @@
   padding: 4px;
   cursor: pointer;
   border: 1px solid var(--color-border);
-  background: #fff;
+  background: var(--surface, #fff);
 }
 
 .admin-color-hex-input {
@@ -360,7 +360,7 @@
     align-items: flex-start;
     gap: 20px;
   }
-  
+
   .admin-attr-expanded-pane {
     padding-left: 24px;
   }

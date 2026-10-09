@@ -26,7 +26,7 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  background: var(--color-white);
+  background: var(--surface);
   border-bottom: 1px solid var(--color-border);
   transition: all var(--transition-base);
 }
@@ -45,7 +45,7 @@
 }
 .site-header.is-transparent:hover,
 .site-header.is-transparent.scrolled {
-  background: var(--color-white);
+  background: var(--surface);
   border-bottom-color: var(--color-border);
 }
 .header-inner {
@@ -85,8 +85,8 @@
   color: rgba(255, 255, 255, 0.7);
 }
 .site-header.is-transparent:not(:hover):not(.scrolled) .cart-count {
-  background: var(--color-white);
-  color: var(--color-black);
+  background: var(--surface);
+  color: var(--color-text);
 }
 
 /* Nav */
@@ -120,7 +120,7 @@
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-lg);
   padding: 32px 40px;
@@ -162,7 +162,7 @@
   transition: color var(--transition-fast);
 }
 .mega-menu-col li a:hover {
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 /* Actions */
@@ -206,7 +206,7 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--color-white);
+  background: var(--surface);
   border-bottom: 1px solid var(--color-border);
   padding: 16px 0;
   transform: translateY(-10px);
@@ -255,7 +255,7 @@
   left: -100%;
   width: 300px;
   height: calc(100vh - var(--topbar-height) - var(--header-height));
-  background: var(--color-white);
+  background: var(--surface);
   z-index: var(--z-fixed);
   overflow-y: auto;
   transition: left var(--transition-base);

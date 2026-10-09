@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { ExternalLink, Globe, Palette, RefreshCw, Save, Search, Share2, Upload, Wallet } from 'lucide-react';
 import './AdminSettings.css';
@@ -43,6 +45,7 @@ const GROUPS = [
 ];
 
 export default function AdminSettings() {
+  useTranslation();
   const [settings, setSettings] = useState<SettingsState>({} as SettingsState);
   const [initialSettings, setInitialSettings] = useState<SettingsState>({} as SettingsState);
   const [loading, setLoading] = useState(true);
@@ -102,30 +105,30 @@ export default function AdminSettings() {
     <div className="admin-settings-page">
       <header className="admin-settings-header">
         <div>
-          <h1>Settings</h1>
-          <p>Global store configuration and branding assets.</p>
+          <h1>{translateUi("Settings")}</h1>
+          <p>{translateUi("Global store configuration and branding assets.")}</p>
         </div>
         <div className="settings-toolbar-actions">
-           <button type="button" className="btn btn-outline" onClick={() => setSettings(initialSettings)} disabled={changedKeys.length === 0}><RefreshCw size={14} /> Reset</button>
-           <button type="button" className="btn btn-primary" onClick={handleSaveAll} disabled={changedKeys.length === 0 || savingAll}><Save size={14} /> {savingAll ? 'Saving...' : 'Save All'}</button>
+           <button type="button" className="btn btn-outline" onClick={() => setSettings(initialSettings)} disabled={changedKeys.length === 0}><RefreshCw size={14} /> {translateUi("Reset")}</button>
+           <button type="button" className="btn btn-primary" onClick={handleSaveAll} disabled={changedKeys.length === 0 || savingAll}><Save size={14} /> {savingAll ? translateUi("Saving...") : translateUi("Save All")}</button>
         </div>
       </header>
 
       <div className="settings-overview-grid">
-        <div className="settings-overview-card"><span>Managed Sections</span><strong>{GROUPS.length}</strong></div>
-        <div className="settings-overview-card"><span>Total Settings</span><strong>{SETTING_KEYS.length}</strong></div>
-        <div className="settings-overview-card"><span>Unsaved Changes</span><strong>{changedKeys.length}</strong></div>
-        <div className="settings-overview-card"><span>Live Status</span><strong>Online</strong></div>
+        <div className="settings-overview-card"><span>{translateUi("Managed Sections")}</span><strong>{GROUPS.length}</strong></div>
+        <div className="settings-overview-card"><span>{translateUi("Total Settings")}</span><strong>{SETTING_KEYS.length}</strong></div>
+        <div className="settings-overview-card"><span>{translateUi("Unsaved Changes")}</span><strong>{changedKeys.length}</strong></div>
+        <div className="settings-overview-card"><span>{translateUi("Live Status")}</span><strong>{translateUi("Online")}</strong></div>
       </div>
 
       <div className="settings-workspace">
         <aside className="settings-sidebar">
           <div className="settings-search-wrap">
             <Search size={18} />
-            <input type="text" placeholder="Search setting names or values..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input type="text" placeholder={translateUi("Search setting names or values...")} value={search} onChange={e => setSearch(e.target.value)} />
           </div>
 
-          <nav className="settings-section-nav" aria-label="Settings sections">
+          <nav className="settings-section-nav" aria-label={translateUi("Settings sections")}>
             {GROUPS.map(group => {
               const dirtyCount = group.keys.filter(k => changedKeys.includes(k)).length;
               return (
@@ -133,7 +136,7 @@ export default function AdminSettings() {
                   <span className="settings-section-link-icon"><group.icon size={16} /></span>
                   <span>
                     <strong>{group.title}</strong>
-                    <small>{group.keys.length} fields</small>
+                    <small>{group.keys.length} {translateUi("fields")}</small>
                   </span>
                   {dirtyCount > 0 && <em>{dirtyCount}</em>}
                 </a>
@@ -167,7 +170,7 @@ export default function AdminSettings() {
                 {visibleKeys.length === 0 ? (
                   <div className="settings-empty-state">
                     <Search size={18} />
-                    <p>No settings match your search in this section.</p>
+                    <p>{translateUi("No settings match your search in this section.")}</p>
                   </div>
                 ) : (
                   <div className="settings-form-grid">
@@ -177,24 +180,24 @@ export default function AdminSettings() {
                       return (
                         <div key={k} className={`settings-field ${isDirty ? 'is-dirty' : ''}`}>
                           <div className="settings-field-label-row">
-                            <label>{meta.label}</label>
-                            {isDirty && <span>Changed</span>}
+                            <label>{translateUi(meta.label)}</label>
+                            {isDirty && <span>{translateUi("Changed")}</span>}
                           </div>
                           {meta.type === 'textarea' ? (
-                            <textarea title={meta.label} placeholder={meta.placeholder || meta.label} value={settings[k]} rows={meta.rows || 3} onChange={e => setSettings({...settings, [k]: e.target.value})} />
+                            <textarea title={translateUi(meta.label)} placeholder={meta.placeholder || meta.label} value={settings[k]} rows={meta.rows || 3} onChange={e => setSettings({...settings, [k]: e.target.value})} />
                           ) : (
-                            <input title={meta.label} placeholder={meta.placeholder || meta.label} type={meta.type} value={settings[k]} onChange={e => setSettings({...settings, [k]: e.target.value})} />
+                            <input title={translateUi(meta.label)} placeholder={meta.placeholder || meta.label} type={meta.type} value={settings[k]} onChange={e => setSettings({...settings, [k]: e.target.value})} />
                           )}
 
                           {(meta.uploadTarget || settings[k]) && (
                             <div className="settings-field-actions">
                               {meta.uploadTarget && (
                                 <label className="btn btn-outline btn-sm">
-                                  <Upload size={12} /> {uploadingTarget === k ? 'Uploading...' : 'Upload'}
-                                  <input aria-label="Upload" title="Upload" type="file" hidden onChange={e => handleUpload(meta.uploadTarget!, e.target.files?.[0] || null)} />
+                                  <Upload size={12} /> {uploadingTarget === k ? translateUi("Uploading...") : translateUi("Upload")}
+                                  <input aria-label={translateUi("Upload")} title={translateUi("Upload")} type="file" hidden onChange={e => handleUpload(meta.uploadTarget!, e.target.files?.[0] || null)} />
                                 </label>
                               )}
-                              {settings[k] && <button type="button" title={`Open ${meta.label}`} aria-label={`Open ${meta.label}`} className="btn btn-outline btn-sm" onClick={() => window.open(resolveSiteAssetUrl(settings[k]), '_blank')}><ExternalLink size={12} /> Open</button>}
+                              {settings[k] && <button type="button" title={translateUi("Open {{value1}}", { value1: meta.label })} aria-label={translateUi("Open {{value1}}", { value1: meta.label })} className="btn btn-outline btn-sm" onClick={() => window.open(resolveSiteAssetUrl(settings[k]), '_blank')}><ExternalLink size={12} /> {translateUi("Open")}</button>}
                             </div>
                           )}
 
@@ -202,7 +205,7 @@ export default function AdminSettings() {
                             <div key={settings[k]} className={`settings-preview settings-preview-${meta.preview}`}>
                               <img
                                 src={resolveSiteAssetUrl(settings[k])}
-                                alt={meta.label}
+                                alt={translateUi(meta.label)}
                                 onError={(e: any) => {
                                   e.target.style.display = 'none';
                                   const p = e.target.parentElement;
@@ -229,10 +232,10 @@ export default function AdminSettings() {
 
       {changedKeys.length > 0 && (
         <div className="settings-unsaved-bar">
-          <span>You have {changedKeys.length} unsaved changes.</span>
+          <span>{translateUi("You have")} {changedKeys.length} {translateUi("unsaved changes.")}</span>
           <div className="settings-unsaved-actions">
-             <button type="button" className="btn btn-outline btn-discard" onClick={() => setSettings(initialSettings)}>Discard</button>
-             <button type="button" className="btn btn-primary" onClick={handleSaveAll} disabled={savingAll}>Save Now</button>
+             <button type="button" className="btn btn-outline btn-discard" onClick={() => setSettings(initialSettings)}>{translateUi("Discard")}</button>
+             <button type="button" className="btn btn-primary" onClick={handleSaveAll} disabled={savingAll}>{translateUi("Save Now")}</button>
           </div>
         </div>
       )}

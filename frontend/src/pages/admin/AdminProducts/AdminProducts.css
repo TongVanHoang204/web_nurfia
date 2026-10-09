@@ -34,7 +34,7 @@
   padding: 12px 16px 12px 44px;
   border: 1px solid var(--color-border);
   font-size: 14px;
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .ap-search-icon {
@@ -72,13 +72,13 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  background: var(--color-white);
+  background: var(--surface);
   cursor: pointer;
 }
 
 /* Table */
 .ap-table-wrap {
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   overflow-x: auto;
 }
@@ -139,7 +139,7 @@
 .ap-product-name {
   font-family: var(--font-heading);
   font-size: 18px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .ap-product-category {
@@ -179,7 +179,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   color: var(--color-text);
   transition: all var(--transition-fast);
 }
@@ -219,7 +219,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   font-size: 13px;
   font-weight: 600;
   transition: all var(--transition-fast);
@@ -260,7 +260,7 @@
 
 /* Variant Sections */
 .ap-variant-toggle {
-  background: var(--color-white);
+  background: var(--surface);
   border: 2px solid var(--color-border);
   border-radius: 12px;
   padding: 24px;
@@ -287,7 +287,7 @@
   font-size: 16px;
   font-weight: 700;
   margin: 0;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .ap-variant-toggle-actions {
@@ -324,8 +324,8 @@
 }
 
 .ap-variant-row {
-  background: var(--color-white);
-  border: 1px solid #eee;
+  background: var(--surface);
+  border: 1px solid var(--color-border, #eee);
   border-radius: 10px;
   padding: 18px 20px;
   display: grid;
@@ -360,7 +360,7 @@
   font-size: 13px;
   width: 100%;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   transition: border-color 0.15s;
 }
 
@@ -377,7 +377,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   color: var(--color-text-muted);
   border-radius: 8px;
   cursor: pointer;
@@ -397,7 +397,7 @@
   padding: 10px 18px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-black);
+  color: var(--color-text);
   background: transparent;
   border: 1px dashed var(--color-border);
   border-radius: 8px;
@@ -425,7 +425,7 @@
   width: 120px;
   height: 120px;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 4px;
 }
 
@@ -470,7 +470,7 @@
 .ap-image-upload:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 @media (max-width: 1024px) {
@@ -540,7 +540,7 @@
 .ap-matrix-count {
   font-size: 12px;
   color: var(--color-text-light, #888);
-  background: #fff;
+  background: var(--surface, #fff);
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 999px;
   padding: 2px 10px;
@@ -557,7 +557,7 @@
 }
 
 .ap-matrix-corner {
-  background: #f3f4f6;
+  background: var(--surface-soft, #f3f4f6);
   padding: 8px 12px;
   font-size: 11px;
   font-weight: 500;
@@ -568,7 +568,7 @@
 }
 
 .ap-matrix-col-header {
-  background: #f3f4f6;
+  background: var(--surface-soft, #f3f4f6);
   padding: 10px 12px;
   font-size: 13px;
   font-weight: 700;
@@ -582,7 +582,7 @@
 }
 
 .ap-matrix-row-header {
-  background: #f9fafb;
+  background: var(--surface-soft, #f9fafb);
   padding: 10px 12px;
   font-size: 13px;
   font-weight: 600;
@@ -603,7 +603,7 @@
 }
 
 .ap-matrix-cell {
-  background: #fff;
+  background: var(--surface, #fff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -670,7 +670,7 @@
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 8px;
   overflow: hidden;
-  background: #fff;
+  background: var(--surface, #fff);
 }
 
 .ap-variant-collapse-header {
@@ -763,7 +763,7 @@
 }
 
 .ap-sku-table th {
-  background: #f9fafb;
+  background: var(--surface-soft, #f9fafb);
   padding: 10px 12px;
   font-weight: 600;
   color: var(--color-heading, #111);
@@ -786,7 +786,7 @@
 }
 
 .ap-sku-table tbody tr:hover {
-  background: #fafafa;
+  background: var(--surface-soft, #fafafa);
 }
 
 .ap-sku-table tbody tr.ap-sku-row-duplicate {
@@ -814,7 +814,7 @@
   border-radius: 4px;
   padding: 6px 8px;
   font-size: 12px;
-  background: #fff;
+  background: var(--surface, #fff);
   color: var(--color-heading, #111);
 }
 
@@ -829,7 +829,7 @@
   border-radius: 4px;
   padding: 6px 8px;
   font-size: 12px;
-  background: #fff;
+  background: var(--surface, #fff);
   color: var(--color-heading, #111);
 }
 

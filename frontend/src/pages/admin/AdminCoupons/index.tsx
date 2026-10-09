@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Check, Copy, Edit2, Filter, Plus, Search, Trash2, X } from 'lucide-react';
@@ -62,7 +64,7 @@ const formatCurrency = (value: number | string | null | undefined) => {
 };
 
 const formatDate = (value: string) => {
-  return new Date(value).toLocaleDateString('en-US', {
+  return new Date(value).toLocaleDateString(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -86,6 +88,7 @@ const applyValuePreset = (currentType: CouponForm['type'], value: number) => {
 };
 
 export default function AdminCoupons() {
+  useTranslation();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [stats, setStats] = useState<CouponStats>({
     totalCoupons: 0,
@@ -302,10 +305,10 @@ export default function AdminCoupons() {
     if (form.type === 'PERCENTAGE' && numValue > 100) {
       setFormError('Percentage discount cannot exceed 100%'); return;
     }
-    
+
     setIsSubmitting(true);
     setFormError('');
-    
+
     const payload = {
       code: form.code.toUpperCase().trim(),
       type: form.type,
@@ -349,31 +352,31 @@ export default function AdminCoupons() {
     <div className="coupons-admin-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Coupons ({coupons.length})</h1>
-          <p className="coupons-admin-subtitle">Manage promotions with smarter filtering, bulk actions, and quick coupon operations.</p>
+          <h1 className="admin-page-title">{translateUi("Coupons (")}{coupons.length})</h1>
+          <p className="coupons-admin-subtitle">{translateUi("Manage promotions with smarter filtering, bulk actions, and quick coupon operations.")}</p>
         </div>
-        <button className="admin-btn admin-btn-primary" onClick={openAddModal}><Plus size={16} /> Add Coupon</button>
+        <button className="admin-btn admin-btn-primary" onClick={openAddModal}><Plus size={16} /> {translateUi("Add Coupon")}</button>
       </div>
 
       <div className="coupons-stats-grid">
         <article className="coupons-stat-card">
-          <span>Total Coupons</span>
+          <span>{translateUi("Total Coupons")}</span>
           <strong>{stats.totalCoupons}</strong>
         </article>
         <article className="coupons-stat-card">
-          <span>Active</span>
+          <span>{translateUi("Active")}</span>
           <strong>{stats.activeCoupons}</strong>
         </article>
         <article className="coupons-stat-card">
-          <span>Scheduled</span>
+          <span>{translateUi("Scheduled")}</span>
           <strong>{stats.scheduledCoupons}</strong>
         </article>
         <article className="coupons-stat-card">
-          <span>Expired</span>
+          <span>{translateUi("Expired")}</span>
           <strong>{stats.expiredCoupons}</strong>
         </article>
         <article className="coupons-stat-card">
-          <span>Disabled</span>
+          <span>{translateUi("Disabled")}</span>
           <strong>{stats.inactiveCoupons}</strong>
         </article>
       </div>
@@ -386,48 +389,48 @@ export default function AdminCoupons() {
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by coupon code"
+              placeholder={translateUi("Search by coupon code")}
             />
           </div>
 
-          <label className="coupons-select-wrap" aria-label="Filter coupon status">
+          <label className="coupons-select-wrap" aria-label={translateUi("Filter coupon status")}>
             <Filter size={15} />
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
-              <option value="ALL">All status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="SCHEDULED">Scheduled</option>
-              <option value="EXPIRED">Expired</option>
-              <option value="INACTIVE">Disabled</option>
+              <option value="ALL">{translateUi("All status")}</option>
+              <option value="ACTIVE">{translateUi("Active")}</option>
+              <option value="SCHEDULED">{translateUi("Scheduled")}</option>
+              <option value="EXPIRED">{translateUi("Expired")}</option>
+              <option value="INACTIVE">{translateUi("Disabled")}</option>
             </select>
           </label>
 
-          <label className="coupons-select-wrap" aria-label="Filter coupon type">
+          <label className="coupons-select-wrap" aria-label={translateUi("Filter coupon type")}>
             <Filter size={15} />
             <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as TypeFilter)}>
-              <option value="ALL">All types</option>
-              <option value="PERCENTAGE">Percentage</option>
-              <option value="FIXED_AMOUNT">Fixed amount</option>
+              <option value="ALL">{translateUi("All types")}</option>
+              <option value="PERCENTAGE">{translateUi("Percentage")}</option>
+              <option value="FIXED_AMOUNT">{translateUi("Fixed amount")}</option>
             </select>
           </label>
 
-          <label className="coupons-select-wrap" aria-label="Sort coupons">
+          <label className="coupons-select-wrap" aria-label={translateUi("Sort coupons")}>
             <Filter size={15} />
             <select value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}>
-              <option value="NEWEST">Sort: Newest</option>
-              <option value="OLDEST">Sort: Oldest</option>
-              <option value="CODE_ASC">Sort: Code A-Z</option>
-              <option value="CODE_DESC">Sort: Code Z-A</option>
-              <option value="VALUE_ASC">Sort: Value low-high</option>
-              <option value="VALUE_DESC">Sort: Value high-low</option>
-              <option value="USAGE_DESC">Sort: Most used</option>
-              <option value="ENDING_SOON">Sort: Ending soon</option>
+              <option value="NEWEST">{translateUi("Sort: Newest")}</option>
+              <option value="OLDEST">{translateUi("Sort: Oldest")}</option>
+              <option value="CODE_ASC">{translateUi("Sort: Code A-Z")}</option>
+              <option value="CODE_DESC">{translateUi("Sort: Code Z-A")}</option>
+              <option value="VALUE_ASC">{translateUi("Sort: Value low-high")}</option>
+              <option value="VALUE_DESC">{translateUi("Sort: Value high-low")}</option>
+              <option value="USAGE_DESC">{translateUi("Sort: Most used")}</option>
+              <option value="ENDING_SOON">{translateUi("Sort: Ending soon")}</option>
             </select>
           </label>
 
-          <button type="submit" className="admin-btn admin-btn-primary">Search</button>
-          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>Reset</button>
+          <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>
+          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>{translateUi("Reset")}</button>
 
-          {activeFilterCount > 0 && <span className="coupons-filter-chip">{activeFilterCount} filter(s)</span>}
+          {activeFilterCount > 0 && <span className="coupons-filter-chip">{activeFilterCount} {translateUi("filter(s)")}</span>}
         </form>
       </div>
 
@@ -435,8 +438,8 @@ export default function AdminCoupons() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content coupons-modal-content">
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">{isEditing ? 'Edit Coupon' : 'Create Coupon'}</h3>
-              <button title="Close" aria-label="Close modal" onClick={() => setIsModalOpen(false)} className="admin-modal-close"><X size={20} /></button>
+              <h3 className="admin-modal-title">{isEditing ? translateUi("Edit Coupon") : translateUi("Create Coupon")}</h3>
+              <button title={translateUi("Close")} aria-label={translateUi("Close modal")} onClick={() => setIsModalOpen(false)} className="admin-modal-close"><X size={20} /></button>
             </div>
 
             {formError && (
@@ -449,17 +452,17 @@ export default function AdminCoupons() {
               <div className="admin-modal-body">
               <div className="admin-modal-grid">
                 <div className="admin-form-group">
-                  <label htmlFor="code">Coupon Code *</label>
-                  <input id="code" title="Coupon Code" placeholder="SUMMER20" type="text" value={form.code} onChange={e => setForm((prev) => ({ ...prev, code: e.target.value }))} required />
+                  <label htmlFor="code">{translateUi("Coupon Code *")}</label>
+                  <input id="code" title={translateUi("Coupon Code")} placeholder={translateUi("SUMMER20")} type="text" value={form.code} onChange={e => setForm((prev) => ({ ...prev, code: e.target.value }))} required />
                 </div>
                 <label className="coupons-active-toggle" htmlFor="isActive">
-                  <input id="isActive" title="Status" type="checkbox" checked={form.isActive} onChange={e => setForm((prev) => ({ ...prev, isActive: e.target.checked }))} />
-                  <span>Active Coupon</span>
+                  <input id="isActive" title={translateUi("Status")} type="checkbox" checked={form.isActive} onChange={e => setForm((prev) => ({ ...prev, isActive: e.target.checked }))} />
+                  <span>{translateUi("Active Coupon")}</span>
                 </label>
               </div>
 
               <div className="coupons-preset-row">
-                <span>Quick value presets</span>
+                <span>{translateUi("Quick value presets")}</span>
                 <div className="coupons-preset-actions">
                   {[10, 15, 20, 30].map((preset) => (
                     <button
@@ -476,53 +479,53 @@ export default function AdminCoupons() {
 
               <div className="admin-modal-grid">
                 <div className="admin-form-group">
-                  <label htmlFor="type">Discount Type *</label>
-                  <select id="type" title="Discount Type" value={form.type} onChange={e => setForm((prev) => ({ ...prev, type: e.target.value as CouponForm['type'] }))}>
-                    <option value="PERCENTAGE">Percentage (%)</option>
-                    <option value="FIXED_AMOUNT">Fixed Amount ($)</option>
+                  <label htmlFor="type">{translateUi("Discount Type *")}</label>
+                  <select id="type" title={translateUi("Discount Type")} value={form.type} onChange={e => setForm((prev) => ({ ...prev, type: e.target.value as CouponForm['type'] }))}>
+                    <option value="PERCENTAGE">{translateUi("Percentage (%)")}</option>
+                    <option value="FIXED_AMOUNT">{translateUi("Fixed Amount ($)")}</option>
                   </select>
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="value">Value *</label>
-                  <input id="value" title="Value" placeholder="10" type="number" min="0" step="0.01" value={form.value} onChange={e => setForm((prev) => ({ ...prev, value: e.target.value }))} required />
+                  <label htmlFor="value">{translateUi("Value *")}</label>
+                  <input id="value" title={translateUi("Value")} placeholder="10" type="number" min="0" step="0.01" value={form.value} onChange={e => setForm((prev) => ({ ...prev, value: e.target.value }))} required />
                 </div>
               </div>
 
               <div className="admin-modal-grid">
                 <div className="admin-form-group">
-                  <label htmlFor="minOrderValue">Min Order Value</label>
-                  <input id="minOrderValue" title="Min Order Value" placeholder="Optional" type="number" min="0" step="0.01" value={form.minOrderValue} onChange={e => setForm((prev) => ({ ...prev, minOrderValue: e.target.value }))} />
+                  <label htmlFor="minOrderValue">{translateUi("Min Order Value")}</label>
+                  <input id="minOrderValue" title={translateUi("Min Order Value")} placeholder={translateUi("Optional")} type="number" min="0" step="0.01" value={form.minOrderValue} onChange={e => setForm((prev) => ({ ...prev, minOrderValue: e.target.value }))} />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="maxDiscount">Max Discount</label>
-                  <input id="maxDiscount" title="Max Discount" placeholder="Optional" type="number" min="0" step="0.01" value={form.maxDiscount} onChange={e => setForm((prev) => ({ ...prev, maxDiscount: e.target.value }))} />
+                  <label htmlFor="maxDiscount">{translateUi("Max Discount")}</label>
+                  <input id="maxDiscount" title={translateUi("Max Discount")} placeholder={translateUi("Optional")} type="number" min="0" step="0.01" value={form.maxDiscount} onChange={e => setForm((prev) => ({ ...prev, maxDiscount: e.target.value }))} />
                 </div>
               </div>
 
               <div className="admin-modal-grid">
                 <div className="admin-form-group">
-                  <label htmlFor="usageLimit">Usage Limit</label>
-                  <input id="usageLimit" title="Usage Limit" placeholder="Optional" type="number" min="1" value={form.usageLimit} onChange={e => setForm((prev) => ({ ...prev, usageLimit: e.target.value }))} />
+                  <label htmlFor="usageLimit">{translateUi("Usage Limit")}</label>
+                  <input id="usageLimit" title={translateUi("Usage Limit")} placeholder={translateUi("Optional")} type="number" min="1" value={form.usageLimit} onChange={e => setForm((prev) => ({ ...prev, usageLimit: e.target.value }))} />
                 </div>
                 <div className="admin-form-group" />
               </div>
 
               <div className="admin-modal-grid">
                 <div className="admin-form-group">
-                  <label htmlFor="startDate">Start Date *</label>
-                  <input id="startDate" title="Start Date" type="date" value={form.startDate} onChange={e => setForm((prev) => ({ ...prev, startDate: e.target.value }))} required />
+                  <label htmlFor="startDate">{translateUi("Start Date *")}</label>
+                  <input id="startDate" title={translateUi("Start Date")} type="date" value={form.startDate} onChange={e => setForm((prev) => ({ ...prev, startDate: e.target.value }))} required />
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="endDate">End Date *</label>
-                  <input id="endDate" title="End Date" type="date" value={form.endDate} onChange={e => setForm((prev) => ({ ...prev, endDate: e.target.value }))} required />
+                  <label htmlFor="endDate">{translateUi("End Date *")}</label>
+                  <input id="endDate" title={translateUi("End Date")} type="date" value={form.endDate} onChange={e => setForm((prev) => ({ ...prev, endDate: e.target.value }))} required />
                 </div>
               </div>
 
               </div>
               <div className="admin-modal-actions">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="admin-btn admin-btn-outline">Cancel</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="admin-btn admin-btn-outline">{translateUi("Cancel")}</button>
                 <button type="submit" disabled={isSubmitting} className="admin-btn admin-btn-primary">
-                  {isSubmitting ? 'Saving...' : (isEditing ? 'Update Coupon' : 'Create Coupon')}
+                  {isSubmitting ? translateUi("Saving...") : (isEditing ? translateUi("Update Coupon") : translateUi("Create Coupon"))}
                 </button>
               </div>
             </form>
@@ -533,23 +536,21 @@ export default function AdminCoupons() {
       <div className="admin-card coupons-list-card">
         {isLoading ? <div className="loading-page"><div className="spinner" /></div> : (
           coupons.length === 0 ? (
-            <p className="coupons-empty-state">No coupons found for this filter set.</p>
+            <p className="coupons-empty-state">{translateUi("No coupons found for this filter set.")}</p>
           ) : (
             <>
               <div className="coupons-sticky-actions">
                 <label className="coupons-select-all">
                   <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} />
-                  <span>Select page ({coupons.length})</span>
+                  <span>{translateUi("Select page (")}{coupons.length})</span>
                 </label>
 
                 <div className="coupons-bulk-actions">
-                  <span className="coupons-selected-count">{selectedIds.length} selected</span>
+                  <span className="coupons-selected-count">{selectedIds.length} {translateUi("selected")}</span>
                   <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyBulkActive(true)} disabled={isBulkUpdating || selectedIds.length === 0}>
-                    <Check size={13} /> Activate
-                  </button>
+                    <Check size={13} />{translateUi("Activate")}</button>
                   <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyBulkActive(false)} disabled={isBulkUpdating || selectedIds.length === 0}>
-                    <X size={13} /> Deactivate
-                  </button>
+                    <X size={13} />{translateUi("Deactivate")}</button>
                 </div>
               </div>
 
@@ -565,54 +566,50 @@ export default function AdminCoupons() {
                     <article key={coupon.id} className={`coupons-row-card ${isSelected ? 'is-selected' : ''}`}>
                       <div className="coupons-row-main">
                         <label className="coupons-item-check">
-                          <input type="checkbox" aria-label={`Select coupon ${coupon.code}`} checked={isSelected} onChange={() => toggleSelected(coupon.id)} />
+                          <input type="checkbox" aria-label={translateUi("Select coupon {{value1}}", { value1: coupon.code })} checked={isSelected} onChange={() => toggleSelected(coupon.id)} />
                         </label>
 
                         <div className="coupons-code-col">
                           <h3>{coupon.code}</h3>
-                          <p>{coupon.type === 'PERCENTAGE' ? 'Percentage' : 'Fixed Amount'} &middot; {coupon.type === 'PERCENTAGE' ? `${Number(coupon.value)}%` : formatCurrency(coupon.value)}</p>
+                          <p>{coupon.type === 'PERCENTAGE' ? translateUi("Percentage") : translateUi("Fixed Amount")} &middot; {coupon.type === 'PERCENTAGE' ? `${Number(coupon.value)}%` : formatCurrency(coupon.value)}</p>
                         </div>
 
                         <div className="coupons-conditions-col">
-                          <span>Min order: {formatCurrency(coupon.minOrderValue)}</span>
-                          <span>Max discount: {formatCurrency(coupon.maxDiscount)}</span>
+                          <span>{translateUi("Min order:")} {formatCurrency(coupon.minOrderValue)}</span>
+                          <span>{translateUi("Max discount:")} {formatCurrency(coupon.maxDiscount)}</span>
                         </div>
 
                         <div className="coupons-usage-col">
-                          <span>{coupon.usedCount}{coupon.usageLimit ? ` / ${coupon.usageLimit}` : ' uses'}</span>
+                          <span>{coupon.usedCount}{coupon.usageLimit ? ` / ${coupon.usageLimit}` : translateUi("uses")}</span>
                           {coupon.usageLimit ? (
-                            <meter min={0} max={100} value={usageRatio} className="coupons-usage-meter" aria-label="Coupon usage progress" />
+                            <meter min={0} max={100} value={usageRatio} className="coupons-usage-meter" aria-label={translateUi("Coupon usage progress")} />
                           ) : (
-                            <small>No limit</small>
+                            <small>{translateUi("No limit")}</small>
                           )}
                         </div>
 
                         <div className="coupons-date-col">
                           <span>{formatDate(coupon.startDate)} - {formatDate(coupon.endDate)}</span>
-                          <small>Created {formatDate(coupon.createdAt)}</small>
+                          <small>{translateUi("Created")} {formatDate(coupon.createdAt)}</small>
                         </div>
 
                         <div className="coupons-status-col">
-                          <span className={`coupons-status-pill ${status.className}`}>{status.label}</span>
+                          <span className={`coupons-status-pill ${status.className}`}>{translateUi(status.label)}</span>
                         </div>
                       </div>
 
                       <div className="coupons-row-actions">
                         <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => copyCouponCode(coupon.code)}>
-                          <Copy size={13} /> Copy
-                        </button>
+                          <Copy size={13} />{translateUi("Copy")}</button>
                         <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => duplicateCoupon(coupon)}>
-                          <Plus size={13} /> Duplicate
-                        </button>
+                          <Plus size={13} />{translateUi("Duplicate")}</button>
                         <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openEditModal(coupon)}>
-                          <Edit2 size={13} /> Edit
-                        </button>
+                          <Edit2 size={13} />{translateUi("Edit")}</button>
                         <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => updateCouponActive(coupon.id, !coupon.isActive)}>
-                          {coupon.isActive ? <><X size={13} /> Disable</> : <><Check size={13} /> Enable</>}
+                          {coupon.isActive ? <><X size={13} /> {translateUi("Disable")}</> : <><Check size={13} /> {translateUi("Enable")}</>}
                         </button>
                         <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(coupon.id)}>
-                          <Trash2 size={13} /> Delete
-                        </button>
+                          <Trash2 size={13} />{translateUi("Delete")}</button>
                       </div>
                     </article>
                   );

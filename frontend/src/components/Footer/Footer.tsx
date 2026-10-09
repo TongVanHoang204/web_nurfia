@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import './Footer.css';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail } from 'lucide-react';
@@ -11,6 +13,7 @@ const InstagramIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill
 const TwitterIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>;
 
 export default function Footer() {
+  useTranslation();
   const [email, setEmail] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
   const { addToast } = useUIStore();
@@ -48,12 +51,12 @@ export default function Footer() {
         <div className="container">
           <div className="newsletter-inner">
             <div className="newsletter-text">
-              <h3>Subscribe To Our Newsletter</h3>
-              <p>Get the latest updates on new products and upcoming sales</p>
+              <h3>{translateUi("Subscribe To Our Newsletter")}</h3>
+              <p>{translateUi("Get the latest updates on new products and upcoming sales")}</p>
             </div>
             <form className="newsletter-form" onSubmit={handleSubscribe}>
-              <input type="email" placeholder="Your email address" className="newsletter-input" required value={email} onChange={e => setEmail(e.target.value)} />
-              <button type="submit" className="btn btn-primary" disabled={isSubscribing}>{isSubscribing ? 'Subscribing...' : 'Subscribe'}</button>
+              <input type="email" placeholder={translateUi("Your email address")} className="newsletter-input" required value={email} onChange={e => setEmail(e.target.value)} />
+              <button type="submit" className="btn btn-primary" disabled={isSubscribing}>{isSubscribing ? translateUi("Subscribing...") : translateUi("Subscribe")}</button>
             </form>
           </div>
         </div>
@@ -66,33 +69,33 @@ export default function Footer() {
               <img src={logoUrl} alt={siteName} className="footer-logo-img" />
               <p className="footer-about">{siteDescription}</p>
               <div className="footer-social">
-                <a href={facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FacebookIcon /></a>
-                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><InstagramIcon /></a>
-                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" aria-label="Twitter"><TwitterIcon /></a>
+                <a href={facebookUrl} target="_blank" rel="noopener noreferrer" aria-label={translateUi("Facebook")}><FacebookIcon /></a>
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label={translateUi("Instagram")}><InstagramIcon /></a>
+                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" aria-label={translateUi("Twitter")}><TwitterIcon /></a>
               </div>
             </div>
             <div className="footer-col">
-              <h4 className="footer-title">Quick Links</h4>
+              <h4 className="footer-title">{translateUi("Quick Links")}</h4>
               <ul className="footer-links">
-                <li><Link to="/category/women">Women</Link></li>
-                <li><Link to="/category/men">Men</Link></li>
-                <li><Link to="/category/accessories">Accessories</Link></li>
-                <li><Link to="/blog">Blog</Link></li>
-                <li><Link to="/contact">Contact Us</Link></li>
+                <li><Link to="/category/women">{translateUi("Women")}</Link></li>
+                <li><Link to="/category/men">{translateUi("Men")}</Link></li>
+                <li><Link to="/category/accessories">{translateUi("Accessories")}</Link></li>
+                <li><Link to="/blog">{translateUi("Blog")}</Link></li>
+                <li><Link to="/contact">{translateUi("Contact Us")}</Link></li>
               </ul>
             </div>
             <div className="footer-col">
-              <h4 className="footer-title">Customer Service</h4>
+              <h4 className="footer-title">{translateUi("Customer Service")}</h4>
               <ul className="footer-links">
-                <li><Link to="/account">My Account</Link></li>
-                <li><Link to="/account/orders">Order Tracking</Link></li>
-                <li><Link to="/policy/shipping">Shipping Policy</Link></li>
-                <li><Link to="/policy/returns">Returns & Exchanges</Link></li>
-                <li><Link to="/policy/privacy">Privacy Policy</Link></li>
+                <li><Link to="/account">{translateUi("My Account")}</Link></li>
+                <li><Link to="/account/orders">{translateUi("Order Tracking")}</Link></li>
+                <li><Link to="/policy/shipping">{translateUi("Shipping Policy")}</Link></li>
+                <li><Link to="/policy/returns">{translateUi("Returns & Exchanges")}</Link></li>
+                <li><Link to="/policy/privacy">{translateUi("Privacy Policy")}</Link></li>
               </ul>
             </div>
             <div className="footer-col">
-              <h4 className="footer-title">Contact Us</h4>
+              <h4 className="footer-title">{translateUi("Contact Us")}</h4>
               <ul className="footer-contact">
                 <li><MapPin size={16} /><span>{footerAddress}</span></li>
                 <li><Phone size={16} /><span>{footerPhone}</span></li>
@@ -105,12 +108,12 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <div className="container footer-bottom-inner">
-          <p>&copy; {new Date().getFullYear()} {siteName}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {siteName}{translateUi(". All rights reserved.")}</p>
           <div className="payment-methods">
-            <img src="/assets/svg/payment.svg" alt="Visa" className="payment-icon-img" />
-            <img src="/assets/svg/payment2.svg" alt="Mastercard" className="payment-icon-img" />
-            <img src="/assets/svg/payment3.svg" alt="PayPal" className="payment-icon-img" />
-            <img src="/assets/svg/payment4.svg" alt="Apple Pay" className="payment-icon-img" />
+            <img src="/assets/svg/payment.svg" alt={translateUi("Visa")} className="payment-icon-img" />
+            <img src="/assets/svg/payment2.svg" alt={translateUi("Mastercard")} className="payment-icon-img" />
+            <img src="/assets/svg/payment3.svg" alt={translateUi("PayPal")} className="payment-icon-img" />
+            <img src="/assets/svg/payment4.svg" alt={translateUi("Apple Pay")} className="payment-icon-img" />
           </div>
         </div>
       </div>

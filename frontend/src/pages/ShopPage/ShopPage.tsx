@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Grid3X3, LayoutGrid, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
@@ -8,6 +10,7 @@ import ActiveFilters from "../../components/ActiveFilters/ActiveFilters";
 import './ShopPage.css';
 
 export default function ShopPage() {
+  useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 0 });
@@ -17,7 +20,7 @@ export default function ShopPage() {
   const [gridCols, setGridCols] = useState(3); // Default to 3 columns per screenshot
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
-  
+
   const page = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => {
@@ -78,16 +81,16 @@ export default function ShopPage() {
     <div className="shop-page container">
       {/* Breadcrumb could go here if needed, but per screenshot we jump straight to layout */}
       <div className="shop-layout">
-        
+
         {/* Sidebar Filters - Desktop & Mobile Drawer */}
         <div className={`shop-sidebar-container ${isMobileFilterOpen ? 'mobile-open' : ''}`}>
            <div className="mobile-filter-header">
-              <h3>Filters</h3>
-              <button title="Close filters" onClick={() => setIsMobileFilterOpen(false)}><X size={20} /></button>
+              <h3>{translateUi("Filters")}</h3>
+              <button title={translateUi("Close filters")} onClick={() => setIsMobileFilterOpen(false)}><X size={20} /></button>
            </div>
            <FilterSidebar />
         </div>
-        
+
         {/* Backdrop for mobile drawer */}
         {isMobileFilterOpen && (
           <div className="drawer-backdrop" onClick={() => setIsMobileFilterOpen(false)}></div>
@@ -98,32 +101,30 @@ export default function ShopPage() {
           {/* Toolbar */}
           <div className="shop-toolbar">
             <div className="toolbar-left">
-               <button 
-                  className="mobile-filter-trigger" 
+               <button
+                  className="mobile-filter-trigger"
                   onClick={() => setIsMobileFilterOpen(true)}
                >
                  <SlidersHorizontal size={18} />
-                 <span>Filter</span>
+                 <span>{translateUi("Filter")}</span>
                </button>
-               <p className="result-count">
-                 Showing {Math.min((page - 1) * itemsPerPage + 1, pagination.total)}-
-                 {Math.min(page * itemsPerPage, pagination.total)} of {pagination.total} results
-               </p>
+               <p className="result-count">{translateUi("Showing")}{Math.min((page - 1) * itemsPerPage + 1, pagination.total)}-
+                 {Math.min(page * itemsPerPage, pagination.total)} {translateUi("of")} {pagination.total}{translateUi("results")}</p>
             </div>
 
             <div className="toolbar-controls">
               <div className="grid-toggle">
-                <button aria-label="3 Columns Grid" title="3 Columns Grid" className={gridCols === 3 ? 'active' : ''} onClick={() => setGridCols(3)}><Grid3X3 size={16} /></button>
-                <button aria-label="4 Columns Grid" title="4 Columns Grid" className={gridCols === 4 ? 'active' : ''} onClick={() => setGridCols(4)}><LayoutGrid size={16} /></button>
+                <button aria-label={translateUi("3 Columns Grid")} title={translateUi("3 Columns Grid")} className={gridCols === 3 ? 'active' : ''} onClick={() => setGridCols(3)}><Grid3X3 size={16} /></button>
+                <button aria-label={translateUi("4 Columns Grid")} title={translateUi("4 Columns Grid")} className={gridCols === 4 ? 'active' : ''} onClick={() => setGridCols(4)}><LayoutGrid size={16} /></button>
               </div>
               <div className="sort-select">
-                <label className="visually-hidden" htmlFor="sort-select">Sort by</label>
-                <select id="sort-select" title="Sort products" aria-label="Sort products" value={sort} onChange={(e) => handleSort(e.target.value)}>
-                  <option value="default">Default sorting</option>
-                  <option value="newest">Sort by latest</option>
-                  <option value="price_asc">Sort by price: low to high</option>
-                  <option value="price_desc">Sort by price: high to low</option>
-                  <option value="rating">Sort by average rating</option>
+                <label className="visually-hidden" htmlFor="sort-select">{translateUi("Sort by")}</label>
+                <select id="sort-select" title={translateUi("Sort products")} aria-label={translateUi("Sort products")} value={sort} onChange={(e) => handleSort(e.target.value)}>
+                  <option value="default">{translateUi("Default sorting")}</option>
+                  <option value="newest">{translateUi("Sort by latest")}</option>
+                  <option value="price_asc">{translateUi("Sort by price: low to high")}</option>
+                  <option value="price_desc">{translateUi("Sort by price: high to low")}</option>
+                  <option value="rating">{translateUi("Sort by average rating")}</option>
                 </select>
               </div>
             </div>
@@ -132,13 +133,13 @@ export default function ShopPage() {
           {/* Product Grid */}
           <div className={`product-grid grid-${gridCols}`}>
             {isLoading ? (
-              <div className="loading-state">Loading products...</div>
+              <div className="loading-state">{translateUi("Loading products...")}</div>
             ) : products.length > 0 ? (
               products.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))
             ) : (
-              <p>No products found matching your selection.</p>
+              <p>{translateUi("No products found matching your selection.")}</p>
             )}
           </div>
 
@@ -146,19 +147,19 @@ export default function ShopPage() {
           {pagination.totalPages > 1 && (
             <div className="shop-pagination">
               {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(num => (
-                <button 
-                  key={num} 
-                  className={num === page ? 'active' : ''} 
+                <button
+                  key={num}
+                  className={num === page ? 'active' : ''}
                   onClick={() => handlePage(num)}
                 >
                   {num}
                 </button>
               ))}
-              <button 
-                className="next-page" 
-                aria-label="Next page"
-                title="Next page"
-                onClick={() => handlePage(page + 1)} 
+              <button
+                className="next-page"
+                aria-label={translateUi("Next page")}
+                title={translateUi("Next page")}
+                onClick={() => handlePage(page + 1)}
                 disabled={page >= pagination.totalPages}
               >
                 <ChevronRight size={16} />
@@ -171,7 +172,7 @@ export default function ShopPage() {
       {/* Recently Viewed Section */}
       {recentlyViewed.length > 0 && (
         <div className="recently-viewed">
-          <h3>Recently viewed</h3>
+          <h3>{translateUi("Recently viewed")}</h3>
           <div className="recent-grid grid-4">
             {recentlyViewed.slice(0, 4).map(product => (
                <ProductCard key={`recent-${product.id}`} product={product} />

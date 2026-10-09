@@ -57,6 +57,23 @@ test('legacy tokens without a version require a new login', async () => {
   expect((await request(app()).get('/private').set('Authorization', 'Bearer ' + token(null))).status).toBe(401);
 });
 
+test('restricted Admin login and profile expose only the permissions set by Owner', async () => {
+  user.adminPermissionsRestricted = true;
+  user.permissions = ['MANAGE_ORDERS'];
+  const login = await authService.login('test-admin', 'old-password');
+  const profile = await authService.getProfile(user.id);
+  expect(login.user.permissions).toEqual(['MANAGE_ORDERS']);
+  expect(profile.permissions).toEqual(['MANAGE_ORDERS']);
+  expect(profile.adminPermissionsRestricted).toBeUndefined();
+});
+
+test('legacy Admin login and profile preserve all modules until Owner configures them', async () => {
+  const login = await authService.login('test-admin', 'old-password');
+  const profile = await authService.getProfile(user.id);
+  expect(login.user.permissions).toContain('MANAGE_SETTINGS');
+  expect(profile.permissions).toContain('MANAGE_STAFF');
+});
+
 test('owner login, profile and authenticated requests expose OWNER without leaking the storage flag', async () => {
   user.isOwner = true;
   const login = await authService.login('test-admin', 'old-password');

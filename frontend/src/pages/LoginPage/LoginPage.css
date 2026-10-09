@@ -46,8 +46,8 @@
 .login-debug-card {
   margin-bottom: 20px;
   padding: 14px 16px;
-  border: 1px dashed #d1d5db;
-  background: #f9fafb;
+  border: 1px dashed var(--color-border, #d1d5db);
+  background: var(--surface-soft, #f9fafb);
   font-size: 13px;
 }
 .login-debug-card p {
@@ -57,12 +57,12 @@
   display: inline-flex;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text, #111827);
   text-decoration: underline;
 }
 .login-debug-raw {
   word-break: break-all;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   font-size: 12px;
 }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -84,7 +84,7 @@
   height: 28px;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -93,14 +93,14 @@
 }
 
 .password-toggle-btn:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--surface-soft, #f3f4f6);
+  color: var(--color-text, #111827);
 }
 
 .login-text-btn {
   margin: -6px 0 20px;
   font-size: 13px;
-  color: #111827;
+  color: var(--color-text, #111827);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -111,7 +111,7 @@
   color: var(--color-text-light);
 }
 .login-switch button {
-  color: var(--color-black);
+  color: var(--color-text);
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
@@ -156,7 +156,7 @@
 
 /* Read-only input for auto-filled email */
 .form-input[readonly] {
-  background: #f5f5f5;
+  background: var(--surface-soft, #f5f5f5);
   cursor: not-allowed;
   opacity: 0.75;
 }

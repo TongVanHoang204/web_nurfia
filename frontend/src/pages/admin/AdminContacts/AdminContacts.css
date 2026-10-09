@@ -17,7 +17,7 @@
 .contacts-stat-card {
   padding: 18px 20px;
   border-radius: 20px;
-  background: #fff;
+  background: var(--surface, #fff);
   border: 1px solid rgba(17, 24, 39, 0.08);
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.04);
 }
@@ -55,7 +55,7 @@
   padding: 0 14px;
   border: 1px solid rgba(17, 24, 39, 0.12);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface, #fff);
 }
 
 .contacts-search-wrap input,
@@ -110,7 +110,7 @@
   padding: 18px;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 18px;
-  background: #fff;
+  background: var(--surface, #fff);
 }
 
 .contacts-row-card.is-unread {
@@ -192,7 +192,7 @@
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 3px 8px;
   font-size: 10px;
   font-weight: 800;
@@ -218,7 +218,7 @@
 
 .contacts-reply-history h4 {
   margin: 0 0 8px;
-  color: var(--color-black);
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 700;
 }
@@ -306,7 +306,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   color: var(--color-text);
   font-size: 12px;
   font-weight: 700;
@@ -360,7 +360,7 @@
 .contacts-detail-meta-grid div,
 .contacts-detail-section {
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   padding: 14px;
 }
 
@@ -377,14 +377,14 @@
 
 .contacts-detail-meta-grid strong {
   display: block;
-  color: var(--color-black);
+  color: var(--color-text);
   font-size: 13px;
   overflow-wrap: anywhere;
 }
 
 .contacts-detail-section h3 {
   margin: 0;
-  color: var(--color-black);
+  color: var(--color-text);
   font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 400;
@@ -413,7 +413,7 @@
 .contacts-reply-context {
   padding: 14px;
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--surface-soft, #f8fafc);
   border: 1px solid rgba(148, 163, 184, 0.16);
 }
 
@@ -457,7 +457,7 @@
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.2);
-  background: #f8fafc;
+  background: var(--surface-soft, #f8fafc);
 }
 
 @media (max-width: 1100px) {

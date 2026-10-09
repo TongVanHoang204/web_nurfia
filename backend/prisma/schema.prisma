@@ -18,6 +18,7 @@ model User {
   phone        String?   @db.VarChar(20)
   role         UserRole  @default(CUSTOMER)
   isOwner      Boolean   @default(false) @map("is_owner")
+  adminPermissionsRestricted Boolean @default(false) @map("admin_permissions_restricted")
   permissions  Json?     @db.Json
   isActive     Boolean   @default(true) @map("is_active")
   resetToken   String?   @map("reset_token") @db.VarChar(255)

@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 ﻿import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import {
@@ -18,6 +20,7 @@ import api from '../../../api/client';
 import { useUIStore } from '../../../stores/uiStore';
 import { resolveSiteAssetUrl } from '../../../contexts/SiteSettingsContext';
 import './AdminInventory.css';
+import { useSearchParams } from 'react-router-dom';
 
 type InventoryTab = 'STOCK' | 'LOGS';
 type InventoryType = 'IN' | 'OUT' | 'ADJUSTMENT' | 'RETURN';
@@ -211,11 +214,19 @@ const downloadCsv = (fileName: string, headers: string[], rows: string[][]) => {
 };
 
 export default function AdminInventory() {
+  useTranslation();
+  const [searchParams] = useSearchParams();
+  const notificationSku = searchParams.get('sku') || '';
   const { addToast } = useUIStore();
 
   const [activeTab, setActiveTab] = useState<InventoryTab>('STOCK');
 
   const [stockSearchInput, setStockSearchInput] = useState('');
+  useEffect(() => {
+    if (!notificationSku) return;
+    setStockSearchInput(notificationSku);
+    setStockStatus('ALL'); setStockSkuFilter('ALL'); setActiveTab('STOCK');
+  }, [notificationSku]);
   const [stockStatus, setStockStatus] = useState<StockStatusFilter>('ALL');
   const [stockSkuFilter, setStockSkuFilter] = useState('ALL');
   const [lowThreshold, setLowThreshold] = useState(10);
@@ -285,6 +296,8 @@ export default function AdminInventory() {
   const displayedStocks = useMemo(() => {
     return stocks
       .map((product) => {
+        const focusSku = stockSearchInput === notificationSku ? notificationSku : '';
+        if (focusSku && product.sku !== focusSku && !product.variants?.some(variant => variant.sku === focusSku)) return null;
         if (stockSkuFilter !== 'ALL' && product.sku !== stockSkuFilter) {
           return null;
         }
@@ -301,9 +314,10 @@ export default function AdminInventory() {
           };
         }
 
+        const sourceVariants = focusSku && product.sku !== focusSku ? variants.filter(variant => variant.sku === focusSku) : variants;
         const visibleVariants = stockStatus === 'ALL'
-          ? variants
-          : variants.filter((variant) => stockMatchesStatus([Number(variant.stock) || 0], stockStatus, lowThreshold));
+          ? sourceVariants
+          : sourceVariants.filter((variant) => stockMatchesStatus([Number(variant.stock) || 0], stockStatus, lowThreshold));
 
         if (visibleVariants.length === 0) return null;
 
@@ -313,7 +327,7 @@ export default function AdminInventory() {
         };
       })
       .filter(Boolean) as StockProduct[];
-  }, [stocks, stockStatus, stockSkuFilter, lowThreshold]);
+  }, [stocks, stockStatus, stockSkuFilter, lowThreshold, notificationSku, stockSearchInput]);
 
   useEffect(() => {
     setExpandedProductGroups((previous) => {
@@ -327,7 +341,7 @@ export default function AdminInventory() {
           return;
         }
 
-        next[key] = stockSkuFilter !== 'ALL';
+        next[key] = Boolean(notificationSku) || stockSkuFilter !== 'ALL';
       });
 
       const previousKeys = Object.keys(previous);
@@ -345,7 +359,7 @@ export default function AdminInventory() {
 
       return previous;
     });
-  }, [displayedStocks, stockSkuFilter]);
+  }, [displayedStocks, stockSkuFilter, notificationSku]);
 
   const productsWithVariants = useMemo(() => {
     return displayedStocks.filter((product) => (product.variants || []).length > 0);
@@ -726,7 +740,7 @@ export default function AdminInventory() {
       const productRowKey = `product-${product.id}`;
 
       rows.push(
-        <tr key={productRowKey} className="ai-stock-product-row">
+        <tr key={productRowKey} className={`ai-stock-product-row${product.sku === notificationSku ? ' notification-target-row' : ''}`}>
           <td>
             <div className="ai-product-cell">
               {hasVariants ? (
@@ -734,7 +748,7 @@ export default function AdminInventory() {
                   type="button"
                   className="ai-row-toggle"
                   onClick={() => toggleProductGroup(product.id)}
-                  aria-label={`Toggle variants for ${product.name}`}
+                  aria-label={translateUi("Toggle variants for {{value1}}", { value1: product.name })}
                 >
                   <ChevronRight size={14} className={`ai-row-toggle-caret ${isExpanded ? 'expanded' : ''}`} />
                 </button>
@@ -751,8 +765,8 @@ export default function AdminInventory() {
                 <strong>{product.name}</strong>
                 <small>
                   {hasVariants
-                    ? `${visibleVariants.length} SKU variants`
-                    : 'Single SKU product'}
+                    ? translateUi("{{value1}} SKU variants", { value1: visibleVariants.length })
+                    : translateUi("Single SKU product")}
                 </small>
               </div>
             </div>
@@ -761,11 +775,11 @@ export default function AdminInventory() {
           <td>
             <div className="ai-stock-cell">
               <span className={`ai-stock-value ${productStatus.className}`}>{product.stock}</span>
-              {hasVariants && <small>Total of variant SKUs</small>}
+              {hasVariants && <small>{translateUi("Total of variant SKUs")}</small>}
             </div>
           </td>
           <td>
-            <span className={`ai-status-pill ${productStatus.className}`}>{productStatus.label}</span>
+            <span className={`ai-status-pill ${productStatus.className}`}>{translateUi(productStatus.label)}</span>
           </td>
           <td>
             {hasVariants ? (
@@ -774,23 +788,23 @@ export default function AdminInventory() {
                 className="admin-btn admin-btn-outline admin-btn-sm"
                 onClick={() => toggleProductGroup(product.id)}
               >
-                {isExpanded ? 'Hide Variants' : `Show Variants (${visibleVariants.length})`}
+                {isExpanded ? translateUi("Hide Variants") : translateUi("Show Variants ({{value1}})", { value1: visibleVariants.length })}
               </button>
             ) : editingRow?.key === productRowKey ? (
               <div className="ai-inline-edit">
                 <input
                   type="number"
                   min="0"
-                  title="Edit stock quantity"
-                  aria-label="Edit stock quantity"
+                  title={translateUi("Edit stock quantity")}
+                  aria-label={translateUi("Edit stock quantity")}
                   value={editingRow.value}
                   onChange={(event) => setEditingRow({ ...editingRow, value: event.target.value })}
                   onKeyDown={handleInlineKeyDown}
                 />
-                <button type="button" className="ai-icon-btn success" onClick={handleInlineSave} title="Save">
+                <button type="button" className="ai-icon-btn success" onClick={handleInlineSave} title={translateUi("Save")}>
                   <Check size={15} />
                 </button>
-                <button type="button" className="ai-icon-btn danger" onClick={() => setEditingRow(null)} title="Cancel">
+                <button type="button" className="ai-icon-btn danger" onClick={() => setEditingRow(null)} title={translateUi("Cancel")}>
                   <X size={15} />
                 </button>
               </div>
@@ -806,9 +820,7 @@ export default function AdminInventory() {
                     value: String(product.stock),
                   })
                 }
-              >
-                Quick Edit
-              </button>
+              >{translateUi("Quick Edit")}</button>
             )}
           </td>
         </tr>,
@@ -824,7 +836,7 @@ export default function AdminInventory() {
         const colorMeta = getVariantColorMeta(variant);
 
         rows.push(
-          <tr key={rowKey} className="ai-stock-variant-row">
+          <tr key={rowKey} className={`ai-stock-variant-row${variant.sku === notificationSku ? ' notification-target-row' : ''}`}>
             <td>
               <div className="ai-variant-cell">
                 <span className="ai-variant-dot" />
@@ -834,7 +846,7 @@ export default function AdminInventory() {
                     <circle cx="7" cy="7" r="6" fill={colorMeta.hex} stroke="#cbd5e1" />
                   </svg>
                 )}
-                {colorMeta.label && <span className="ai-color-chip-text">{colorMeta.label}</span>}
+                {colorMeta.label && <span className="ai-color-chip-text">{translateUi(colorMeta.label)}</span>}
               </div>
             </td>
             <td>{variant.sku || product.sku || '-'}</td>
@@ -842,7 +854,7 @@ export default function AdminInventory() {
               <span className={`ai-stock-value ${variantStatus.className}`}>{variant.stock}</span>
             </td>
             <td>
-              <span className={`ai-status-pill ${variantStatus.className}`}>{variantStatus.label}</span>
+              <span className={`ai-status-pill ${variantStatus.className}`}>{translateUi(variantStatus.label)}</span>
             </td>
             <td>
               {editingRow?.key === rowKey ? (
@@ -850,16 +862,16 @@ export default function AdminInventory() {
                   <input
                     type="number"
                     min="0"
-                    title="Edit variant stock quantity"
-                    aria-label="Edit variant stock quantity"
+                    title={translateUi("Edit variant stock quantity")}
+                    aria-label={translateUi("Edit variant stock quantity")}
                     value={editingRow.value}
                     onChange={(event) => setEditingRow({ ...editingRow, value: event.target.value })}
                     onKeyDown={handleInlineKeyDown}
                   />
-                  <button type="button" className="ai-icon-btn success" onClick={handleInlineSave} title="Save">
+                  <button type="button" className="ai-icon-btn success" onClick={handleInlineSave} title={translateUi("Save")}>
                     <Check size={15} />
                   </button>
-                  <button type="button" className="ai-icon-btn danger" onClick={() => setEditingRow(null)} title="Cancel">
+                  <button type="button" className="ai-icon-btn danger" onClick={() => setEditingRow(null)} title={translateUi("Cancel")}>
                     <X size={15} />
                   </button>
                 </div>
@@ -876,9 +888,7 @@ export default function AdminInventory() {
                       value: String(variant.stock),
                     })
                   }
-                >
-                  Quick Edit
-                </button>
+                >{translateUi("Quick Edit")}</button>
               )}
             </td>
           </tr>,
@@ -892,8 +902,8 @@ export default function AdminInventory() {
           <td colSpan={5}>
             <div className="ai-empty-state">
               <Layers size={42} />
-              <h3>No stock records found</h3>
-              <p>Try changing your search, stock filters, or SKU dropdown.</p>
+              <h3>{translateUi("No stock records found")}</h3>
+              <p>{translateUi("Try changing your search, stock filters, or SKU dropdown.")}</p>
             </div>
           </td>
         </tr>,
@@ -907,47 +917,42 @@ export default function AdminInventory() {
     <div className="ai-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Inventory Control Center</h1>
-          <p className="ai-subtitle">Track live stock levels, process adjustments quickly, and audit every inventory movement.</p>
+          <h1 className="admin-page-title">{translateUi("Inventory Control Center")}</h1>
+          <p className="ai-subtitle">{translateUi("Track live stock levels, process adjustments quickly, and audit every inventory movement.")}</p>
 
           <div className="ai-tab-switcher">
             <button
               className={`admin-btn ${activeTab === 'STOCK' ? 'admin-btn-primary' : 'admin-btn-outline'}`}
               onClick={() => setActiveTab('STOCK')}
-            >
-              Current Stock
-            </button>
+            >{translateUi("Current Stock")}</button>
             <button
               className={`admin-btn ${activeTab === 'LOGS' ? 'admin-btn-primary' : 'admin-btn-outline'}`}
               onClick={() => setActiveTab('LOGS')}
-            >
-              Inventory History
-            </button>
+            >{translateUi("Inventory History")}</button>
           </div>
         </div>
 
         <button className="admin-btn admin-btn-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={16} /> Update Inventory
-        </button>
+          <Plus size={16} />{translateUi("Update Inventory")}</button>
       </div>
 
       {activeTab === 'STOCK' ? (
         <>
           <div className="ai-stats-grid">
             <article className="ai-stat-card admin-card">
-              <span>Products in Scope</span>
+              <span>{translateUi("Products in Scope")}</span>
               <strong>{resolvedStockStats.totalProducts}</strong>
             </article>
             <article className="ai-stat-card admin-card">
-              <span>Total Units</span>
+              <span>{translateUi("Total Units")}</span>
               <strong>{resolvedStockStats.totalUnits}</strong>
             </article>
             <article className="ai-stat-card warning admin-card">
-              <span>Low Stock (&lt;= {resolvedStockStats.lowThreshold})</span>
+              <span>{translateUi("Low Stock (<=")} {resolvedStockStats.lowThreshold})</span>
               <strong>{resolvedStockStats.lowStockProducts}</strong>
             </article>
             <article className="ai-stat-card danger admin-card">
-              <span>Out Of Stock</span>
+              <span>{translateUi("Out Of Stock")}</span>
               <strong>{resolvedStockStats.outOfStockProducts}</strong>
             </article>
           </div>
@@ -959,37 +964,35 @@ export default function AdminInventory() {
                 <input
                   value={stockSearchInput}
                   onChange={(event) => setStockSearchInput(event.target.value)}
-                  placeholder="Search by product name or SKU"
+                  placeholder={translateUi("Search by product name or SKU")}
                 />
               </div>
 
               <select
-                title="Filter stock status"
-                aria-label="Filter stock status"
+                title={translateUi("Filter stock status")}
+                aria-label={translateUi("Filter stock status")}
                 value={stockStatus}
                 onChange={(event) => setStockStatus(event.target.value as StockStatusFilter)}
               >
-                <option value="ALL">All Status</option>
-                <option value="LOW_STOCK">Low Stock</option>
-                <option value="OUT_OF_STOCK">Out Of Stock</option>
-                <option value="IN_STOCK">Healthy Stock</option>
+                <option value="ALL">{translateUi("All Status")}</option>
+                <option value="LOW_STOCK">{translateUi("Low Stock")}</option>
+                <option value="OUT_OF_STOCK">{translateUi("Out Of Stock")}</option>
+                <option value="IN_STOCK">{translateUi("Healthy Stock")}</option>
               </select>
 
               <select
-                title="Filter by product SKU"
-                aria-label="Filter by product SKU"
+                title={translateUi("Filter by product SKU")}
+                aria-label={translateUi("Filter by product SKU")}
                 value={stockSkuFilter}
                 onChange={(event) => setStockSkuFilter(event.target.value)}
               >
-                <option value="ALL">All Product SKU</option>
+                <option value="ALL">{translateUi("All Product SKU")}</option>
                 {availableSkuOptions.map((sku) => (
                   <option key={sku} value={sku}>{sku}</option>
                 ))}
               </select>
 
-              <label className="ai-threshold-input">
-                Low Threshold
-                <input
+              <label className="ai-threshold-input">{translateUi("Low Threshold")}<input
                   type="number"
                   min="1"
                   max="9999"
@@ -999,11 +1002,10 @@ export default function AdminInventory() {
               </label>
 
               <button type="button" className="admin-btn admin-btn-outline" onClick={() => fetchStocks(stockPagination.page)}>
-                <RefreshCw size={14} /> Refresh
-              </button>
+                <RefreshCw size={14} />{translateUi("Refresh")}</button>
 
               <button type="button" className="admin-btn admin-btn-outline" onClick={toggleAllProductGroups}>
-                <Layers size={14} /> {allProductGroupsExpanded ? 'Collapse Products' : 'Expand Products'}
+                <Layers size={14} /> {allProductGroupsExpanded ? translateUi("Collapse Products") : translateUi("Expand Products")}
               </button>
             </div>
           </div>
@@ -1017,11 +1019,11 @@ export default function AdminInventory() {
                   <table className="ai-table admin-table">
                     <thead>
                       <tr>
-                        <th>Product / Variant</th>
-                        <th>SKU</th>
-                        <th>Stock</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th>{translateUi("Product / Variant")}</th>
+                        <th>{translateUi("SKU")}</th>
+                        <th>{translateUi("Stock")}</th>
+                        <th>{translateUi("Status")}</th>
+                        <th>{translateUi("Action")}</th>
                       </tr>
                     </thead>
                     <tbody>{stockRows}</tbody>
@@ -1030,9 +1032,8 @@ export default function AdminInventory() {
 
                 {stockPagination.totalPages > 1 && (
                   <div className="ai-pagination-wrap">
-                    <p>
-                      Showing <strong>{(stockPagination.page - 1) * 20 + 1}</strong> to{' '}
-                      <strong>{Math.min(stockPagination.page * 20, stockPagination.total)}</strong> of{' '}
+                    <p>{translateUi("Showing")}<strong>{(stockPagination.page - 1) * 20 + 1}</strong> {translateUi("to")}{' '}
+                      <strong>{Math.min(stockPagination.page * 20, stockPagination.total)}</strong> {translateUi("of")}{' '}
                       <strong>{stockPagination.total}</strong>
                     </p>
                     <div className="ai-pagination-buttons">
@@ -1040,17 +1041,13 @@ export default function AdminInventory() {
                         className="ai-page-btn"
                         disabled={stockPagination.page <= 1}
                         onClick={() => fetchStocks(stockPagination.page - 1)}
-                      >
-                        Prev
-                      </button>
+                      >{translateUi("Prev")}</button>
                       <span>{stockPagination.page} / {stockPagination.totalPages}</span>
                       <button
                         className="ai-page-btn"
                         disabled={stockPagination.page >= stockPagination.totalPages}
                         onClick={() => fetchStocks(stockPagination.page + 1)}
-                      >
-                        Next
-                      </button>
+                      >{translateUi("Next")}</button>
                     </div>
                   </div>
                 )}
@@ -1062,19 +1059,19 @@ export default function AdminInventory() {
         <>
           <div className="ai-stats-grid">
             <article className="ai-stat-card admin-card">
-              <span>Total Logs</span>
+              <span>{translateUi("Total Logs")}</span>
               <strong>{logStats.total}</strong>
             </article>
             <article className="ai-stat-card success admin-card">
-              <span>IN / RETURN</span>
+              <span>{translateUi("IN / RETURN")}</span>
               <strong>{logStats.inCount + logStats.returnCount}</strong>
             </article>
             <article className="ai-stat-card warning admin-card">
-              <span>OUT</span>
+              <span>{translateUi("OUT")}</span>
               <strong>{logStats.outCount}</strong>
             </article>
             <article className="ai-stat-card neutral admin-card">
-              <span>ADJUSTMENT</span>
+              <span>{translateUi("ADJUSTMENT")}</span>
               <strong>{logStats.adjustmentCount}</strong>
             </article>
           </div>
@@ -1086,39 +1083,38 @@ export default function AdminInventory() {
                 <input
                   value={logSearchInput}
                   onChange={(event) => setLogSearchInput(event.target.value)}
-                  placeholder="Search by product, SKU, note, or staff"
+                  placeholder={translateUi("Search by product, SKU, note, or staff")}
                 />
               </div>
 
               <select
-                title="Filter log action type"
-                aria-label="Filter log action type"
+                title={translateUi("Filter log action type")}
+                aria-label={translateUi("Filter log action type")}
                 value={logType}
                 onChange={(event) => setLogType(event.target.value as 'ALL' | InventoryType)}
               >
-                <option value="ALL">All Actions</option>
-                <option value="IN">IN</option>
-                <option value="OUT">OUT</option>
-                <option value="RETURN">RETURN</option>
-                <option value="ADJUSTMENT">ADJUSTMENT</option>
+                <option value="ALL">{translateUi("All Actions")}</option>
+                <option value="IN">{translateUi("IN")}</option>
+                <option value="OUT">{translateUi("OUT")}</option>
+                <option value="RETURN">{translateUi("RETURN")}</option>
+                <option value="ADJUSTMENT">{translateUi("ADJUSTMENT")}</option>
               </select>
 
               <input
                 type="date"
                 value={logStartDate}
                 onChange={(event) => handleManualDateChange(event.target.value, logEndDate)}
-                title="Start date"
+                title={translateUi("Start date")}
               />
               <input
                 type="date"
                 value={logEndDate}
                 onChange={(event) => handleManualDateChange(logStartDate, event.target.value)}
-                title="End date"
+                title={translateUi("End date")}
               />
 
               <button type="button" className="admin-btn admin-btn-outline" onClick={handleExportLogs}>
-                <Download size={14} /> Export CSV
-              </button>
+                <Download size={14} />{translateUi("Export CSV")}</button>
             </div>
 
             <div className="ai-presets">
@@ -1129,7 +1125,7 @@ export default function AdminInventory() {
                   className={`ai-preset-btn ${logPreset === preset ? 'active' : ''}`}
                   onClick={() => applyLogPreset(preset)}
                 >
-                  {preset === 'TODAY' ? 'Today' : preset === '7D' ? '7 days' : preset === '30D' ? '30 days' : 'All time'}
+                  {preset === 'TODAY' ? translateUi("Today") : preset === '7D' ? translateUi("7 days") : preset === '30D' ? translateUi("30 days") : translateUi("All time")}
                 </button>
               ))}
             </div>
@@ -1141,8 +1137,8 @@ export default function AdminInventory() {
             ) : logs.length === 0 ? (
               <div className="ai-empty-state">
                 <PackageOpen size={42} />
-                <h3>No inventory logs found</h3>
-                <p>Try adjusting your filters or create a stock update.</p>
+                <h3>{translateUi("No inventory logs found")}</h3>
+                <p>{translateUi("Try adjusting your filters or create a stock update.")}</p>
               </div>
             ) : (
               <>
@@ -1150,13 +1146,13 @@ export default function AdminInventory() {
                   <table className="ai-table admin-table">
                     <thead>
                       <tr>
-                        <th>Date</th>
-                        <th>Product</th>
-                        <th>Action</th>
-                        <th>Change</th>
-                        <th>Stock After</th>
-                        <th>Note</th>
-                        <th>Updated By</th>
+                        <th>{translateUi("Date")}</th>
+                        <th>{translateUi("Product")}</th>
+                        <th>{translateUi("Action")}</th>
+                        <th>{translateUi("Change")}</th>
+                        <th>{translateUi("Stock After")}</th>
+                        <th>{translateUi("Note")}</th>
+                        <th>{translateUi("Updated By")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1174,7 +1170,7 @@ export default function AdminInventory() {
                             <td>
                               <div className="ai-log-product">
                                 <strong>{log.product?.name || '-'}</strong>
-                                <small>SKU: {log.variant?.sku || log.product?.sku || '-'}</small>
+                                <small>{translateUi("SKU:")} {log.variant?.sku || log.product?.sku || '-'}</small>
                               </div>
                             </td>
                             <td>
@@ -1197,9 +1193,8 @@ export default function AdminInventory() {
 
                 {logPagination.totalPages > 1 && (
                   <div className="ai-pagination-wrap">
-                    <p>
-                      Showing <strong>{(logPagination.page - 1) * 20 + 1}</strong> to{' '}
-                      <strong>{Math.min(logPagination.page * 20, logPagination.total)}</strong> of{' '}
+                    <p>{translateUi("Showing")}<strong>{(logPagination.page - 1) * 20 + 1}</strong> {translateUi("to")}{' '}
+                      <strong>{Math.min(logPagination.page * 20, logPagination.total)}</strong> {translateUi("of")}{' '}
                       <strong>{logPagination.total}</strong>
                     </p>
                     <div className="ai-pagination-buttons">
@@ -1207,17 +1202,13 @@ export default function AdminInventory() {
                         className="ai-page-btn"
                         disabled={logPagination.page <= 1}
                         onClick={() => fetchLogs(logPagination.page - 1)}
-                      >
-                        Prev
-                      </button>
+                      >{translateUi("Prev")}</button>
                       <span>{logPagination.page} / {logPagination.totalPages}</span>
                       <button
                         className="ai-page-btn"
                         disabled={logPagination.page >= logPagination.totalPages}
                         onClick={() => fetchLogs(logPagination.page + 1)}
-                      >
-                        Next
-                      </button>
+                      >{translateUi("Next")}</button>
                     </div>
                   </div>
                 )}
@@ -1231,65 +1222,65 @@ export default function AdminInventory() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content ai-modal-content">
             <div className="admin-modal-header">
-              <h2 className="admin-modal-title">Update Inventory</h2>
-              <button className="admin-modal-close" aria-label="Close" title="Close" onClick={() => setIsModalOpen(false)}>
+              <h2 className="admin-modal-title">{translateUi("Update Inventory")}</h2>
+              <button className="admin-modal-close" aria-label={translateUi("Close")} title={translateUi("Close")} onClick={() => setIsModalOpen(false)}>
                 <X size={20} />
               </button>
             </div>
 
             <form className="admin-form" onSubmit={handleCreateTransaction}>
               <div className="admin-form-group">
-                <label htmlFor="inv-product">Product</label>
+                <label htmlFor="inv-product">{translateUi("Product")}</label>
                 <select
                   id="inv-product"
                   value={formData.productId}
                   onChange={(event) => setFormData((prev) => ({ ...prev, productId: event.target.value, variantId: '' }))}
                   required
                 >
-                  <option value="">-- Select Product --</option>
+                  <option value="">{translateUi("-- Select Product --")}</option>
                   {selectableProducts.map((item) => (
-                    <option key={item.id} value={item.id}>{item.name} (Stock: {item.stock})</option>
+                    <option key={item.id} value={item.id}>{item.name} {translateUi("(Stock:")} {item.stock})</option>
                   ))}
                 </select>
               </div>
 
               {selectedProduct && (selectedProduct.variants || []).length > 0 && (
                 <div className="admin-form-group">
-                  <label htmlFor="inv-variant">Variant (Required)</label>
+                  <label htmlFor="inv-variant">{translateUi("Variant (Required)")}</label>
                   <select
                     id="inv-variant"
                     value={formData.variantId}
                     onChange={(event) => setFormData((prev) => ({ ...prev, variantId: event.target.value }))}
                     required={selectedProductHasVariants}
                   >
-                    <option value="">-- Select Variant SKU --</option>
+                    <option value="">{translateUi("-- Select Variant SKU --")}</option>
                     {(selectedProduct.variants || []).map((variant) => (
                       <option key={variant.id} value={variant.id}>
-                        {buildVariantLabel(variant)} (Stock: {variant.stock})
+                        {buildVariantLabel(variant)} {translateUi("(Stock:")} {variant.stock})
                       </option>
                     ))}
                   </select>
-                  <small className="ai-form-helper">Product stock is aggregated from variants, so updates must target a specific SKU.</small>
+                  <small className="ai-form-helper">{translateUi("Product stock is aggregated from variants, so updates must target a specific SKU.")}</small>
                 </div>
               )}
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="inv-type">Action</label>
+                  <label htmlFor="inv-type">{translateUi("Action")}</label>
                   <select
                     id="inv-type"
                     value={formData.type}
                     onChange={(event) => setFormData((prev) => ({ ...prev, type: event.target.value as InventoryType }))}
                   >
-                    <option value="IN">IN (Restock)</option>
-                    <option value="OUT">OUT (Damaged/Loss)</option>
-                    <option value="RETURN">RETURN (Customer Return)</option>
-                    <option value="ADJUSTMENT">ADJUSTMENT (Set Exact Stock)</option>
+                    <option value="IN">{translateUi("IN (Restock)")}</option>
+                    <option value="OUT">{translateUi("OUT (Damaged/Loss)")}</option>
+                    <option value="RETURN">{translateUi("RETURN (Customer Return)")}</option>
+                    <option value="ADJUSTMENT">{translateUi("ADJUSTMENT (Set Exact Stock)")}</option>
                   </select>
                 </div>
 
                 <div className="admin-form-group">
-                  <label htmlFor="inv-change">{formData.type === 'ADJUSTMENT' ? 'New Total' : 'Quantity'}</label>
+                  <label htmlFor="inv-change">{formData.type === 'ADJUSTMENT' ? translateUi("New Total") : translateUi("Quantity")}</label>
                   <input
                     id="inv-change"
                     type="number"
@@ -1309,15 +1300,14 @@ export default function AdminInventory() {
                     className="admin-btn admin-btn-outline admin-btn-sm"
                     onClick={() => setFormData((prev) => ({ ...prev, change: step }))}
                   >
-                    {formData.type === 'ADJUSTMENT' ? `Set ${step}` : `+${step}`}
+                    {formData.type === 'ADJUSTMENT' ? translateUi("Set {{value1}}", { value1: step }) : `+${step}`}
                   </button>
                 ))}
               </div>
 
               <div className="ai-stock-preview">
-                <span>Current: <strong>{selectedProductHasVariants && !selectedVariant ? '-' : currentStock}</strong></span>
-                <span>
-                  After Update:{' '}
+                <span>{translateUi("Current:")} <strong>{selectedProductHasVariants && !selectedVariant ? '-' : currentStock}</strong></span>
+                <span>{translateUi("After Update:")}{' '}
                   <strong className={projectedStock < 0 ? 'ai-negative' : 'ai-positive'}>
                     {selectedProductHasVariants && !selectedVariant ? '-' : projectedStock}
                   </strong>
@@ -1325,22 +1315,20 @@ export default function AdminInventory() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="inv-note">Note</label>
+                <label htmlFor="inv-note">{translateUi("Note")}</label>
                 <textarea
                   id="inv-note"
                   rows={3}
-                  placeholder="Why this adjustment was made"
+                  placeholder={translateUi("Why this adjustment was made")}
                   value={formData.note}
                   onChange={(event) => setFormData((prev) => ({ ...prev, note: event.target.value }))}
                 />
               </div>
 
               <div className="admin-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={() => setIsModalOpen(false)}>
-                  Cancel
-                </button>
+                <button type="button" className="admin-btn admin-btn-outline" onClick={() => setIsModalOpen(false)}>{translateUi("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary" disabled={isSubmitting || projectedStock < 0}>
-                  {isSubmitting ? 'Saving...' : 'Save Inventory'}
+                  {isSubmitting ? translateUi("Saving...") : translateUi("Save Inventory")}
                 </button>
               </div>
             </form>

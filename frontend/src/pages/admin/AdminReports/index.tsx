@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
@@ -236,7 +238,7 @@ const normalizeSparklineSeries = <T extends Record<string, unknown>>(series: T[]
 const toChartDate = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-GB', {
+  return date.toLocaleDateString(getLocale(), {
     day: '2-digit',
     month: '2-digit',
   });
@@ -245,7 +247,7 @@ const toChartDate = (value: string) => {
 const toChartDateFull = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-GB', {
+  return date.toLocaleDateString(getLocale(), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -263,6 +265,7 @@ const translateCustomerActivity = (status: string) => {
 const escapeCsvValue = (value: string | number) => `"${String(value ?? '').replace(/"/g, '""')}"`;
 
 function CustomTooltip({ active, payload, label, formatter, labelFormatter }: TooltipProps) {
+  useTranslation();
   if (!active || !payload?.length) return null;
 
   return (
@@ -306,6 +309,7 @@ function MetricCard({
   gradientId: string;
   sparklineData: Array<Record<string, unknown>>;
 }) {
+  useTranslation();
   return (
     <article className="reports-analytics-metric-card">
       <div className="reports-analytics-metric-top">
@@ -325,13 +329,13 @@ function MetricCard({
 
       <div className="reports-analytics-metric-value-wrap">
         <h3>{value}</h3>
-        <p>in this selected period</p>
+        <p>{translateUi("in this selected period")}</p>
       </div>
 
       <div className="reports-analytics-spark-wrap">
         <div className="reports-analytics-spark-head">
-          <span>Trend</span>
-          <span>Recent</span>
+          <span>{translateUi("Trend")}</span>
+          <span>{translateUi("Recent")}</span>
         </div>
         <div className="reports-analytics-spark-chart">
           {sparklineData.length > 0 ? (
@@ -369,6 +373,7 @@ function MetricCard({
 }
 
 export default function AdminReports() {
+  useTranslation();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ReportsData>(DEFAULT_REPORT_DATA);
   const [filters, setFilters] = useState<ReportFilters>({
@@ -655,14 +660,14 @@ export default function AdminReports() {
     <div className="reports-analytics-page">
       <div className="reports-analytics-header">
         <div>
-          <h1>Reports & Analytics</h1>
-          <p>Business performance overview ({toChartDateFull(data.range.startDate)} - {toChartDateFull(data.range.endDate)})</p>
+          <h1>{translateUi("Reports & Analytics")}</h1>
+          <p>{translateUi("Business performance overview (")}{toChartDateFull(data.range.startDate)} - {toChartDateFull(data.range.endDate)})</p>
         </div>
 
         <div className="reports-analytics-toolbar">
           <div className="reports-analytics-period-wrap">
             <select
-              title="Select report period"
+              title={translateUi("Select report period")}
               value={isCustomRangeActive ? 'custom' : String(filters.days)}
               onChange={(event) => {
                 const value = event.target.value;
@@ -674,16 +679,16 @@ export default function AdminReports() {
               }}
             >
               {RANGE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
+                <option key={option.value} value={option.value}>{translateUi(option.label)}</option>
               ))}
-              <option value="custom">Custom range</option>
+              <option value="custom">{translateUi("Custom range")}</option>
             </select>
             <Calendar size={15} className="reports-analytics-period-icon" />
           </div>
 
           <div className="reports-analytics-custom-range">
             <label>
-              <span>From</span>
+              <span>{translateUi("From")}</span>
               <input
                 type="date"
                 value={customRange.startDate}
@@ -692,7 +697,7 @@ export default function AdminReports() {
               />
             </label>
             <label>
-              <span>To</span>
+              <span>{translateUi("To")}</span>
               <input
                 type="date"
                 value={customRange.endDate}
@@ -701,16 +706,10 @@ export default function AdminReports() {
                 onChange={(event) => setCustomRange((current) => ({ ...current, endDate: event.target.value }))}
               />
             </label>
-            <button type="button" className="reports-analytics-toolbar-btn" onClick={handleApplyCustomRange}>
-              Apply
-            </button>
-            <button type="button" className="reports-analytics-toolbar-btn is-secondary" onClick={handleResetFilters}>
-              Reset
-            </button>
+            <button type="button" className="reports-analytics-toolbar-btn" onClick={handleApplyCustomRange}>{translateUi("Apply")}</button>
+            <button type="button" className="reports-analytics-toolbar-btn is-secondary" onClick={handleResetFilters}>{translateUi("Reset")}</button>
             <button type="button" className="reports-analytics-toolbar-btn is-secondary" onClick={handleExportCsv}>
-              <Download size={14} />
-              Export CSV
-            </button>
+              <Download size={14} />{translateUi("Export CSV")}</button>
           </div>
         </div>
       </div>
@@ -719,22 +718,20 @@ export default function AdminReports() {
         <div className="reports-analytics-ai-head">
           <div>
             <span className="reports-analytics-ai-badge">
-              <Sparkles size={14} />
-              AI Insight
-            </span>
-            <h2>Business recommendations</h2>
-            <p>Auto-generated from the selected report range.</p>
+              <Sparkles size={14} />{translateUi("AI Insight")}</span>
+            <h2>{translateUi("Business recommendations")}</h2>
+            <p>{translateUi("Auto-generated from the selected report range.")}</p>
           </div>
           <div className="reports-analytics-ai-score">
             <Target size={16} />
-            <span>{revenueProgress}% revenue goal</span>
+            <span>{revenueProgress}{translateUi("% revenue goal")}</span>
           </div>
         </div>
 
         <div className="reports-analytics-ai-grid">
           {aiInsights.map((insight) => (
             <article key={insight.label} className={`reports-analytics-ai-card ${insight.tone}`}>
-              <span>{insight.label}</span>
+              <span>{translateUi(insight.label)}</span>
               <h3>{insight.title}</h3>
               <p>{insight.detail}</p>
             </article>
@@ -745,7 +742,7 @@ export default function AdminReports() {
       <div className="reports-analytics-kpi-grid">
         <div className="reports-analytics-kpi-main">
           <MetricCard
-            title="New Signups"
+            title={translateUi("New Signups")}
             value={formatNumber(summary.newCustomers)}
             icon={FileText}
             trend={summary.trends.newCustomers}
@@ -755,7 +752,7 @@ export default function AdminReports() {
             gradientId="analytics-gradient-subscriptions"
           />
           <MetricCard
-            title="Active Customers"
+            title={translateUi("Active Customers")}
             value={formatNumber(summary.totalCustomers)}
             icon={Users}
             trend={summary.trends.activeCustomers}
@@ -765,7 +762,7 @@ export default function AdminReports() {
             gradientId="analytics-gradient-active-customers"
           />
           <MetricCard
-            title="Net Revenue"
+            title={translateUi("Net Revenue")}
             value={formatCurrency(summary.totalRevenue)}
             icon={TrendingUp}
             trend={summary.trends.revenue}
@@ -777,14 +774,14 @@ export default function AdminReports() {
         </div>
 
         <div className="reports-analytics-overview-card">
-          <h3>Data Overview</h3>
-          <p>Core distribution snapshot</p>
+          <h3>{translateUi("Data Overview")}</h3>
+          <p>{translateUi("Core distribution snapshot")}</p>
 
           <div className="reports-analytics-overview-list">
             <div className="reports-analytics-overview-row">
               <div>
                 <span className="reports-analytics-overview-icon purple"><ShoppingBag size={14} /></span>
-                <span>Orders</span>
+                <span>{translateUi("Orders")}</span>
               </div>
               <strong>{formatNumber(summary.totalOrders)}</strong>
             </div>
@@ -792,7 +789,7 @@ export default function AdminReports() {
             <div className="reports-analytics-overview-row">
               <div>
                 <span className="reports-analytics-overview-icon blue"><Activity size={14} /></span>
-                <span>Avg order value</span>
+                <span>{translateUi("Avg order value")}</span>
               </div>
               <strong>{formatCurrency(summary.aov)}</strong>
             </div>
@@ -800,7 +797,7 @@ export default function AdminReports() {
             <div className="reports-analytics-overview-row">
               <div>
                 <span className="reports-analytics-overview-icon emerald"><Settings size={14} /></span>
-                <span>Top products</span>
+                <span>{translateUi("Top products")}</span>
               </div>
               <strong>{formatNumber(topProducts.length)}</strong>
             </div>
@@ -812,21 +809,21 @@ export default function AdminReports() {
         <section className="reports-analytics-card span-5">
           <div className="reports-analytics-card-head">
             <div>
-              <h3>Traffic Overview</h3>
+              <h3>{translateUi("Traffic Overview")}</h3>
             </div>
           </div>
 
           <div className="reports-analytics-traffic-metrics">
             <div>
-              <p>Revenue / day</p>
+              <p>{translateUi("Revenue / day")}</p>
               <h4>{formatCurrency(averageRevenuePerDay)}</h4>
             </div>
             <div>
-              <p>Orders / day</p>
+              <p>{translateUi("Orders / day")}</p>
               <h4>{formatNumber(averageOrdersPerDay)}</h4>
             </div>
             <div>
-              <p>Visitors</p>
+              <p>{translateUi("Visitors")}</p>
               <h4>{formatNumber(estimatedVisitors)}</h4>
             </div>
           </div>
@@ -881,15 +878,13 @@ export default function AdminReports() {
 
         <section className="reports-analytics-card span-4">
           <div className="reports-analytics-card-head">
-            <h3>Sales Performance</h3>
+            <h3>{translateUi("Sales Performance")}</h3>
           </div>
 
           <div className="reports-analytics-sales-overview">
             <h2>{formatCurrency(summary.totalRevenue)}</h2>
             <p>
-              <TrendingUp size={12} />
-              Overall revenue
-            </p>
+              <TrendingUp size={12} />{translateUi("Overall revenue")}</p>
           </div>
 
           <div className="reports-analytics-chart chart-lg">
@@ -921,8 +916,8 @@ export default function AdminReports() {
         <section className="reports-analytics-card span-3 reports-analytics-customer-card">
           <div className="reports-analytics-card-head">
             <div>
-              <h3>Featured Customers</h3>
-              <p>Recent purchase activity</p>
+              <h3>{translateUi("Featured Customers")}</h3>
+              <p>{translateUi("Recent purchase activity")}</p>
             </div>
           </div>
 
@@ -931,19 +926,19 @@ export default function AdminReports() {
               recentCustomers.map((user) => (
                 <div key={user.id} className="reports-analytics-customer-item">
                   <div className="reports-analytics-customer-main">
-                    <span className="reports-analytics-customer-avatar">{user.initials || 'CU'}</span>
+                    <span className="reports-analytics-customer-avatar">{user.initials || translateUi("CU")}</span>
                     <div>
-                      <h4>{user.fullName || 'Anonymous customer'}</h4>
+                      <h4>{user.fullName || translateUi("Anonymous customer")}</h4>
                       <p>{translateCustomerActivity(user.status)}</p>
                     </div>
                   </div>
-                  <button title="Customer menu" className="reports-analytics-customer-menu-btn">
+                  <button title={translateUi("Customer menu")} className="reports-analytics-customer-menu-btn">
                     <MoreVertical size={14} />
                   </button>
                 </div>
               ))
             ) : (
-              <div className="reports-analytics-empty">No data available</div>
+              <div className="reports-analytics-empty">{translateUi("No data available")}</div>
             )}
           </div>
         </section>
@@ -952,7 +947,7 @@ export default function AdminReports() {
       <div className="reports-analytics-grid reports-analytics-grid-bottom">
         <section className="reports-analytics-card span-3">
           <div className="reports-analytics-card-head">
-            <h3>Status Distribution</h3>
+            <h3>{translateUi("Status Distribution")}</h3>
           </div>
 
           <div className="reports-analytics-chart chart-md">
@@ -996,8 +991,8 @@ export default function AdminReports() {
         <section className="reports-analytics-card span-6">
           <div className="reports-analytics-income-head">
             <div>
-              <h3>Income Overview</h3>
-              <p>Comparison by time period</p>
+              <h3>{translateUi("Income Overview")}</h3>
+              <p>{translateUi("Comparison by time period")}</p>
             </div>
             <div className="reports-analytics-tab-wrap">
               {(['Income', 'Orders'] as const).map((tab) => (
@@ -1007,7 +1002,7 @@ export default function AdminReports() {
                   onClick={() => setActiveTab(tab)}
                   className={activeTab === tab ? 'active' : ''}
                 >
-                  {tab === 'Income' ? 'Revenue' : 'Orders'}
+                  {tab === 'Income' ? translateUi("Revenue") : translateUi("Orders")}
                 </button>
               ))}
             </div>
@@ -1055,13 +1050,13 @@ export default function AdminReports() {
 
         <section className="reports-analytics-card span-3">
           <div className="reports-analytics-card-head">
-            <h3>Additional Insights</h3>
+            <h3>{translateUi("Additional Insights")}</h3>
           </div>
 
           <div className="reports-analytics-goals">
             <div className="reports-analytics-goal-item">
               <div>
-                <span>Revenue target</span>
+                <span>{translateUi("Revenue target")}</span>
                 <strong>{revenueProgress}%</strong>
               </div>
               <p>{formatCurrency(data.goals.revenue.current)} / {formatCurrency(revenueTarget)}</p>
@@ -1070,7 +1065,7 @@ export default function AdminReports() {
 
             <div className="reports-analytics-goal-item">
               <div>
-                <span>Order target</span>
+                <span>{translateUi("Order target")}</span>
                 <strong>{ordersProgress}%</strong>
               </div>
               <p>{formatNumber(data.goals.orders.current)} / {formatNumber(ordersTarget)}</p>
@@ -1079,10 +1074,10 @@ export default function AdminReports() {
 
             <div className="reports-analytics-goal-item">
               <div>
-                <span>Conversion rate</span>
+                <span>{translateUi("Conversion rate")}</span>
                 <strong>{conversionRate.toFixed(2)}%</strong>
               </div>
-              <p>Based on active customer behavior</p>
+              <p>{translateUi("Based on active customer behavior")}</p>
               <meter min={0} max={100} value={conversionRate} />
             </div>
           </div>

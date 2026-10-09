@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Crown, Eye, Pencil, Plus, Search, Shield, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -9,11 +11,13 @@ import StaffActions from './StaffActions';
 import { assignableRoles, canManageMember, formatDate, fullAccess, permissionLabel } from './staffModel';
 import type { StaffForm, StaffMember } from './staffModel';
 import './AdminStaff.css';
+import '../../../styles/teamRoles.css';
 
 type Query = { page: number; search: string; role: string; status: string; sort: string };
 const defaultQuery: Query = { page: 1, search: '', role: 'ALL', status: 'ALL', sort: 'NEWEST' };
 
 export default function AdminStaff() {
+  useTranslation();
   const { user } = useAuthStore();
   const { addToast } = useUIStore();
   const { confirm, dialog: confirmDialog } = useAdminConfirm();
@@ -56,7 +60,7 @@ export default function AdminStaff() {
       const data: Partial<StaffForm> = {};
       if (form.fullName !== editor.fullName) data.fullName = form.fullName;
       if (form.role !== editor.role) data.role = form.role;
-      if (JSON.stringify([...form.permissions].sort()) !== JSON.stringify([...editor.permissions].sort())) data.permissions = form.permissions;
+      if (form.role !== editor.role || JSON.stringify([...form.permissions].sort()) !== JSON.stringify([...editor.permissions].sort())) data.permissions = form.permissions;
       if (form.isActive !== editor.isActive) data.isActive = form.isActive;
       if (form.password) data.password = form.password;
       await api.put(`/admin/staffs/${editor.id}`, data);
@@ -97,38 +101,38 @@ export default function AdminStaff() {
   if (!user) return null;
   return (
     <div className="staff-admin-page">
-      <div className="admin-page-header"><div><h1 className="admin-page-title">Staff Management</h1><p className="staff-admin-subtitle">Your team, their responsibilities and access.</p></div>
-        {assignableRoles(user).length > 0 && <button className="admin-btn admin-btn-primary" onClick={() => setEditor(null)}><Plus size={16} />New Staff</button>}
+      <div className="admin-page-header"><div><h1 className="admin-page-title">{translateUi("Staff Management")}</h1><p className="staff-admin-subtitle">{translateUi("Your team, their responsibilities and access.")}</p></div>
+        {assignableRoles(user).length > 0 && <button className="admin-btn admin-btn-primary" onClick={() => setEditor(null)}><Plus size={16} />{translateUi("New Staff")}</button>}
       </div>
-      <div className="staff-stats-grid">{[{ label: 'Team members', value: stats.totalStaff }, { label: 'Active accounts', value: stats.activeStaff }, { label: 'Disabled accounts', value: stats.inactiveStaff }].map(stat => <article className="staff-stat-card" key={stat.label}><span>{stat.label}</span><strong>{stat.value}</strong></article>)}</div>
+      <div className="staff-stats-grid">{[{ label: 'Team members', value: stats.totalStaff }, { label: 'Active accounts', value: stats.activeStaff }, { label: 'Disabled accounts', value: stats.inactiveStaff }].map(stat => <article className="staff-stat-card" key={stat.label}><span>{translateUi(stat.label)}</span><strong>{stat.value}</strong></article>)}</div>
       <div className="admin-card staff-team-card">
         <form className="staff-toolbar" onSubmit={event => { event.preventDefault(); setQuery({ ...query, page: 1, search: keyword.trim() }); }}>
-          <label className="staff-search-wrap"><Search size={17} /><input aria-label="Search team" placeholder="Search name, username or email" value={keyword} onChange={event => setKeyword(event.target.value)} maxLength={120} /></label>
-          <select aria-label="Filter role" value={query.role} onChange={e => setQuery({ ...query, page: 1, role: e.target.value })}><option value="ALL">All roles</option><option value="OWNER">Owner</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="STAFF">Staff</option></select>
-          <select aria-label="Filter status" value={query.status} onChange={e => setQuery({ ...query, page: 1, status: e.target.value })}><option value="ALL">All statuses</option><option value="ACTIVE">Active</option><option value="INACTIVE">Disabled</option></select>
-          <select aria-label="Sort team" value={query.sort} onChange={e => setQuery({ ...query, page: 1, sort: e.target.value })}><option value="NEWEST">Newest first</option><option value="NAME_ASC">Name A–Z</option><option value="UPDATED_DESC">Recently updated</option></select>
-          <button className="admin-btn admin-btn-primary" type="submit">Search</button>
-          {(query.search || query.role !== 'ALL' || query.status !== 'ALL' || query.sort !== 'NEWEST') && <button type="button" className="staff-reset-button" onClick={() => { setKeyword(''); setQuery(defaultQuery); }}>Reset</button>}
+          <label className="staff-search-wrap"><Search size={17} /><input aria-label={translateUi("Search team")} placeholder={translateUi("Search name, username or email")} value={keyword} onChange={event => setKeyword(event.target.value)} maxLength={120} /></label>
+          <select aria-label={translateUi("Filter role")} value={query.role} onChange={e => setQuery({ ...query, page: 1, role: e.target.value })}><option value="ALL">{translateUi("All roles")}</option><option value="OWNER">{translateUi("Owner")}</option><option value="ADMIN">{translateUi("Admin")}</option><option value="MANAGER">{translateUi("Manager")}</option><option value="STAFF">{translateUi("Staff")}</option></select>
+          <select aria-label={translateUi("Filter status")} value={query.status} onChange={e => setQuery({ ...query, page: 1, status: e.target.value })}><option value="ALL">{translateUi("All statuses")}</option><option value="ACTIVE">{translateUi("Active")}</option><option value="INACTIVE">{translateUi("Disabled")}</option></select>
+          <select aria-label={translateUi("Sort team")} value={query.sort} onChange={e => setQuery({ ...query, page: 1, sort: e.target.value })}><option value="NEWEST">{translateUi("Newest first")}</option><option value="NAME_ASC">{translateUi("Name A–Z")}</option><option value="UPDATED_DESC">{translateUi("Recently updated")}</option></select>
+          <button className="admin-btn admin-btn-primary" type="submit">{translateUi("Search")}</button>
+          {(query.search || query.role !== 'ALL' || query.status !== 'ALL' || query.sort !== 'NEWEST') && <button type="button" className="staff-reset-button" onClick={() => { setKeyword(''); setQuery(defaultQuery); }}>{translateUi("Reset")}</button>}
         </form>
-        <div className="staff-selection-bar"><label><input type="checkbox" aria-label="Select manageable accounts on this page" disabled={busy || loading || !editableIds.length} checked={allSelected} onChange={() => setSelected(allSelected ? [] : [...editableIds])} /><span>{selected.length ? `${selected.length} selected` : `${pagination.total} team members`}</span></label>
-          {selected.length > 0 ? <div><button className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy} onClick={() => void bulkStatus(true)}><Check size={13} />Enable</button><button className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy} onClick={() => void bulkStatus(false)}><X size={13} />Disable</button><button className="staff-reset-button" disabled={busy} onClick={() => setSelected([])}>Clear selection</button></div> : <span className="staff-muted">Select members for bulk actions</span>}
+        <div className="staff-selection-bar"><label><input type="checkbox" aria-label={translateUi("Select manageable accounts on this page")} disabled={busy || loading || !editableIds.length} checked={allSelected} onChange={() => setSelected(allSelected ? [] : [...editableIds])} /><span>{selected.length ? translateUi("{{value1}} selected", { value1: selected.length }) : translateUi("{{value1}} team members", { value1: pagination.total })}</span></label>
+          {selected.length > 0 ? <div><button className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy} onClick={() => void bulkStatus(true)}><Check size={13} />{translateUi("Enable")}</button><button className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy} onClick={() => void bulkStatus(false)}><X size={13} />{translateUi("Disable")}</button><button className="staff-reset-button" disabled={busy} onClick={() => setSelected([])}>{translateUi("Clear selection")}</button></div> : <span className="staff-muted">{translateUi("Select members for bulk actions")}</span>}
         </div>
-        {loadError ? <div className="staff-empty-state" role="alert"><p>Unable to load the team.</p><button className="admin-btn admin-btn-outline" onClick={reload}>Try again</button></div> : loading ? <div className="loading-page" aria-label="Loading team"><div className="spinner" /></div> : !members.length ? <div className="staff-empty-state"><Shield size={28} /><h3>No team members found</h3><p>Try another search or reset your filters.</p><button className="admin-btn admin-btn-outline" onClick={() => { setKeyword(''); setQuery(defaultQuery); }}>Reset filters</button></div> :
-          <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th className="staff-checkbox-cell" aria-label="Selection" /><th>Team member</th><th>Role</th><th>Access</th><th>Status</th><th>Joined</th><th className="staff-action-heading">Actions</th></tr></thead><tbody>{members.map(member => {
+        {loadError ? <div className="staff-empty-state" role="alert"><p>{translateUi("Unable to load the team.")}</p><button className="admin-btn admin-btn-outline" onClick={reload}>{translateUi("Try again")}</button></div> : loading ? <div className="loading-page" aria-label={translateUi("Loading team")}><div className="spinner" /></div> : !members.length ? <div className="staff-empty-state"><Shield size={28} /><h3>{translateUi("No team members found")}</h3><p>{translateUi("Try another search or reset your filters.")}</p><button className="admin-btn admin-btn-outline" onClick={() => { setKeyword(''); setQuery(defaultQuery); }}>{translateUi("Reset filters")}</button></div> :
+          <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th className="staff-checkbox-cell" aria-label={translateUi("Selection")} /><th>{translateUi("Team member")}</th><th>{translateUi("Role")}</th><th>{translateUi("Access")}</th><th>{translateUi("Status")}</th><th>{translateUi("Joined")}</th><th className="staff-action-heading">{translateUi("Actions")}</th></tr></thead><tbody>{members.map(member => {
             const manageable = canManageMember(user, member);
             return <tr key={member.id} className={selected.includes(member.id) ? 'is-selected' : ''}>
-              <td className="staff-checkbox-cell"><input type="checkbox" aria-label={`Select ${member.fullName}`} checked={selected.includes(member.id)} disabled={!manageable || busy} onChange={() => toggle(member.id)} /></td>
-              <td className="staff-identity-cell"><span className="staff-avatar">{member.fullName.slice(0, 1).toUpperCase()}</span><div><strong>{member.fullName}</strong><span>{member.email}</span><small>@{member.username}{member.id === user.id ? ' · You' : ''}</small></div></td>
-              <td data-label="Role"><span className={`staff-role-pill staff-role-${member.role.toLowerCase()}`}>{member.role === 'OWNER' && <Crown size={13} />}{member.role}</span></td>
-              <td data-label="Access"><button className="staff-access-button" onClick={() => setEditor(member)} title={fullAccess(member.role) ? 'All admin modules' : member.permissions.map(permissionLabel).join(', ')}>{fullAccess(member.role) ? 'Full access' : `${member.permissions.length} modules`}<span>{fullAccess(member.role) ? member.role === 'OWNER' ? 'Store ownership' : 'Administration' : member.permissions.slice(0, 2).map(permissionLabel).join(', ') || 'Dashboard only'}</span></button></td>
-              <td data-label="Status"><span className={`staff-status-pill ${member.isActive ? 'is-active' : 'is-inactive'}`}><i />{member.isActive ? 'Active' : 'Disabled'}</span></td>
-              <td data-label="Joined" className="staff-date-cell">{formatDate(member.createdAt)}</td>
-              <td className="staff-row-actions"><button className="staff-icon-button" aria-label={`${manageable ? 'Edit' : 'View'} ${member.fullName}`} title={manageable ? 'Edit account' : 'View account'} disabled={busy} onClick={() => setEditor(member)}>{manageable ? <Pencil size={16} /> : <Eye size={16} />}</button>
+              <td className="staff-checkbox-cell"><input type="checkbox" aria-label={translateUi("Select {{value1}}", { value1: member.fullName })} checked={selected.includes(member.id)} disabled={!manageable || busy} onChange={() => toggle(member.id)} /></td>
+              <td className="staff-identity-cell"><span className="staff-avatar">{member.fullName.slice(0, 1).toUpperCase()}</span><div><strong>{member.fullName}</strong><span>{member.email}</span><small>@{member.username}{member.id === user.id ? translateUi("· You") : ''}</small></div></td>
+              <td data-label={translateUi("Role")}><span className={`staff-role-pill team-role-badge team-role-${member.role.toLowerCase()}`}>{member.role === 'OWNER' && <Crown size={13} />}{translateUi(member.role)}</span></td>
+              <td data-label={translateUi("Access")}><button className="staff-access-button" onClick={() => setEditor(member)} title={fullAccess(member.role) ? translateUi("All admin modules") : member.permissions.map(permissionLabel).join(', ')}>{fullAccess(member.role) ? translateUi("Full access") : translateUi("{{value1}} modules", { value1: member.permissions.length })}<span>{fullAccess(member.role) ? member.role === 'OWNER' ? translateUi("Store ownership") : translateUi("Administration") : member.permissions.slice(0, 2).map(permissionLabel).join(', ') || translateUi("Dashboard only")}</span></button></td>
+              <td data-label={translateUi("Status")}><span className={`staff-status-pill ${member.isActive ? 'is-active' : 'is-inactive'}`}><i />{member.isActive ? translateUi("Active") : translateUi("Disabled")}</span></td>
+              <td data-label={translateUi("Joined")} className="staff-date-cell">{formatDate(member.createdAt)}</td>
+              <td className="staff-row-actions"><button className="staff-icon-button" aria-label={`${manageable ? translateUi("Edit") : translateUi("View")} ${member.fullName}`} title={manageable ? translateUi("Edit account") : translateUi("View account")} disabled={busy} onClick={() => setEditor(member)}>{manageable ? <Pencil size={16} /> : <Eye size={16} />}</button>
                 {manageable && <StaffActions name={member.fullName} active={member.isActive} disabled={busy} onStatus={() => void changeStatus(member)} onDelete={() => void remove(member)} />}
               </td>
             </tr>;
           })}</tbody></table></div>}
-        {!loading && !loadError && pagination.total > 0 && <div className="staff-pagination-wrap"><span>Showing {(pagination.page - 1) * pagination.limit + 1}–{Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}</span><div><button className="staff-icon-button" aria-label="Previous page" disabled={query.page === 1} onClick={() => setQuery({ ...query, page: query.page - 1 })}><ChevronLeft size={17} /></button><span>Page {pagination.page} of {Math.max(1, pagination.totalPages)}</span><button className="staff-icon-button" aria-label="Next page" disabled={query.page >= pagination.totalPages} onClick={() => setQuery({ ...query, page: query.page + 1 })}><ChevronRight size={17} /></button></div></div>}
+        {!loading && !loadError && pagination.total > 0 && <div className="staff-pagination-wrap"><span>{translateUi("Showing")} {(pagination.page - 1) * pagination.limit + 1}–{Math.min(pagination.page * pagination.limit, pagination.total)} {translateUi("of")} {pagination.total}</span><div><button className="staff-icon-button" aria-label={translateUi("Previous page")} disabled={query.page === 1} onClick={() => setQuery({ ...query, page: query.page - 1 })}><ChevronLeft size={17} /></button><span>{translateUi("Page")} {pagination.page} {translateUi("of")} {Math.max(1, pagination.totalPages)}</span><button className="staff-icon-button" aria-label={translateUi("Next page")} disabled={query.page >= pagination.totalPages} onClick={() => setQuery({ ...query, page: query.page + 1 })}><ChevronRight size={17} /></button></div></div>}
       </div>
       {editor !== undefined && <StaffEditor key={editor?.id || 'new'} member={editor} actor={user} editable={editor ? canManageMember(user, editor) : assignableRoles(user).length > 0} onSave={save} onClose={() => setEditor(undefined)} confirmDiscard={() => confirm({ title: 'Discard unsaved changes?', message: 'Your changes have not been saved.', confirmText: 'Discard changes', tone: 'danger' })} />}
       {confirmDialog}

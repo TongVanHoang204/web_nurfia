@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '../../stores/cartStore';
@@ -7,6 +9,7 @@ import './CartDrawer.css';
 const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000';
 
 export default function CartDrawer() {
+  useTranslation();
   const { items, isOpen, closeCart, updateQuantity, removeItem, getSubtotal, isLoading } = useCartStore();
   const { user } = useAuthStore();
   const canCheckout = user?.role === 'CUSTOMER';
@@ -16,16 +19,16 @@ export default function CartDrawer() {
       <div className={`overlay ${isOpen ? 'active' : ''}`} onClick={closeCart} />
       <div className={`drawer cart-drawer ${isOpen ? 'active' : ''}`}>
         <div className="drawer-header">
-          <h3><ShoppingBag size={20} /> Shopping Cart ({items.length})</h3>
-          <button className="drawer-close" onClick={closeCart} title="Close cart" aria-label="Close cart"><X size={20} /></button>
+          <h3><ShoppingBag size={20} /> {translateUi("Shopping Cart (")}{items.length})</h3>
+          <button className="drawer-close" onClick={closeCart} title={translateUi("Close cart")} aria-label={translateUi("Close cart")}><X size={20} /></button>
         </div>
 
         <div className="drawer-body">
           {items.length === 0 ? (
             <div className="cart-empty">
               <ShoppingBag size={48} strokeWidth={1} />
-              <p>Your cart is empty</p>
-              <Link to="/category/women" className="btn btn-primary" onClick={closeCart}>Start Shopping</Link>
+              <p>{translateUi("Your cart is empty")}</p>
+              <Link to="/category/women" className="btn btn-primary" onClick={closeCart}>{translateUi("Start Shopping")}</Link>
             </div>
           ) : (
             <div className="cart-items">
@@ -52,8 +55,8 @@ export default function CartDrawer() {
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                             disabled={isLoading}
-                            title="Decrease quantity"
-                            aria-label="Decrease quantity"
+                            title={translateUi("Decrease quantity")}
+                            aria-label={translateUi("Decrease quantity")}
                           >
                             <Minus size={12} />
                           </button>
@@ -61,8 +64,8 @@ export default function CartDrawer() {
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             disabled={isLoading}
-                            title="Increase quantity"
-                            aria-label="Increase quantity"
+                            title={translateUi("Increase quantity")}
+                            aria-label={translateUi("Increase quantity")}
                           >
                             <Plus size={12} />
                           </button>
@@ -70,7 +73,7 @@ export default function CartDrawer() {
                         <span className="cart-item-price">${(Number(price) * item.quantity).toFixed(2)}</span>
                       </div>
                     </div>
-                    <button className="cart-item-remove" onClick={() => removeItem(item.id)} title="Remove item" aria-label="Remove item">
+                    <button className="cart-item-remove" onClick={() => removeItem(item.id)} title={translateUi("Remove item")} aria-label={translateUi("Remove item")}>
                       <X size={14} />
                     </button>
                   </div>
@@ -83,22 +86,16 @@ export default function CartDrawer() {
         {items.length > 0 && (
           <div className="drawer-footer">
             <div className="cart-subtotal">
-              <span>Subtotal</span>
+              <span>{translateUi("Subtotal")}</span>
               <strong>${getSubtotal().toFixed(2)}</strong>
             </div>
-            <Link to="/cart" className="btn btn-outline" style={{ width: '100%', marginBottom: 8 }} onClick={closeCart}>
-              View Cart
-            </Link>
+            <Link to="/cart" className="btn btn-outline" style={{ width: '100%', marginBottom: 8 }} onClick={closeCart}>{translateUi("View Cart")}</Link>
             {canCheckout ? (
-              <Link to="/checkout" className="btn btn-primary" style={{ width: '100%' }} onClick={closeCart}>
-                Checkout
-              </Link>
+              <Link to="/checkout" className="btn btn-primary" style={{ width: '100%' }} onClick={closeCart}>{translateUi("Checkout")}</Link>
             ) : (
               <>
-                <button type="button" className="btn btn-primary cart-drawer-checkout-disabled-btn" disabled>
-                  Checkout
-                </button>
-                <p className="cart-drawer-role-note">Only customer accounts can place orders.</p>
+                <button type="button" className="btn btn-primary cart-drawer-checkout-disabled-btn" disabled>{translateUi("Checkout")}</button>
+                <p className="cart-drawer-role-note">{translateUi("Only customer accounts can place orders.")}</p>
               </>
             )}
           </div>

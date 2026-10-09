@@ -6,10 +6,10 @@ import { Prisma } from '@prisma/client';
 import prisma from '../models/prisma.js';
 import config from '../config/index.js';
 import { AppError } from '../middlewares/errorHandler.js';
-import { normalizeAdminPermissions } from '../middlewares/auth.js';
 import { mailService } from './mail.service.js';
 import { resolveTrustedAppOrigin } from '../utils/security.js';
 import { effectiveRole, publicTeamMember } from '../utils/teamAccess.js';
+import { resolveAdminPermissions } from '../utils/adminPermissions.js';
 
 const SALT_ROUNDS = 12;
 const CHANGE_PASSWORD_OTP_TTL_MS = 10 * 60 * 1000;
@@ -123,7 +123,7 @@ export const authService = {
         username: user.username,
         fullName: user.fullName,
         role,
-        permissions: normalizeAdminPermissions(user.permissions),
+        permissions: resolveAdminPermissions(user),
       },
       token,
     };
@@ -134,14 +134,14 @@ export const authService = {
       where: { id: userId },
       select: {
         id: true, email: true, username: true, fullName: true,
-        phone: true, role: true, isOwner: true, permissions: true, createdAt: true,
+        phone: true, role: true, isOwner: true, adminPermissionsRestricted: true, permissions: true, createdAt: true,
         addresses: true,
       },
     });
     if (!user) throw new AppError('User not found.', 404);
     return {
       ...publicTeamMember(user),
-      permissions: normalizeAdminPermissions(user.permissions),
+      permissions: resolveAdminPermissions(user),
     };
   },
 

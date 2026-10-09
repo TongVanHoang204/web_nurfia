@@ -1,3 +1,5 @@
+import { translateUi } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, Edit2, Plus, Search, Trash2, X } from 'lucide-react';
 import api from '../../../api/client';
@@ -34,6 +36,7 @@ const createEmptyFormState = () => ({
 });
 
 export default function AdminCategories() {
+  useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { addToast, openConfirm } = useUIStore();
@@ -409,8 +412,8 @@ export default function AdminCategories() {
               type="button"
               className={`category-expand-btn ${hasChildren ? '' : 'is-hidden'}`}
               onClick={() => hasChildren && toggleExpand(category.id)}
-              aria-label={isExpanded ? 'Collapse category' : 'Expand category'}
-              title={isExpanded ? 'Collapse category' : 'Expand category'}
+              aria-label={isExpanded ? translateUi("Collapse category") : translateUi("Expand category")}
+              title={isExpanded ? translateUi("Collapse category") : translateUi("Expand category")}
             >
               {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </button>
@@ -427,31 +430,30 @@ export default function AdminCategories() {
               <div className="category-tree-title-wrap">
                 <strong className="category-tree-title">{category.name}</strong>
                 <span className={`status-badge ${category.isActive ? 'status-delivered' : 'status-cancelled'}`}>
-                  {category.isActive ? 'Active' : 'Inactive'}
+                  {category.isActive ? translateUi("Active") : translateUi("Inactive")}
                 </span>
-                {depth === 0 ? <span className="category-type-pill">Root</span> : <span className="category-type-pill category-type-pill-child">Child</span>}
+                {depth === 0 ? <span className="category-type-pill">{translateUi("Root")}</span> : <span className="category-type-pill category-type-pill-child">{translateUi("Child")}</span>}
               </div>
               <p className="category-tree-meta">
-                <span>Slug: {category.slug}</span>
-                <span>Products: {category._count?.products || 0}</span>
-                <span>Children: {category._count?.children || 0}</span>
-                <span>Sort: {category.sortOrder}</span>
+                <span>{translateUi("Slug:")} {category.slug}</span>
+                <span>{translateUi("Products:")} {category._count?.products || 0}</span>
+                <span>{translateUi("Children:")} {category._count?.children || 0}</span>
+                <span>{translateUi("Sort:")} {category.sortOrder}</span>
               </p>
-              {depth > 0 && parentPath ? <p className="category-tree-parent-path">Path: {getCategoryPathLabel(category)}</p> : null}
+              {depth > 0 && parentPath ? <p className="category-tree-parent-path">{translateUi("Path:")} {getCategoryPathLabel(category)}</p> : null}
             </div>
           </div>
 
           <div className="category-tree-actions">
             <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openAddChildModal(category)}>
-              <Plus size={12} /> Child
-            </button>
-            <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openEditModal(category)} aria-label="Edit Category" title="Edit Category">
+              <Plus size={12} />{translateUi("Child")}</button>
+            <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => openEditModal(category)} aria-label={translateUi("Edit Category")} title={translateUi("Edit Category")}>
               <Edit2 size={12} />
             </button>
             <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => handleToggleActive(category)}>
-              {category.isActive ? 'Disable' : 'Enable'}
+              {category.isActive ? translateUi("Disable") : translateUi("Enable")}
             </button>
-            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(category.id)} aria-label="Delete Category" title="Delete Category">
+            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(category.id)} aria-label={translateUi("Delete Category")} title={translateUi("Delete Category")}>
               <Trash2 size={12} />
             </button>
           </div>
@@ -470,18 +472,17 @@ export default function AdminCategories() {
     <div className="category-admin-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Categories</h1>
-          <p className="category-admin-subtitle">Manage parent-child category structure and status in one place.</p>
+          <h1 className="admin-page-title">{translateUi("Categories")}</h1>
+          <p className="category-admin-subtitle">{translateUi("Manage parent-child category structure and status in one place.")}</p>
         </div>
         <div className="category-admin-header-actions">
           <div className="category-admin-stats">
-            <span>Total: {categories.length}</span>
-            <span>Root: {parentCount}</span>
-            <span>Child: {childCount}</span>
+            <span>{translateUi("Total:")} {categories.length}</span>
+            <span>{translateUi("Root:")} {parentCount}</span>
+            <span>{translateUi("Child:")} {childCount}</span>
           </div>
           <button className="admin-btn admin-btn-primary" onClick={openAddModal}>
-            <Plus size={16} /> Add Category
-          </button>
+            <Plus size={16} />{translateUi("Add Category")}</button>
         </div>
       </div>
 
@@ -493,30 +494,30 @@ export default function AdminCategories() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by name, slug, or path"
-              title="Search categories"
+              placeholder={translateUi("Search by name, slug, or path")}
+              title={translateUi("Search categories")}
             />
           </div>
 
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as CategoryFilter)}
-            title="Filter categories"
+            title={translateUi("Filter categories")}
             className="category-filter-select"
           >
-            <option value="all">All categories</option>
-            <option value="root">Root only</option>
-            <option value="child">Children only</option>
-            <option value="active">Active only</option>
-            <option value="inactive">Inactive only</option>
-            <option value="has-children">Has children</option>
+            <option value="all">{translateUi("All categories")}</option>
+            <option value="root">{translateUi("Root only")}</option>
+            <option value="child">{translateUi("Children only")}</option>
+            <option value="active">{translateUi("Active only")}</option>
+            <option value="inactive">{translateUi("Inactive only")}</option>
+            <option value="has-children">{translateUi("Has children")}</option>
           </select>
         </div>
 
         <div className="category-toolbar-right">
-          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={handleExpandAll}>Expand all</button>
-          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={handleCollapseAll}>Collapse all</button>
-          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={fetchCategories}>Refresh</button>
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={handleExpandAll}>{translateUi("Expand all")}</button>
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={handleCollapseAll}>{translateUi("Collapse all")}</button>
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={fetchCategories}>{translateUi("Refresh")}</button>
         </div>
       </div>
 
@@ -524,8 +525,8 @@ export default function AdminCategories() {
         <div className="admin-modal-overlay">
           <div className="admin-modal-content category-modal-content">
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">{isEditing ? 'Edit Category' : 'Add Category'}</h3>
-              <button aria-label="Close" title="Close modal" type="button" onClick={closeModal} className="admin-modal-close">
+              <h3 className="admin-modal-title">{isEditing ? translateUi("Edit Category") : translateUi("Add Category")}</h3>
+              <button aria-label={translateUi("Close")} title={translateUi("Close modal")} type="button" onClick={closeModal} className="admin-modal-close">
                 <X size={20} />
               </button>
             </div>
@@ -535,56 +536,56 @@ export default function AdminCategories() {
             <form onSubmit={handleSubmit} className="admin-form">
               <div className="admin-form-row category-form-row-tight">
                 <div className="admin-form-group">
-                  <label htmlFor="categoryName">Name *</label>
+                  <label htmlFor="categoryName">{translateUi("Name *")}</label>
                   <input
                     id="categoryName"
-                    title="Category Name"
+                    title={translateUi("Category Name")}
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g. T-Shirts"
+                    placeholder={translateUi("e.g. T-Shirts")}
                     required
                   />
                 </div>
 
                 <div className="admin-form-group category-status-group">
-                  <label htmlFor="categoryStatus">Status</label>
+                  <label htmlFor="categoryStatus">{translateUi("Status")}</label>
                   <label className="category-status-toggle" htmlFor="categoryStatus">
                     <input
                       id="categoryStatus"
-                      title="Category Status"
+                      title={translateUi("Category Status")}
                       type="checkbox"
                       checked={formData.isActive}
                       onChange={(e) => setFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
                     />
-                    <span>{formData.isActive ? 'Active' : 'Inactive'}</span>
+                    <span>{formData.isActive ? translateUi("Active") : translateUi("Inactive")}</span>
                   </label>
                 </div>
               </div>
 
               <div className="admin-form-row category-form-row-tight">
                 <div className="admin-form-group">
-                  <label htmlFor="parentId">Parent Category</label>
+                  <label htmlFor="parentId">{translateUi("Parent Category")}</label>
                   <select
                     id="parentId"
-                    title="Parent Category"
+                    title={translateUi("Parent Category")}
                     value={formData.parentId}
                     onChange={(e) => setFormData((prev) => ({ ...prev, parentId: e.target.value === '' ? '' : Number(e.target.value) }))}
                   >
-                    <option value="">None (Top Level)</option>
+                    <option value="">{translateUi("None (Top Level)")}</option>
                     {parentOptions.map((option) => (
                       <option key={option.id} value={option.id} disabled={blockedParentIds.has(option.id)}>
-                        {option.label}
+                        {translateUi(option.label)}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="admin-form-group">
-                  <label htmlFor="sortOrder">Sort Order</label>
+                  <label htmlFor="sortOrder">{translateUi("Sort Order")}</label>
                   <input
                     id="sortOrder"
-                    title="Sort Order"
+                    title={translateUi("Sort Order")}
                     type="number"
                     min="0"
                     value={formData.sortOrder}
@@ -594,23 +595,23 @@ export default function AdminCategories() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="description">Description</label>
+                <label htmlFor="description">{translateUi("Description")}</label>
                 <WordEditor
                   id="description"
                   ariaLabel="Category Description"
                   value={formData.description}
                   onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
-                  placeholder="Optional description"
+                  placeholder={translateUi("Optional description")}
                   size="sm"
                 />
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="imageUrl">Image URL</label>
+                <label htmlFor="imageUrl">{translateUi("Image URL")}</label>
                 <div className="category-image-input-row">
                   <input
                     id="imageUrl"
-                    title="Image URL"
+                    title={translateUi("Image URL")}
                     type="text"
                     value={formData.image}
                     onChange={(e) => {
@@ -621,7 +622,7 @@ export default function AdminCategories() {
                   />
 
                   <label className={`admin-btn admin-btn-outline category-upload-btn ${isUploading ? 'is-uploading' : ''}`}>
-                    {isUploading ? 'Uploading...' : 'Choose File'}
+                    {isUploading ? translateUi("Uploading...") : translateUi("Choose File")}
                     <input type="file" accept="image/*" onChange={handleFileUpload} disabled={isUploading} />
                   </label>
                 </div>
@@ -630,7 +631,7 @@ export default function AdminCategories() {
                   <div className="category-image-preview-wrap">
                     <img
                       src={resolveSiteAssetUrl(formData.image)}
-                      alt="Category preview"
+                      alt={translateUi("Category preview")}
                       className="category-image-preview"
                       onError={() => setHidePreview(true)}
                     />
@@ -639,11 +640,9 @@ export default function AdminCategories() {
               </div>
 
               <div className="admin-modal-actions">
-                <button type="button" onClick={closeModal} className="admin-btn admin-btn-secondary" disabled={isSubmitting}>
-                  Cancel
-                </button>
+                <button type="button" onClick={closeModal} className="admin-btn admin-btn-secondary" disabled={isSubmitting}>{translateUi("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : (isEditing ? 'Update Category' : 'Create Category')}
+                  {isSubmitting ? translateUi("Saving...") : (isEditing ? translateUi("Update Category") : translateUi("Create Category"))}
                 </button>
               </div>
             </form>
@@ -655,9 +654,9 @@ export default function AdminCategories() {
         {isLoading ? <div className="loading-page"><div className="spinner" /></div> : (
           <>
             {categories.length === 0 ? (
-              <p className="category-empty-state">No categories found. Create one to get started.</p>
+              <p className="category-empty-state">{translateUi("No categories found. Create one to get started.")}</p>
             ) : rootCategories.filter((root) => visibleIds.has(root.id)).length === 0 ? (
-              <p className="category-empty-state">No categories match your current search/filter.</p>
+              <p className="category-empty-state">{translateUi("No categories match your current search/filter.")}</p>
             ) : (
               <div className="category-tree-list">
                 {rootCategories

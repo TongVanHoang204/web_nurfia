@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Check, Eye, Filter, Search, Star, Trash2, X } from 'lucide-react';
@@ -51,7 +53,7 @@ type SortOption = 'NEWEST' | 'OLDEST' | 'RATING_DESC' | 'RATING_ASC';
 const PAGE_LIMIT = 15;
 
 const formatDateTime = (value: string) => {
-  return new Date(value).toLocaleString('en-US', {
+  return new Date(value).toLocaleString(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -89,6 +91,7 @@ const getPageNumbers = (current: number, total: number) => {
 };
 
 export default function AdminReviews() {
+  useTranslation();
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, total: 0, totalPages: 0 });
   const [stats, setStats] = useState<ReviewStats>({ totalReviews: 0, approvedReviews: 0, hiddenReviews: 0, averageRating: 0 });
@@ -276,26 +279,26 @@ export default function AdminReviews() {
     <div className="reviews-admin-page">
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Reviews ({pagination.total})</h1>
-          <p className="reviews-admin-subtitle">Moderate customer feedback quickly with smarter filters and bulk actions.</p>
+          <h1 className="admin-page-title">{translateUi("Reviews (")}{pagination.total})</h1>
+          <p className="reviews-admin-subtitle">{translateUi("Moderate customer feedback quickly with smarter filters and bulk actions.")}</p>
         </div>
       </div>
 
       <div className="reviews-stats-grid">
         <article className="reviews-stat-card">
-          <span>Total Reviews</span>
+          <span>{translateUi("Total Reviews")}</span>
           <strong>{stats.totalReviews}</strong>
         </article>
         <article className="reviews-stat-card">
-          <span>Approved</span>
+          <span>{translateUi("Approved")}</span>
           <strong>{stats.approvedReviews}</strong>
         </article>
         <article className="reviews-stat-card">
-          <span>Hidden</span>
+          <span>{translateUi("Hidden")}</span>
           <strong>{stats.hiddenReviews}</strong>
         </article>
         <article className="reviews-stat-card">
-          <span>Average Rating</span>
+          <span>{translateUi("Average Rating")}</span>
           <strong>{averageRatingText} / 5</strong>
         </article>
       </div>
@@ -308,68 +311,65 @@ export default function AdminReviews() {
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by product, customer, email, title or comment"
+              placeholder={translateUi("Search by product, customer, email, title or comment")}
             />
           </div>
 
-          <label className="reviews-select-wrap" aria-label="Filter review status">
+          <label className="reviews-select-wrap" aria-label={translateUi("Filter review status")}>
             <Filter size={15} />
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ReviewStatusFilter)}>
-              <option value="ALL">All status</option>
-              <option value="APPROVED">Approved</option>
-              <option value="HIDDEN">Hidden</option>
+              <option value="ALL">{translateUi("All status")}</option>
+              <option value="APPROVED">{translateUi("Approved")}</option>
+              <option value="HIDDEN">{translateUi("Hidden")}</option>
             </select>
           </label>
 
-          <label className="reviews-select-wrap" aria-label="Filter by rating">
+          <label className="reviews-select-wrap" aria-label={translateUi("Filter by rating")}>
             <Star size={15} />
             <select value={ratingFilter} onChange={(event) => setRatingFilter(event.target.value as RatingFilter)}>
-              <option value="ALL">All ratings</option>
-              <option value="5">5 stars</option>
-              <option value="4">4 stars</option>
-              <option value="3">3 stars</option>
-              <option value="2">2 stars</option>
-              <option value="1">1 star</option>
+              <option value="ALL">{translateUi("All ratings")}</option>
+              <option value="5">{translateUi("5 stars")}</option>
+              <option value="4">{translateUi("4 stars")}</option>
+              <option value="3">{translateUi("3 stars")}</option>
+              <option value="2">{translateUi("2 stars")}</option>
+              <option value="1">{translateUi("1 star")}</option>
             </select>
           </label>
 
-          <label className="reviews-select-wrap" aria-label="Sort reviews">
+          <label className="reviews-select-wrap" aria-label={translateUi("Sort reviews")}>
             <Filter size={15} />
             <select value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}>
-              <option value="NEWEST">Sort: Newest</option>
-              <option value="OLDEST">Sort: Oldest</option>
-              <option value="RATING_DESC">Sort: Rating high to low</option>
-              <option value="RATING_ASC">Sort: Rating low to high</option>
+              <option value="NEWEST">{translateUi("Sort: Newest")}</option>
+              <option value="OLDEST">{translateUi("Sort: Oldest")}</option>
+              <option value="RATING_DESC">{translateUi("Sort: Rating high to low")}</option>
+              <option value="RATING_ASC">{translateUi("Sort: Rating low to high")}</option>
             </select>
           </label>
 
-          <button type="submit" className="admin-btn admin-btn-primary">Search</button>
-          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>Reset</button>
+          <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>
+          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>{translateUi("Reset")}</button>
         </form>
       </div>
 
       <div className="admin-card reviews-list-card">
         {isLoading ? <div className="loading-page"><div className="spinner" /></div> : reviews.length === 0 ? (
-          <p className="reviews-empty-state">No reviews found for this filter set.</p>
+          <p className="reviews-empty-state">{translateUi("No reviews found for this filter set.")}</p>
         ) : (
           <>
             <div className="reviews-sticky-actions">
               <label className="reviews-select-all">
                 <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} />
-                <span>Select page ({reviews.length})</span>
+                <span>{translateUi("Select page (")}{reviews.length})</span>
               </label>
 
               <div className="reviews-bulk-actions">
-                <span className="reviews-selected-count">{selectedIds.length} selected</span>
+                <span className="reviews-selected-count">{selectedIds.length} {translateUi("selected")}</span>
                 <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyBulkApprove(true)} disabled={isBulkLoading || selectedIds.length === 0}>
-                  <Check size={13} /> Approve
-                </button>
+                  <Check size={13} />{translateUi("Approve")}</button>
                 <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyBulkApprove(false)} disabled={isBulkLoading || selectedIds.length === 0}>
-                  <X size={13} /> Hide
-                </button>
+                  <X size={13} />{translateUi("Hide")}</button>
                 <button type="button" className="admin-btn admin-btn-danger admin-btn-sm" onClick={applyBulkDelete} disabled={isBulkLoading || selectedIds.length === 0}>
-                  <Trash2 size={13} /> Delete
-                </button>
+                  <Trash2 size={13} />{translateUi("Delete")}</button>
               </div>
             </div>
 
@@ -386,7 +386,7 @@ export default function AdminReviews() {
                       <label className="reviews-item-check">
                         <input
                           type="checkbox"
-                          aria-label={`Select review ${review.id}`}
+                          aria-label={translateUi("Select review {{value1}}", { value1: review.id })}
                           checked={isSelected}
                           onChange={() => toggleSelected(review.id)}
                         />
@@ -401,13 +401,13 @@ export default function AdminReviews() {
                           )}
                           <div>
                             <p>{productName}</p>
-                            <small>By {customerName}</small>
+                            <small>{translateUi("By")} {customerName}</small>
                           </div>
                         </div>
                       </div>
 
                       <div className="reviews-rating-col">
-                        <div className="reviews-stars" aria-label={`${review.rating} star rating`}>
+                        <div className="reviews-stars" aria-label={translateUi("{{value1}} star rating", { value1: review.rating })}>
                           {[...Array(5)].map((_, index) => (
                             <Star key={index} size={14} className={index < review.rating ? 'is-active' : ''} />
                           ))}
@@ -422,7 +422,7 @@ export default function AdminReviews() {
 
                       <div className="reviews-meta-col">
                         <span className={`reviews-status-pill ${review.isApproved ? 'is-approved' : 'is-hidden'}`}>
-                          {review.isApproved ? 'Approved' : 'Hidden'}
+                          {review.isApproved ? translateUi("Approved") : translateUi("Hidden")}
                         </span>
                         <small>{formatDateTime(review.createdAt)}</small>
                       </div>
@@ -432,24 +432,24 @@ export default function AdminReviews() {
                       <button
                         className={`admin-btn admin-btn-sm ${review.isApproved ? 'admin-btn-outline' : 'admin-btn-primary'}`}
                         onClick={() => handleApprove(review.id, review.isApproved)}
-                        aria-label={review.isApproved ? 'Hide Review' : 'Approve Review'}
-                        title={review.isApproved ? 'Hide Review' : 'Approve Review'}
+                        aria-label={review.isApproved ? translateUi("Hide Review") : translateUi("Approve Review")}
+                        title={review.isApproved ? translateUi("Hide Review") : translateUi("Approve Review")}
                       >
                         {review.isApproved ? <X size={12} /> : <Check size={12} />}
                       </button>
                       <button
                         className="admin-btn admin-btn-outline admin-btn-sm"
                         onClick={() => setSelectedReview(review)}
-                        aria-label="View details"
-                        title="View details"
+                        aria-label={translateUi("View details")}
+                        title={translateUi("View details")}
                       >
                         <Eye size={12} />
                       </button>
                       <button
                         className="admin-btn admin-btn-danger admin-btn-sm"
                         onClick={() => handleDelete(review.id)}
-                        aria-label="Delete Review"
-                        title="Delete Review"
+                        aria-label={translateUi("Delete Review")}
+                        title={translateUi("Delete Review")}
                       >
                         <Trash2 size={12} />
                       </button>
@@ -463,9 +463,7 @@ export default function AdminReviews() {
 
         {pagination.totalPages > 1 && (
           <div className="reviews-pagination-wrap">
-            <div className="reviews-pagination-text">
-              Showing <strong>{(pagination.page - 1) * PAGE_LIMIT + 1}</strong> to <strong>{Math.min(pagination.page * PAGE_LIMIT, pagination.total)}</strong> of <strong>{pagination.total}</strong> reviews
-            </div>
+            <div className="reviews-pagination-text">{translateUi("Showing")}<strong>{(pagination.page - 1) * PAGE_LIMIT + 1}</strong> {translateUi("to")} <strong>{Math.min(pagination.page * PAGE_LIMIT, pagination.total)}</strong> {translateUi("of")} <strong>{pagination.total}</strong>{translateUi("reviews")}</div>
             <div className="reviews-pagination">
               <button
                 disabled={pagination.page <= 1}
@@ -501,8 +499,8 @@ export default function AdminReviews() {
         <div className="admin-modal-overlay" onClick={() => setSelectedReview(null)}>
           <div className="admin-modal-content reviews-detail-modal" onClick={(event) => event.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">Review Details</h3>
-              <button className="admin-modal-close" type="button" onClick={() => setSelectedReview(null)} aria-label="Close details">
+              <h3 className="admin-modal-title">{translateUi("Review Details")}</h3>
+              <button className="admin-modal-close" type="button" onClick={() => setSelectedReview(null)} aria-label={translateUi("Close details")}>
                 <X size={18} />
               </button>
             </div>
@@ -513,40 +511,40 @@ export default function AdminReviews() {
                   {resolveSiteAssetUrl(selectedReview.product?.images?.[0]?.url || '') ? (
                     <img
                       src={resolveSiteAssetUrl(selectedReview.product?.images?.[0]?.url || '')}
-                      alt={selectedReview.product?.images?.[0]?.alt || selectedReview.product?.name || 'Product'}
+                      alt={selectedReview.product?.images?.[0]?.alt || selectedReview.product?.name || translateUi("Product")}
                     />
                   ) : (
                     <div className="reviews-product-placeholder" />
                   )}
-                  <h4>{selectedReview.product?.name || 'Unknown product'}</h4>
+                  <h4>{selectedReview.product?.name || translateUi("Unknown product")}</h4>
                 </div>
                 <span className={`reviews-status-pill ${selectedReview.isApproved ? 'is-approved' : 'is-hidden'}`}>
-                  {selectedReview.isApproved ? 'Approved' : 'Hidden'}
+                  {selectedReview.isApproved ? translateUi("Approved") : translateUi("Hidden")}
                 </span>
               </div>
 
               <div className="reviews-detail-grid">
                 <div className="reviews-detail-item">
-                  <span>Customer</span>
-                  <strong>{selectedReview.user?.fullName || selectedReview.user?.username || 'Guest'}</strong>
+                  <span>{translateUi("Customer")}</span>
+                  <strong>{selectedReview.user?.fullName || selectedReview.user?.username || translateUi("Guest")}</strong>
                 </div>
                 <div className="reviews-detail-item">
-                  <span>Email</span>
-                  <strong>{selectedReview.user?.email || 'N/A'}</strong>
+                  <span>{translateUi("Email")}</span>
+                  <strong>{selectedReview.user?.email || translateUi("N/A")}</strong>
                 </div>
                 <div className="reviews-detail-item">
-                  <span>Rating</span>
+                  <span>{translateUi("Rating")}</span>
                   <strong>{selectedReview.rating}/5</strong>
                 </div>
                 <div className="reviews-detail-item">
-                  <span>Created at</span>
+                  <span>{translateUi("Created at")}</span>
                   <strong>{formatDateTime(selectedReview.createdAt)}</strong>
                 </div>
               </div>
 
               <div className="reviews-detail-comment">
                 {selectedReview.title && <h5>{selectedReview.title}</h5>}
-                <p>{selectedReview.comment?.trim() || 'No comment provided.'}</p>
+                <p>{selectedReview.comment?.trim() || translateUi("No comment provided.")}</p>
               </div>
 
               <div className="reviews-detail-actions">
@@ -558,15 +556,14 @@ export default function AdminReviews() {
                     setSelectedReview((current) => current ? { ...current, isApproved: !current.isApproved } : current);
                   }}
                 >
-                  {selectedReview.isApproved ? <><X size={14} /> Hide review</> : <><Check size={14} /> Approve review</>}
+                  {selectedReview.isApproved ? <><X size={14} /> {translateUi("Hide review")}</> : <><Check size={14} /> {translateUi("Approve review")}</>}
                 </button>
                 <button
                   type="button"
                   className="admin-btn admin-btn-danger"
                   onClick={() => handleDelete(selectedReview.id)}
                 >
-                  <Trash2 size={14} /> Delete review
-                </button>
+                  <Trash2 size={14} />{translateUi("Delete review")}</button>
               </div>
             </div>
           </div>

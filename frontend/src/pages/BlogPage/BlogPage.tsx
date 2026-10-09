@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -7,6 +9,7 @@ import { sanitizeRichHtml } from '../../utils/sanitizeHtml';
 import './BlogPage.css';
 
 export default function BlogPage() {
+  useTranslation();
   const [posts, setPosts] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +51,7 @@ export default function BlogPage() {
   return (
     <div className="blog-page-container">
       <div className="blog-layout">
-        
+
         {/* Main Content Area: List of Blogs */}
         <div className="blog-main">
           {isLoading ? (
@@ -66,25 +69,23 @@ export default function BlogPage() {
                   ) : (
                      <div className="blog-post-image mock-gray-bg" />
                   )}
-                  
+
                   <h2 className="blog-post-title">
                     <Link to={`/blog/${post.slug}`}>{post.title}</Link>
                   </h2>
-                  
+
                   <div className="blog-post-excerpt">
                     <div dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(post.excerpt || '') }} />
                   </div>
-                  
-                  <Link to={`/blog/${post.slug}`} className="blog-btn-readmore">
-                    READ MORE
-                  </Link>
-                  
+
+                  <Link to={`/blog/${post.slug}`} className="blog-btn-readmore">{translateUi("READ MORE")}</Link>
+
                   <div className="blog-post-meta">
-                    <span>{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                    <span>{new Date(post.publishedAt).toLocaleDateString(getLocale(), { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                     <span className="meta-separator">|</span>
-                    <span>{post.category || 'General'}</span>
+                    <span>{post.category || translateUi("General")}</span>
                     <span className="meta-separator">|</span>
-                    <span>Klbtheme, Themeforest</span>
+                    <span>{translateUi("Klbtheme, Themeforest")}</span>
                   </div>
                 </article>
               ))}
@@ -93,12 +94,12 @@ export default function BlogPage() {
               {pagination.totalPages > 1 && (
                 <div className="blog-pagination">
                   {pagination.page > 1 && (
-                     <button aria-label="Previous Page" title="Previous Page" className="blog-page-btn" onClick={() => fetchPosts(pagination.page - 1)}><ChevronLeft size={16} /></button>
+                     <button aria-label={translateUi("Previous Page")} title={translateUi("Previous Page")} className="blog-page-btn" onClick={() => fetchPosts(pagination.page - 1)}><ChevronLeft size={16} /></button>
                   )}
-                  
+
                   {Array.from({ length: pagination.totalPages }).map((_, i) => (
-                    <button 
-                      key={i+1} 
+                    <button
+                      key={i+1}
                       className={`blog-page-btn ${pagination.page === i + 1 ? 'active' : ''}`}
                       onClick={() => fetchPosts(i + 1)}
                     >
@@ -107,7 +108,7 @@ export default function BlogPage() {
                   ))}
 
                   {pagination.page < pagination.totalPages && (
-                     <button aria-label="Next Page" title="Next Page" className="blog-page-btn" onClick={() => fetchPosts(pagination.page + 1)}><ChevronRight size={16} /></button>
+                     <button aria-label={translateUi("Next Page")} title={translateUi("Next Page")} className="blog-page-btn" onClick={() => fetchPosts(pagination.page + 1)}><ChevronRight size={16} /></button>
                   )}
                 </div>
               )}
@@ -117,9 +118,9 @@ export default function BlogPage() {
 
         {/* Sidebar Area */}
         <aside className="blog-sidebar">
-          
+
           <div className="sidebar-widget">
-            <h3 className="widget-title">Post Widget</h3>
+            <h3 className="widget-title">{translateUi("Post Widget")}</h3>
             <div className="recent-posts-list">
               {posts.slice(0, 3).map(post => (
                 <div className="recent-post-item" key={`recent-${post.id}`}>
@@ -129,7 +130,7 @@ export default function BlogPage() {
                   <div className="recent-post-info">
                     <h4><Link to={`/blog/${post.slug}`}>{post.title}</Link></h4>
                     <span className="recent-post-date">
-                      {new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      {new Date(post.publishedAt).toLocaleDateString(getLocale(), { month: 'long', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
                 </div>
@@ -138,27 +139,27 @@ export default function BlogPage() {
           </div>
 
           <div className="sidebar-widget">
-            <h3 className="widget-title">Social Widget</h3>
+            <h3 className="widget-title">{translateUi("Social Widget")}</h3>
             <div className="social-widget-list">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-btn btn-facebook">
-                <span className="social-icon">f</span>
-                <span className="social-name">FACEBOOK</span>
-                <span className="social-action">FOLLOW</span>
+                <span className="social-icon">{translateUi("f")}</span>
+                <span className="social-name">{translateUi("FACEBOOK")}</span>
+                <span className="social-action">{translateUi("FOLLOW")}</span>
               </a>
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-btn btn-x">
-                <span className="social-icon">X</span>
-                <span className="social-name">Twitter</span>
-                <span className="social-action">FOLLOW</span>
+                <span className="social-icon">{translateUi("X")}</span>
+                <span className="social-name">{translateUi("Twitter")}</span>
+                <span className="social-action">{translateUi("FOLLOW")}</span>
               </a>
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-btn btn-instagram">
-                <span className="social-icon">In</span>
-                <span className="social-name">INSTAGRAM</span>
-                <span className="social-action">FOLLOW</span>
+                <span className="social-icon">{translateUi("In")}</span>
+                <span className="social-name">{translateUi("INSTAGRAM")}</span>
+                <span className="social-action">{translateUi("FOLLOW")}</span>
               </a>
               <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="social-btn btn-youtube">
-                <span className="social-icon">Yt</span>
-                <span className="social-name">YOUTUBE</span>
-                <span className="social-action">FOLLOW</span>
+                <span className="social-icon">{translateUi("Yt")}</span>
+                <span className="social-name">{translateUi("YOUTUBE")}</span>
+                <span className="social-action">{translateUi("FOLLOW")}</span>
               </a>
             </div>
           </div>

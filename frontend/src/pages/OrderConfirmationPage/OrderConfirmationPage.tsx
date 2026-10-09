@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Package, Truck, Clock, CheckCircle2, Box, Info, CreditCard } from 'lucide-react';
@@ -20,6 +22,7 @@ const getPaymentLabel = (method: string) => {
 const canCancelOrder = (order: any) => ['PENDING', 'CONFIRMED'].includes(order.status) && order.paymentStatus !== 'PAID';
 
 export default function OrderConfirmationPage() {
+  useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToast } = useUIStore();
@@ -223,7 +226,7 @@ export default function OrderConfirmationPage() {
   }, [order]);
 
   if (isLoading) return <div className="loading-page"><div className="spinner" /></div>;
-  if (error || !order) return <div className="loading-page"><p>{error || 'Order not found'}</p></div>;
+  if (error || !order) return <div className="loading-page"><p>{error || translateUi("Order not found")}</p></div>;
 
   const currentStatus = String(order.status).toLowerCase();
   let currentStepIndex = STATUS_STEPS.indexOf(currentStatus);
@@ -247,39 +250,39 @@ export default function OrderConfirmationPage() {
           ) : (
             <CheckCircle className="oc-icon" size={64} />
           )}
-          <h1 className="oc-title">{isCancelled ? 'Order Cancelled' : 'Order Received'}</h1>
+          <h1 className="oc-title">{isCancelled ? translateUi("Order Cancelled") : translateUi("Order Received")}</h1>
           <p className="oc-subtitle">
             {isCancelled
-              ? 'This order has been cancelled and will not be processed.'
-              : 'Thank you. Your order has been received.'}
+              ? translateUi("This order has been cancelled and will not be processed.")
+              : translateUi("Thank you. Your order has been received.")}
           </p>
         </div>
 
         <ul className="oc-summary">
           <li>
-            <span>Order number:</span>
+            <span>{translateUi("Order number:")}</span>
             <strong>#{String(order.orderNumber)}</strong>
           </li>
           <li>
-            <span>Tracking Status:</span>
-            <strong className="oc-capitalize">{String(order.status) || 'Pending'}</strong>
+            <span>{translateUi("Tracking Status:")}</span>
+            <strong className="oc-capitalize">{String(order.status) || translateUi("Pending")}</strong>
           </li>
           <li>
-            <span>Date:</span>
-            <strong>{new Date(String(order.createdAt)).toLocaleDateString()}</strong>
+            <span>{translateUi("Date:")}</span>
+            <strong>{new Date(String(order.createdAt)).toLocaleDateString(getLocale())}</strong>
           </li>
           <li>
-            <span>Total:</span>
+            <span>{translateUi("Total:")}</span>
             <strong>${Number(order.totalAmount).toFixed(2)}</strong>
           </li>
           <li>
-            <span>Payment method:</span>
+            <span>{translateUi("Payment method:")}</span>
             <strong>{paymentLabel}</strong>
           </li>
         </ul>
 
         <div className="order-tracking-panel">
-          <h3 className="tracking-header">Order Status</h3>
+          <h3 className="tracking-header">{translateUi("Order Status")}</h3>
 
           <div className="tracking-timeline" ref={timelineRef}>
             {!isCancelled ? (
@@ -305,64 +308,61 @@ export default function OrderConfirmationPage() {
                       </div>
                       <div className={titleClass}>{mapStatusToTitle(step)}</div>
                       <div className="step-time">
-                        {isCompleted && index === 0 ? new Date(String(order.createdAt)).toLocaleDateString() : ''}
-                        {isCompleted && index === currentStepIndex - 1 ? 'Completed' : ''}
+                        {isCompleted && index === 0 ? new Date(String(order.createdAt)).toLocaleDateString(getLocale()) : ''}
+                        {isCompleted && index === currentStepIndex - 1 ? translateUi("Completed") : ''}
                       </div>
                     </div>
                   );
                 })}
               </>
             ) : (
-              <div className="order-cancelled-banner">Order Cancelled</div>
+              <div className="order-cancelled-banner">{translateUi("Order Cancelled")}</div>
             )}
           </div>
 
           <div className="tracking-cards">
             <div className="tracking-card">
               <div className="card-heading">
-                <Truck size={16} /> Delivery Info
-              </div>
+                <Truck size={16} />{translateUi("Delivery Info")}</div>
               <div className="card-content">
-                <strong>{String(order.shippingMethod?.name || 'Configured shipping')}</strong>
-                <p>{shippingCost === 0 ? 'Free shipping applied' : `Shipping fee: $${shippingCost.toFixed(2)}`}</p>
+                <strong>{String(order.shippingMethod?.name || translateUi("Configured shipping"))}</strong>
+                <p>{shippingCost === 0 ? translateUi("Free shipping applied") : translateUi("Shipping fee: ${{value1}}", { value1: shippingCost.toFixed(2) })}</p>
                 <div className="card-divider"></div>
-                <p className="tracking-caption">Destination matching and shipping fee are calculated from the admin shipping rules used at checkout.</p>
+                <p className="tracking-caption">{translateUi("Destination matching and shipping fee are calculated from the admin shipping rules used at checkout.")}</p>
               </div>
             </div>
 
             <div className="tracking-card">
               <div className="card-heading">
-                <Box size={16} /> Shipping Address
-              </div>
+                <Box size={16} />{translateUi("Shipping Address")}</div>
               <div className="card-content">
-                <strong>{String(order.shippingName || 'N/A')}</strong>
-                <p>{String(order.shippingPhone || 'N/A')}</p>
+                <strong>{String(order.shippingName || translateUi("N/A"))}</strong>
+                <p>{String(order.shippingPhone || translateUi("N/A"))}</p>
                 <p>
                   {[
                     order.shippingStreet,
                     order.shippingWard,
                     order.shippingDistrict,
                     order.shippingProvince,
-                  ].filter(Boolean).join(', ') || 'N/A'}
+                  ].filter(Boolean).join(', ') || translateUi("N/A")}
                 </p>
               </div>
             </div>
 
             <div className="tracking-card">
               <div className="card-heading">
-                <Info size={16} /> Payment Info
-              </div>
+                <Info size={16} />{translateUi("Payment Info")}</div>
               <div className="card-content">
                 <strong>{paymentLabel}</strong>
                 <p>{paymentStatusText}</p>
                 <p className="cod-text">
                   {order.paymentMethod === 'BANK_TRANSFER'
-                    ? order.bankTransferImage ? 'Transfer proof received.' : 'Upload your transfer proof below.'
+                    ? order.bankTransferImage ? translateUi("Transfer proof received.") : translateUi("Upload your transfer proof below.")
                     : order.paymentMethod === 'MOMO'
-                      ? (order.paymentStatus === 'PAID' ? 'Momo payment completed.' : 'Payment pending in Momo.')
+                      ? (order.paymentStatus === 'PAID' ? translateUi("Momo payment completed.") : translateUi("Payment pending in Momo."))
                       : order.paymentMethod === 'STRIPE'
-                        ? (order.paymentStatus === 'PAID' ? 'Stripe payment completed.' : 'Payment pending in Stripe Checkout.')
-                      : 'Payment will be collected on delivery.'}
+                        ? (order.paymentStatus === 'PAID' ? translateUi("Stripe payment completed.") : translateUi("Payment pending in Stripe Checkout."))
+                      : translateUi("Payment will be collected on delivery.")}
                 </p>
               </div>
             </div>
@@ -371,24 +371,24 @@ export default function OrderConfirmationPage() {
           {order.paymentMethod === 'BANK_TRANSFER' && order.status !== 'CANCELLED' && (
             <div className="order-action-panel">
               <div className="order-action-copy">
-                <h3>Bank Transfer Proof</h3>
-                <p>Upload your transfer receipt to help the admin team verify payment faster.</p>
+                <h3>{translateUi("Bank Transfer Proof")}</h3>
+                <p>{translateUi("Upload your transfer receipt to help the admin team verify payment faster.")}</p>
               </div>
               {order.bankTransferImage ? (
                 <div className="payment-proof-preview">
-                  <img src={bankTransferProofUrl} alt="Bank transfer proof" />
+                  <img src={bankTransferProofUrl} alt={translateUi("Bank transfer proof")} />
                 </div>
               ) : null}
               <div className="order-proof-upload-row">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => setProofFile(e.target.files?.[0] || null)} 
-                  title="Upload bank transfer proof"
-                  aria-label="Upload bank transfer proof"
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                  title={translateUi("Upload bank transfer proof")}
+                  aria-label={translateUi("Upload bank transfer proof")}
                 />
                 <button type="button" className="btn btn-outline" onClick={handleUploadProof} disabled={isUploadingProof}>
-                  {isUploadingProof ? 'Uploading...' : order.bankTransferImage ? 'Replace Proof' : 'Upload Proof'}
+                  {isUploadingProof ? translateUi("Uploading...") : order.bankTransferImage ? translateUi("Replace Proof") : translateUi("Upload Proof")}
                 </button>
               </div>
             </div>
@@ -397,11 +397,11 @@ export default function OrderConfirmationPage() {
           {order.paymentMethod === 'MOMO' && order.paymentStatus !== 'PAID' && order.status !== 'CANCELLED' && (
             <div className="order-action-panel">
               <div className="order-action-copy">
-                <h3>Complete Momo Payment</h3>
-                <p>Your order is created but still unpaid. Retry the Momo redirect to complete payment for this order.</p>
+                <h3>{translateUi("Complete Momo Payment")}</h3>
+                <p>{translateUi("Your order is created but still unpaid. Retry the Momo redirect to complete payment for this order.")}</p>
               </div>
               <button type="button" className="btn btn-primary" onClick={handleRetryMomoPayment} disabled={isRetryingPayment}>
-                <CreditCard size={16} /> {isRetryingPayment ? 'Opening Momo...' : 'Retry Momo Payment'}
+                <CreditCard size={16} /> {isRetryingPayment ? translateUi("Opening Momo...") : translateUi("Retry Momo Payment")}
               </button>
             </div>
           )}
@@ -409,11 +409,11 @@ export default function OrderConfirmationPage() {
           {order.paymentMethod === 'STRIPE' && order.paymentStatus !== 'PAID' && order.status !== 'CANCELLED' && (
             <div className="order-action-panel">
               <div className="order-action-copy">
-                <h3>Complete Stripe Payment</h3>
-                <p>Your order is created but still unpaid. Open Stripe Checkout again to complete card payment.</p>
+                <h3>{translateUi("Complete Stripe Payment")}</h3>
+                <p>{translateUi("Your order is created but still unpaid. Open Stripe Checkout again to complete card payment.")}</p>
               </div>
               <button type="button" className="btn btn-primary" onClick={handleRetryStripePayment} disabled={isRetryingPayment}>
-                <CreditCard size={16} /> {isRetryingPayment ? 'Opening Stripe...' : 'Retry Stripe Payment'}
+                <CreditCard size={16} /> {isRetryingPayment ? translateUi("Opening Stripe...") : translateUi("Retry Stripe Payment")}
               </button>
             </div>
           )}
@@ -421,19 +421,19 @@ export default function OrderConfirmationPage() {
 
         {order.statusHistory && order.statusHistory.length > 0 && (
           <div className="status-history-section" style={{ marginTop: '40px', marginBottom: '40px' }}>
-            <h3 className="tracking-header" style={{ marginBottom: '24px' }}>Detailed Order Journey</h3>
+            <h3 className="tracking-header" style={{ marginBottom: '24px' }}>{translateUi("Detailed Order Journey")}</h3>
             <div className="premium-timeline">
               {order.statusHistory.map((item: any, index: number) => {
                 const isLast = index === order.statusHistory.length - 1;
                 const itemStatus = String(item.status).toLowerCase();
-                
+
                 let statusClass = 'completed';
                 if (itemStatus === 'cancelled') statusClass = 'cancelled';
                 else if (isLast && order.status !== 'DELIVERED') statusClass = 'active';
 
                 return (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     className={`premium-timeline-item ${statusClass}`}
                     style={{ animationDelay: `${index * 150}ms` }}
                   >
@@ -447,10 +447,10 @@ export default function OrderConfirmationPage() {
                     <div className="premium-timeline-content">
                       <div className="premium-timeline-header">
                         <span className="premium-timeline-title">
-                          {itemStatus === 'pending' ? 'Order Placed' : itemStatus}
+                          {itemStatus === 'pending' ? translateUi("Order Placed") : itemStatus}
                         </span>
                         <span className="premium-timeline-time">
-                          {new Date(item.createdAt).toLocaleString()}
+                          {new Date(item.createdAt).toLocaleString(getLocale())}
                         </span>
                       </div>
                       {item.note && (
@@ -459,8 +459,7 @@ export default function OrderConfirmationPage() {
                         </div>
                       )}
                       {item.user && (
-                        <div className="premium-timeline-actor">
-                          Updated by {item.user.fullName}
+                        <div className="premium-timeline-actor">{translateUi("Updated by")}{item.user.fullName}
                         </div>
                       )}
                     </div>
@@ -472,19 +471,19 @@ export default function OrderConfirmationPage() {
         )}
 
         <div className="oc-details">
-          <h2>Order details</h2>
+          <h2>{translateUi("Order details")}</h2>
           <table className="oc-table">
             <thead>
               <tr>
-                <th>Product</th>
-                <th>Total</th>
+                <th>{translateUi("Product")}</th>
+                <th>{translateUi("Total")}</th>
               </tr>
             </thead>
             <tbody>
               {(order.items as Record<string, unknown>[]).map((item) => (
                 <tr key={String(item.id)}>
                   <td>
-                    {String(item.productName)} <strong>× {String(item.quantity)}</strong>
+                    {String(item.productName)} <strong>{translateUi("×")} {String(item.quantity)}</strong>
                   </td>
                   <td>${Number(item.totalPrice).toFixed(2)}</td>
                 </tr>
@@ -492,23 +491,23 @@ export default function OrderConfirmationPage() {
             </tbody>
             <tfoot>
               <tr>
-                <th>Subtotal:</th>
+                <th>{translateUi("Subtotal:")}</th>
                 <td>${Number(order.subtotal).toFixed(2)}</td>
               </tr>
               {shippingCost > 0 && (
                 <tr>
-                  <th>Shipping:</th>
+                  <th>{translateUi("Shipping:")}</th>
                   <td>${shippingCost.toFixed(2)}</td>
                 </tr>
               )}
               {Number(order.discountAmount) > 0 && (
                 <tr>
-                  <th>Discount:</th>
+                  <th>{translateUi("Discount:")}</th>
                   <td>-${Number(order.discountAmount).toFixed(2)}</td>
                 </tr>
               )}
               <tr>
-                <th>Total:</th>
+                <th>{translateUi("Total:")}</th>
                 <td><strong>${Number(order.totalAmount).toFixed(2)}</strong></td>
               </tr>
             </tfoot>
@@ -517,19 +516,16 @@ export default function OrderConfirmationPage() {
 
         <div className="oc-actions">
           <Link to="/account/orders" className="btn btn-outline oc-action-link">
-            <Package size={20} /> View All Orders
-          </Link>
+            <Package size={20} />{translateUi("View All Orders")}</Link>
           {canCancelOrder(order) && (
             <button type="button" className="btn btn-outline" onClick={handleCancelOrder} disabled={isCancelling}>
-              {isCancelling ? 'Cancelling...' : 'Cancel Order'}
+              {isCancelling ? translateUi("Cancelling...") : translateUi("Cancel Order")}
             </button>
           )}
           <button type="button" className="btn btn-outline" onClick={handleReorder} disabled={isReordering}>
-            {isReordering ? 'Adding...' : 'Buy Again'}
+            {isReordering ? translateUi("Adding...") : translateUi("Buy Again")}
           </button>
-          <Link to="/" className="btn btn-primary">
-            Continue Shopping
-          </Link>
+          <Link to="/" className="btn btn-primary">{translateUi("Continue Shopping")}</Link>
         </div>
       </div>
     </div>

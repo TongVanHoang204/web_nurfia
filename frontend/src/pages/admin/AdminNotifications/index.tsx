@@ -1,3 +1,6 @@
+import { notificationDestination } from '../../../utils/notificationDestination';
+import { translateUi, getLocale } from '../../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, CheckCheck, Search, Inbox, Trash2 } from 'lucide-react';
@@ -28,7 +31,7 @@ const formatNotificationDate = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
 
-  return date.toLocaleString('en-US', {
+  return date.toLocaleString(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -37,20 +40,9 @@ const formatNotificationDate = (value: string) => {
   });
 };
 
-const getNotificationTarget = (notification: Notification) => {
-  const link = String(notification.link || '').trim();
-  if (!link) return '';
-  if (link.startsWith('http://') || link.startsWith('https://')) return '';
-  
-  const adminOrderMatch = link.match(/^\/admin\/orders\/(\d+)$/);
-  if (adminOrderMatch) {
-    return `/admin/orders?orderId=${adminOrderMatch[1]}`;
-  }
-
-  return link.startsWith('/') ? link : `/${link}`;
-};
 
 export default function AdminNotifications() {
+  useTranslation();
   const { isAuthenticated, user } = useAuthStore();
   const {
     notifications,
@@ -163,8 +155,8 @@ export default function AdminNotifications() {
     <div className="admin-notifications-page">
       <header className="admin-notifications-header">
         <div>
-          <h1>System Alerts</h1>
-          <p>Manage your notifications, order updates, and system alerts.</p>
+          <h1>{translateUi("System Alerts")}</h1>
+          <p>{translateUi("Manage your notifications, order updates, and system alerts.")}</p>
         </div>
         <div className="admin-notifications-header-actions">
         {selectedIds.length > 0 && (
@@ -174,8 +166,7 @@ export default function AdminNotifications() {
             onClick={handleDeleteSelected}
             disabled={isLoading}
           >
-            <Trash2 size={14} />
-            Delete selected ({selectedIds.length})
+            <Trash2 size={14} />{translateUi("Delete selected (")}{selectedIds.length})
           </button>
         )}
         {unreadCount > 0 && (
@@ -185,33 +176,26 @@ export default function AdminNotifications() {
             onClick={markAllAsRead}
             disabled={isLoading}
           >
-            <CheckCheck size={14} />
-            Mark all as read
-          </button>
+            <CheckCheck size={14} />{translateUi("Mark all as read")}</button>
         )}
         </div>
       </header>
 
       <div className="admin-notifications-toolbar">
         <div className="admin-notifications-filters">
-          <button 
+          <button
             className={`admin-filter-tab ${filter === 'ALL' ? 'active' : ''}`}
             onClick={() => setFilter('ALL')}
-          >
-            All Notifications
-          </button>
-          <button 
+          >{translateUi("All Notifications")}</button>
+          <button
             className={`admin-filter-tab ${filter === 'UNREAD' ? 'active' : ''}`}
             onClick={() => setFilter('UNREAD')}
-          >
-            Unread ({unreadCount})
+          >{translateUi("Unread (")}{unreadCount})
           </button>
-          <button 
+          <button
             className={`admin-filter-tab ${filter === 'READ' ? 'active' : ''}`}
             onClick={() => setFilter('READ')}
-          >
-            Read
-          </button>
+          >{translateUi("Read")}</button>
         </div>
 
         <div className="admin-notifications-search">
@@ -220,8 +204,8 @@ export default function AdminNotifications() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search alerts..."
-            title="Search alerts"
+            placeholder={translateUi("Search alerts...")}
+            title={translateUi("Search alerts")}
           />
         </div>
       </div>
@@ -232,8 +216,8 @@ export default function AdminNotifications() {
         ) : filteredNotifications.length === 0 ? (
           <div className="admin-empty-notifications">
             <Inbox size={48} strokeWidth={1} color="var(--color-text-muted)" />
-            <h3>No notifications found</h3>
-            <p>You're all caught up! New alerts will appear here.</p>
+            <h3>{translateUi("No notifications found")}</h3>
+            <p>{translateUi("You're all caught up! New alerts will appear here.")}</p>
           </div>
         ) : (
           <div className="admin-notifications-list">
@@ -244,16 +228,14 @@ export default function AdminNotifications() {
                   checked={allFilteredSelected}
                   onChange={toggleSelectAllFiltered}
                   disabled={filteredNotifications.length === 0}
-                />
-                Select all shown
-              </label>
-              <span>{filteredNotifications.length} shown</span>
+                />{translateUi("Select all shown")}</label>
+              <span>{filteredNotifications.length} {translateUi("shown")}</span>
             </div>
             {filteredNotifications.map((notification) => {
               const { color } = getNotificationIconConfig(notification.type);
-              const target = getNotificationTarget(notification);
+              const target = notificationDestination(notification, user);
               const isUnread = !notification.isRead;
-              
+
               const itemContent = (
                 <>
                   <div className="admin-notifications-icon-wrap" style={{ color }}>
@@ -261,7 +243,7 @@ export default function AdminNotifications() {
                   </div>
                   <div className="admin-notifications-copy">
                     <div className="admin-notifications-item-meta">
-                      <strong>{notification.title}</strong>
+                      <strong>{translateUi(notification.title)}</strong>
                       <span className="admin-notifications-time">
                         {formatNotificationDate(notification.createdAt)}
                       </span>
@@ -276,7 +258,7 @@ export default function AdminNotifications() {
 
               return (
                 <article key={notification.id} className={itemClass}>
-                  <label className="admin-notifications-select" aria-label={`Select ${notification.title}`}>
+                  <label className="admin-notifications-select" aria-label={translateUi("Select {{value1}}", { value1: notification.title })}>
                     <input
                       type="checkbox"
                       checked={selectedSet.has(notification.id)}
@@ -303,8 +285,8 @@ export default function AdminNotifications() {
                   <button
                     type="button"
                     className="admin-notifications-delete"
-                    aria-label={`Delete ${notification.title}`}
-                    title={`Delete ${notification.title}`}
+                    aria-label={translateUi("Delete {{value1}}", { value1: notification.title })}
+                    title={translateUi("Delete {{value1}}", { value1: notification.title })}
                     onClick={() => handleDeleteOne(notification)}
                   >
                     <Trash2 size={16} />
@@ -317,17 +299,14 @@ export default function AdminNotifications() {
 
         {hasNotifications && totalPages > 1 && (
           <div className="admin-notifications-footer">
-            <span className="admin-notifications-pagination-text">
-              Page {page} of {totalPages}
+            <span className="admin-notifications-pagination-text">{translateUi("Page")}{page} {translateUi("of")} {totalPages}
             </span>
             <button
               type="button"
               className="admin-notifications-page-btn"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1 || isLoading}
-            >
-              Previous
-            </button>
+            >{translateUi("Previous")}</button>
             <div className="admin-notifications-page-numbers">
               {pageNumbers.map((pageNumber) => (
                 pageNumber < 0 ? (
@@ -351,9 +330,7 @@ export default function AdminNotifications() {
               className="admin-notifications-page-btn"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages || isLoading}
-            >
-              Next
-            </button>
+            >{translateUi("Next")}</button>
           </div>
         )}
       </div>

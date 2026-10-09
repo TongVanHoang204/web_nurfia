@@ -15,6 +15,8 @@ const TYPE_CONFIG: Record<string, NotificationIconConfig> = {
   PROMO: { icon: 'tag', color: '#f59e0b' },
   REVIEW: { icon: 'star', color: '#f97316' },
   INFO: { icon: 'info', color: '#6b7280' },
+  LOW_STOCK: { icon: 'package', color: '#c58335' },
+  CONTACT: { icon: 'mail', color: '#8b5cf6' },
 };
 
 const DEFAULT: NotificationIconConfig = { icon: 'bell', color: '#6b7280' };

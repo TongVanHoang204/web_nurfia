@@ -19,12 +19,12 @@
 .notifications-page-header h1 {
   margin: 0;
   font-size: 30px;
-  color: #111827;
+  color: var(--color-text, #111827);
 }
 
 .notifications-page-header p {
   margin: 6px 0 0;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   font-size: 14px;
 }
 
@@ -66,9 +66,9 @@
   align-items: center;
   gap: 8px;
   padding: 0 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface, #fff);
   color: #9ca3af;
 }
 
@@ -76,7 +76,7 @@
   width: 100%;
   border: 0;
   outline: 0;
-  color: #111827;
+  color: var(--color-text, #111827);
   background: transparent;
   font-size: 14px;
 }
@@ -87,10 +87,10 @@
   align-items: center;
   gap: 4px;
   padding: 0 6px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 8px;
-  background: #fff;
-  color: #6b7280;
+  background: var(--surface, #fff);
+  color: var(--color-text-light, #6b7280);
 }
 
 .notifications-filter-group button {
@@ -113,7 +113,7 @@
 .notifications-list-panel {
   border: 1px solid #e8edf5;
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface, #fff);
   overflow: hidden;
 }
 
@@ -130,7 +130,7 @@
   padding: 16px;
   border: 0;
   border-bottom: 1px solid #edf0f5;
-  background: #fff;
+  background: var(--surface, #fff);
   color: inherit;
   text-align: left;
   text-decoration: none;
@@ -142,7 +142,7 @@
 }
 
 .notifications-page-item:hover {
-  background: #f9fafb;
+  background: var(--surface-soft, #f9fafb);
 }
 
 .notifications-page-item.is-unread {
@@ -172,7 +172,7 @@
 }
 
 .notifications-page-item-head strong {
-  color: #111827;
+  color: var(--color-text, #111827);
   font-size: 14px;
 }
 
@@ -203,12 +203,12 @@
   justify-content: space-between;
   gap: 10px;
   padding: 12px 16px;
-  border-top: 1px solid #e5e7eb;
-  background: #fafafa;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  background: var(--surface-soft, #fafafa);
 }
 
 .notifications-page-footer span {
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   font-size: 13px;
 }
 
@@ -227,13 +227,13 @@
 
 .notifications-empty-panel h2 {
   margin: 0;
-  color: #111827;
+  color: var(--color-text, #111827);
   font-size: 18px;
 }
 
 .notifications-empty-panel p {
   margin: 0;
-  color: #6b7280;
+  color: var(--color-text-light, #6b7280);
   font-size: 13px;
 }
 

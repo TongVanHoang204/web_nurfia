@@ -1,8 +1,11 @@
+import { notificationDestination } from '../../utils/notificationDestination';
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Bell, CheckCheck, Filter, Search } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
-import { useNotificationStore, type Notification } from '../../stores/notificationStore';
+import { useNotificationStore, } from '../../stores/notificationStore';
 import { getNotificationIconConfig } from '../../components/Notifications';
 import './NotificationsPage.css';
 
@@ -12,7 +15,7 @@ const formatNotificationDate = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
 
-  return date.toLocaleString('en-US', {
+  return date.toLocaleString(getLocale(), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -21,25 +24,9 @@ const formatNotificationDate = (value: string) => {
   });
 };
 
-const getNotificationTarget = (notification: Notification) => {
-  const link = String(notification.link || '').trim();
-  if (!link) return '';
-  if (link.startsWith('http://') || link.startsWith('https://')) return '';
-  
-  const adminOrderMatch = link.match(/^\/admin\/orders\/(\d+)$/);
-  if (adminOrderMatch) {
-    return `/admin/orders?orderId=${adminOrderMatch[1]}`;
-  }
-
-  const userOrderMatch = link.match(/^\/order(?:s)?\/(\d+)$/);
-  if (userOrderMatch) {
-    return `/order-confirmation/${userOrderMatch[1]}`;
-  }
-
-  return link.startsWith('/') ? link : `/${link}`;
-};
 
 export default function NotificationsPage() {
+  useTranslation();
   const { isAuthenticated, isHydrating, user } = useAuthStore();
   const {
     notifications,
@@ -93,8 +80,8 @@ export default function NotificationsPage() {
       <div className="container notifications-container">
         <header className="notifications-page-header">
           <div>
-            <h1>Notifications</h1>
-            <p>Track order updates, payment events, promotions, and account messages.</p>
+            <h1>{translateUi("Notifications")}</h1>
+            <p>{translateUi("Track order updates, payment events, promotions, and account messages.")}</p>
           </div>
           <button
             type="button"
@@ -102,19 +89,17 @@ export default function NotificationsPage() {
             onClick={markAllAsRead}
             disabled={!unreadCount || isLoading}
           >
-            <CheckCheck size={16} />
-            Mark all read
-          </button>
+            <CheckCheck size={16} />{translateUi("Mark all read")}</button>
         </header>
 
-        <section className="notifications-toolbar" aria-label="Notification filters">
+        <section className="notifications-toolbar" aria-label={translateUi("Notification filters")}>
           <div className="notifications-search">
             <Search size={16} />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search notifications"
-              aria-label="Search notifications"
+              placeholder={translateUi("Search notifications")}
+              aria-label={translateUi("Search notifications")}
             />
           </div>
 
@@ -127,7 +112,7 @@ export default function NotificationsPage() {
                 className={filter === item ? 'is-active' : ''}
                 onClick={() => setFilter(item)}
               >
-                {item === 'ALL' ? 'All' : item === 'UNREAD' ? `Unread (${unreadCount})` : 'Read'}
+                {item === 'ALL' ? translateUi("All") : item === 'UNREAD' ? translateUi("Unread ({{value1}})", { value1: unreadCount }) : translateUi("Read")}
               </button>
             ))}
           </div>
@@ -139,14 +124,14 @@ export default function NotificationsPage() {
           ) : filteredNotifications.length === 0 ? (
             <div className="notifications-empty-panel">
               <Bell size={34} />
-              <h2>{hasNotifications ? 'No matching notifications' : 'No notifications yet'}</h2>
-              <p>{hasNotifications ? 'Try another search term or filter.' : 'New order and account updates will appear here.'}</p>
+              <h2>{hasNotifications ? translateUi("No matching notifications") : translateUi("No notifications yet")}</h2>
+              <p>{hasNotifications ? translateUi("Try another search term or filter.") : translateUi("New order and account updates will appear here.")}</p>
             </div>
           ) : (
             <div className="notifications-page-list">
               {filteredNotifications.map((notification) => {
                 const { color } = getNotificationIconConfig(notification.type);
-                const target = getNotificationTarget(notification);
+                const target = notificationDestination(notification, user);
                 const content = (
                   <>
                     <div className="notifications-page-icon" style={{ background: `${color}18`, color }}>
@@ -154,8 +139,8 @@ export default function NotificationsPage() {
                     </div>
                     <div className="notifications-page-copy">
                       <div className="notifications-page-item-head">
-                        <strong>{notification.title}</strong>
-                        {!notification.isRead && <span>Unread</span>}
+                        <strong>{translateUi(notification.title)}</strong>
+                        {!notification.isRead && <span>{translateUi("Unread")}</span>}
                       </div>
                       <p>{notification.message}</p>
                       <small>{formatNotificationDate(notification.createdAt)}</small>
@@ -192,15 +177,14 @@ export default function NotificationsPage() {
 
           {hasNotifications && (
             <footer className="notifications-page-footer">
-              <span>
-                Page {page} of {Math.max(totalPages, 1)}
+              <span>{translateUi("Page")}{page} {translateUi("of")} {Math.max(totalPages, 1)}
               </span>
               <button
                 type="button"
-                onClick={() => fetchNotifications(page + 1)}
+                onClick={() => fetchNotifications(page + 1, true)}
                 disabled={!hasMore || isLoading}
               >
-                {isLoading ? 'Loading...' : hasMore ? 'Load more' : 'All caught up'}
+                {isLoading ? translateUi("Loading...") : hasMore ? translateUi("Load more") : translateUi("All caught up")}
               </button>
             </footer>
           )}

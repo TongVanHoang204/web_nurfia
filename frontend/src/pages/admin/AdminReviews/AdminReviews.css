@@ -37,7 +37,7 @@
 .reviews-stat-card strong {
   font-family: var(--font-heading);
   font-size: 32px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 /* Toolbar */
@@ -59,7 +59,7 @@
   padding: 12px 16px 12px 44px;
   border: 1px solid var(--color-border);
   font-size: 14px;
-  background: var(--color-white);
+  background: var(--surface);
 }
 
 .reviews-search-wrap svg {
@@ -76,7 +76,7 @@
   gap: 8px;
   padding: 12px 16px;
   border: 1px solid var(--color-border);
-  background: var(--color-white);
+  background: var(--surface);
   cursor: pointer;
 }
 
@@ -159,7 +159,7 @@
   width: 48px;
   height: 64px;
   object-fit: cover;
-  background: #eee;
+  background: var(--surface-soft, #eee);
   flex-shrink: 0;
 }
 
@@ -320,7 +320,7 @@
   margin: 0;
   font-family: var(--font-heading);
   font-size: 18px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reviews-detail-grid {
@@ -345,7 +345,7 @@
 
 .reviews-detail-item strong {
   font-size: 14px;
-  color: var(--color-black);
+  color: var(--color-text);
   font-weight: 500;
 }
 
@@ -358,7 +358,7 @@
 .reviews-detail-comment h5 {
   margin: 0 0 8px;
   font-size: 15px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .reviews-detail-comment p {

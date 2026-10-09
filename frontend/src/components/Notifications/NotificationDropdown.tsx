@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { CheckCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Notification } from '../../stores/notificationStore';
@@ -14,6 +16,7 @@ interface NotificationDropdownProps {
   onRead: (id: number) => void;
   onMarkAllRead: () => void;
   onLoadMore: () => void;
+  onClose?: () => void;
 }
 
 /**
@@ -30,13 +33,15 @@ export function NotificationDropdown({
   onRead,
   onMarkAllRead,
   onLoadMore,
+  onClose,
 }: NotificationDropdownProps) {
+  useTranslation();
   return (
-    <div className="notif-dropdown" role="dialog" aria-label="Notifications">
+    <div className="notif-dropdown" role="dialog" aria-label={translateUi("Notifications")}>
       {/* Header */}
       <div className="notif-header">
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <h3 className="notif-header-title">Notifications</h3>
+          <h3 className="notif-header-title">{translateUi("Notifications")}</h3>
           {unreadCount > 0 && (
             <span className="notif-unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
           )}
@@ -45,11 +50,9 @@ export function NotificationDropdown({
           <button
             className="notif-mark-all-btn"
             onClick={onMarkAllRead}
-            aria-label="Mark all as read"
+            aria-label={translateUi("Mark all as read")}
           >
-            <CheckCheck size={14} />
-            Mark all read
-          </button>
+            <CheckCheck size={14} />{translateUi("Mark all read")}</button>
         )}
       </div>
 
@@ -59,7 +62,7 @@ export function NotificationDropdown({
           <NotificationEmpty />
         ) : (
           notifications.map((n) => (
-            <NotificationItem key={n.id} notification={n} onRead={onRead} />
+            <NotificationItem key={n.id} notification={n} onRead={onRead} onSelect={onClose} />
           ))
         )}
       </div>
@@ -67,19 +70,17 @@ export function NotificationDropdown({
       {/* Load more footer */}
       {notifications.length > 0 && (
         <div className="notif-footer">
-          <Link to={viewAllLink} className="notif-view-all-link">
-            View all notifications
-          </Link>
+          <Link to={viewAllLink} className="notif-view-all-link" onClick={onClose}>{translateUi("View all notifications")}</Link>
           <button
             className="notif-load-more-btn"
             onClick={onLoadMore}
             disabled={isLoading || page >= totalPages}
           >
             {isLoading
-              ? 'Loading...'
+              ? translateUi("Loading...")
               : page >= totalPages
-              ? 'All caught up'
-              : 'Load more'}
+              ? translateUi("All caught up")
+              : translateUi("Load more")}
           </button>
         </div>
       )}

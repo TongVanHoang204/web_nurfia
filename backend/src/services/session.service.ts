@@ -4,6 +4,7 @@ import config from '../config/index.js';
 import prisma from '../models/prisma.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { effectiveRole } from '../utils/teamAccess.js';
+import { resolveAdminPermissions } from '../utils/adminPermissions.js';
 
 type AccessTokenClaims = jwt.JwtPayload & { userId: number; tokenVersion: number; exp: number };
 const sessionEvents = new EventEmitter();
@@ -29,11 +30,11 @@ export const getAuthenticatedUser = async (token: string) => {
   const claims = decodeAccessToken(token);
   const user = await prisma.user.findUnique({
     where: { id: claims.userId },
-    select: { id: true, role: true, isOwner: true, permissions: true, isActive: true, tokenVersion: true },
+    select: { id: true, role: true, isOwner: true, adminPermissionsRestricted: true, permissions: true, isActive: true, tokenVersion: true },
   });
   if (!user || !user.isActive) throw new AppError('User account not found or deactivated.', 401);
   if (claims.tokenVersion !== user.tokenVersion) throw new AppError('Invalid or expired authentication token.', 401);
-  return { ...user, role: effectiveRole(user), tokenExpiresAt: claims.exp };
+  return { ...user, role: effectiveRole(user), permissions: resolveAdminPermissions(user), tokenExpiresAt: claims.exp };
 };
 
 export const notifySessionsRevoked = (userId: number) => sessionEvents.emit(REVOKED, userId);

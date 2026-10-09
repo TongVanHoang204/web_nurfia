@@ -18,7 +18,7 @@
 .pd-gallery-main {
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #f5f5f5;
+  background: var(--surface-soft, #f5f5f5);
   margin-bottom: 12px;
   overflow: hidden;
   position: relative;
@@ -43,7 +43,7 @@
   width: 80px;
   min-width: 80px;
   height: 80px;
-  background: #f5f5f5;
+  background: var(--surface-soft, #f5f5f5);
   cursor: pointer;
   border: 2px solid transparent;
   transition: border-color var(--transition-fast);
@@ -93,7 +93,7 @@
   display: flex; align-items: center; gap: 12px;
   font-size: 28px; font-weight: 700; margin-bottom: 16px; font-family: var(--font-body);
 }
-.pd-price .sale { color: var(--color-black); }
+.pd-price .sale { color: var(--color-text); }
 .pd-price .original {
   font-size: 20px; text-decoration: line-through; color: var(--color-text-muted); font-weight: 400;
 }
@@ -131,13 +131,13 @@
   transition: background var(--transition-fast); background: transparent; color: var(--color-text);
   border: none;
 }
-.pd-qty button:hover { background: #f9f9f9; }
+.pd-qty button:hover { background: var(--surface-soft, #f9f9f9); }
 .pd-qty span {
   width: 40px; text-align: center; font-size: 16px; font-weight: 600;
   border: none;
 }
 
-.pd-atc { 
+.pd-atc {
   flex: 1; height: 52px; font-size: 14px; letter-spacing: 0.5px;
   font-weight: 600; text-transform: uppercase;
 }
@@ -161,14 +161,14 @@
   display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
   padding: 16px 20px; border: 1px solid var(--color-border); border-radius: 4px;
   font-size: 13px; color: var(--color-text-light);
-  margin-bottom: 24px; background: #fff;
+  margin-bottom: 24px; background: var(--surface, #fff);
 }
 .pd-shipping-box .shipping-icon { color: var(--color-text); }
 .pd-shipping-box strong { color: var(--color-text); font-weight: 600; font-size: 14px; }
 .pd-shipping-box .shipping-divider { color: var(--color-border); }
 
 .pd-guarantee-box {
-  background: #f5f5f5;
+  background: var(--surface-soft, #f5f5f5);
   padding: 24px;
   border-radius: 4px;
   margin-bottom: 32px;
@@ -182,7 +182,7 @@
   gap: 16px;
 }
 .guarantee-icon {
-  color: var(--color-black);
+  color: var(--color-text);
   flex-shrink: 0;
 }
 .guarantee-text {
@@ -190,7 +190,7 @@
   color: var(--color-text-light);
 }
 .guarantee-text strong {
-  color: var(--color-black);
+  color: var(--color-text);
   font-weight: 500;
 }
 .pd-share-meta {
@@ -210,7 +210,7 @@
 }
 .share-icon:hover { border-color: var(--color-black); }
 .share-icon.facebook { color: #1877f2; }
-.share-icon.twitter { color: #000; }
+.share-icon.twitter { color: var(--color-text, #000); }
 .share-icon.pinterest { color: #e60023; }
 .share-icon.whatsapp { color: #25d366; }
 
@@ -229,13 +229,13 @@
 }
 .pd-tab-header button.active,
 .pd-tab-header button:hover {
-  color: var(--color-black); border-bottom-color: var(--color-black);
+  color: var(--color-text); border-bottom-color: var(--color-black);
 }
-.pd-tab-content { 
-  max-width: 100%; 
-  font-size: 14px; 
-  line-height: 1.8; 
-  color: var(--color-text-light); 
+.pd-tab-content {
+  max-width: 100%;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--color-text-light);
   word-break: break-word;
   overflow-wrap: break-word;
 }
@@ -311,7 +311,7 @@
 .bar-bg {
   flex: 1;
   height: 4px;
-  background: #f0f0f0;
+  background: var(--surface-soft, #f0f0f0);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -327,7 +327,7 @@
 .review-item {
   display: flex;
   gap: 16px;
-  padding: 24px 0; 
+  padding: 24px 0;
   border-bottom: 1px solid var(--color-border);
 }
 .reviewer-avatar img {
@@ -350,7 +350,7 @@
   margin-bottom: 12px;
 }
 .review-meta strong {
-  color: var(--color-black);
+  color: var(--color-text);
   font-size: 14px;
   margin-right: 4px;
 }
@@ -389,7 +389,7 @@
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: var(--color-black);
+  color: var(--color-text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -397,7 +397,7 @@
 @media (max-width: 1024px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-  
+
   .pd-main { grid-template-columns: 1fr; gap: 32px; padding: 0 16px; }
   .pd-gallery-main { display: none; }
   .pd-gallery-thumbnails { display: flex; margin-top: 10px; justify-content: center; }
@@ -526,7 +526,7 @@
 .pd-gallery-zoom-btn {
   position: absolute;
   bottom: 16px; right: 16px;
-  background: white; border: none; border-radius: 50%;
+  background: var(--surface, white); border: none; border-radius: 50%;
   width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);

@@ -16,7 +16,7 @@
 .admin-dashboard-header h1 {
   font-family: var(--font-heading);
   font-size: 48px;
-  color: var(--color-black);
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 
@@ -68,7 +68,7 @@
 .admin-kpi-value {
   font-family: var(--font-heading);
   font-size: 36px;
-  color: var(--color-black);
+  color: var(--color-text);
   font-weight: 400;
 }
 
@@ -78,7 +78,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   color: var(--color-accent);
   margin-bottom: 4px;
@@ -98,7 +98,7 @@
 
 /* Components */
 .admin-db-card {
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-border);
   padding: 32px;
   height: 100%;
@@ -114,7 +114,7 @@
 .admin-db-card-header h3 {
   font-family: var(--font-heading);
   font-size: 24px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-db-card-header small {
@@ -196,7 +196,7 @@
 .admin-status-info strong {
   display: block;
   font-size: 14px;
-  color: var(--color-black);
+  color: var(--color-text);
   margin-bottom: 4px;
 }
 
@@ -244,7 +244,7 @@
 .admin-db-item-title {
   font-family: var(--font-heading);
   font-size: 18px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-db-item-sub {
@@ -292,7 +292,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-white);
+  background: var(--surface);
   border: 1px solid var(--color-accent);
   display: flex;
   align-items: center;
@@ -304,7 +304,7 @@
 
 .admin-customer-mini strong {
   font-size: 14px;
-  color: var(--color-black);
+  color: var(--color-text);
 }
 
 .admin-customer-mini span {
@@ -338,7 +338,7 @@
     flex: 1;
     min-width: 0;
   }
-  
+
   .admin-kpi-grid { grid-template-columns: 1fr; }
   .admin-db-customers { grid-template-columns: repeat(2, 1fr); }
 }

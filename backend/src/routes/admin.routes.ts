@@ -458,6 +458,7 @@ router.post('/inventory/update', requirePermission('MANAGE_INVENTORY'), validate
  *       200: { description: Orders list }
  */
 router.get('/orders', requirePermission('MANAGE_ORDERS'), validateQuery(adminOrderQuerySchema), adminController.getOrders);
+router.get('/orders/:id', requirePermission('MANAGE_ORDERS'), validateParams(adminIdParamSchema), adminController.getOrderById);
 
 /**
  * @swagger
@@ -858,6 +859,7 @@ router.delete('/popups/:id', requirePermission('MANAGE_BANNERS'), validateParams
  *       200: { description: Messages list }
  */
 router.get('/contacts', requirePermission('MANAGE_CONTACTS'), contactController.getMessages);
+router.get('/contacts/:id', requirePermission('MANAGE_CONTACTS'), validateParams(adminIdParamSchema), contactController.getMessageById);
 
 /**
  * @swagger

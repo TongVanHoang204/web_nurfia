@@ -1,3 +1,5 @@
+import { translateUi } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
@@ -38,6 +40,7 @@ const paymentDescriptions: Record<PaymentMethod, { title: string; description: s
 };
 
 export default function CheckoutPage() {
+  useTranslation();
   const { items, getSubtotal, resetCart } = useCartStore();
   const { addToast } = useUIStore();
   const { isAuthenticated, isHydrating, user } = useAuthStore();
@@ -291,21 +294,21 @@ export default function CheckoutPage() {
   return (
     <div className="checkout-page">
       <div className="container">
-        <h1 className="checkout-title">Checkout</h1>
+        <h1 className="checkout-title">{translateUi("Checkout")}</h1>
         <form onSubmit={handleSubmit} className="checkout-layout">
           <div className="checkout-form">
-            <h3 className="checkout-section-title">Shipping Information</h3>
+            <h3 className="checkout-section-title">{translateUi("Shipping Information")}</h3>
 
             {savedAddresses.length > 0 && (
               <div className="form-group saved-addresses-selector">
-                <label className="form-label" htmlFor="savedAddress">Select a Saved Address</label>
+                <label className="form-label" htmlFor="savedAddress">{translateUi("Select a Saved Address")}</label>
                 <select
                   id="savedAddress"
                   className="form-input"
                   onChange={handleSelectAddress}
                   defaultValue=""
                 >
-                  <option value="" disabled>-- Choose an address --</option>
+                  <option value="" disabled>{translateUi("-- Choose an address --")}</option>
                   {savedAddresses.map((address) => (
                     <option key={address.id} value={address.id}>
                       {address.fullName} - {address.phone} ({address.streetAddress}, {address.ward}, {address.district}, {address.province})
@@ -316,25 +319,25 @@ export default function CheckoutPage() {
             )}
 
             <div className="form-row">
-              <div className="form-group"><label className="form-label" htmlFor="shippingName">Full Name *</label><input id="shippingName" title="Full Name" placeholder="Jon Doe" className="form-input" required value={form.shippingName} onChange={(e) => update('shippingName', e.target.value)} /></div>
-              <div className="form-group"><label className="form-label" htmlFor="shippingPhone">Phone Number *</label><input id="shippingPhone" title="Phone Number" placeholder="+1234567890" className="form-input" required value={form.shippingPhone} onChange={(e) => update('shippingPhone', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label" htmlFor="shippingName">{translateUi("Full Name *")}</label><input id="shippingName" title={translateUi("Full Name")} placeholder={translateUi("Jon Doe")} className="form-input" required value={form.shippingName} onChange={(e) => update('shippingName', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label" htmlFor="shippingPhone">{translateUi("Phone Number *")}</label><input id="shippingPhone" title={translateUi("Phone Number")} placeholder="+1234567890" className="form-input" required value={form.shippingPhone} onChange={(e) => update('shippingPhone', e.target.value)} /></div>
             </div>
-            <div className="form-group"><label className="form-label" htmlFor="shippingEmail">Email Address *</label><input id="shippingEmail" title="Email Address" placeholder="doe@example.com" className="form-input" type="email" required value={form.shippingEmail} onChange={(e) => update('shippingEmail', e.target.value)} /></div>
+            <div className="form-group"><label className="form-label" htmlFor="shippingEmail">{translateUi("Email Address *")}</label><input id="shippingEmail" title={translateUi("Email Address")} placeholder="doe@example.com" className="form-input" type="email" required value={form.shippingEmail} onChange={(e) => update('shippingEmail', e.target.value)} /></div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label" htmlFor="shippingProvince">Province/City *</label><input id="shippingProvince" title="Province/City" placeholder="Ho Chi Minh City" className="form-input" required value={form.shippingProvince} onChange={(e) => update('shippingProvince', e.target.value)} /></div>
-              <div className="form-group"><label className="form-label" htmlFor="shippingDistrict">District *</label><input id="shippingDistrict" title="District" placeholder="District 1" className="form-input" required value={form.shippingDistrict} onChange={(e) => update('shippingDistrict', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label" htmlFor="shippingProvince">{translateUi("Province/City *")}</label><input id="shippingProvince" title={translateUi("Province/City")} placeholder={translateUi("Ho Chi Minh City")} className="form-input" required value={form.shippingProvince} onChange={(e) => update('shippingProvince', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label" htmlFor="shippingDistrict">{translateUi("District *")}</label><input id="shippingDistrict" title={translateUi("District")} placeholder={translateUi("District 1")} className="form-input" required value={form.shippingDistrict} onChange={(e) => update('shippingDistrict', e.target.value)} /></div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label" htmlFor="shippingWard">Ward *</label><input id="shippingWard" title="Ward" placeholder="Ben Nghe" className="form-input" required value={form.shippingWard} onChange={(e) => update('shippingWard', e.target.value)} /></div>
-              <div className="form-group"><label className="form-label" htmlFor="shippingStreet">Street Address *</label><input id="shippingStreet" title="Street Address" placeholder="123 Main St" className="form-input" required value={form.shippingStreet} onChange={(e) => update('shippingStreet', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label" htmlFor="shippingWard">{translateUi("Ward *")}</label><input id="shippingWard" title={translateUi("Ward")} placeholder={translateUi("Ben Nghe")} className="form-input" required value={form.shippingWard} onChange={(e) => update('shippingWard', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label" htmlFor="shippingStreet">{translateUi("Street Address *")}</label><input id="shippingStreet" title={translateUi("Street Address")} placeholder={translateUi("123 Main St")} className="form-input" required value={form.shippingStreet} onChange={(e) => update('shippingStreet', e.target.value)} /></div>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Shipping Method *</label>
+              <label className="form-label">{translateUi("Shipping Method *")}</label>
               {!form.shippingProvince.trim() || !form.shippingDistrict.trim() || !form.shippingWard.trim() ? (
-                <div className="shipping-hint-box">Enter province, district, and ward to load shipping methods.</div>
+                <div className="shipping-hint-box">{translateUi("Enter province, district, and ward to load shipping methods.")}</div>
               ) : isLoadingShipping ? (
-                <div className="shipping-hint-box">Loading shipping methods...</div>
+                <div className="shipping-hint-box">{translateUi("Loading shipping methods...")}</div>
               ) : shippingError ? (
                 <div className="shipping-hint-box shipping-hint-box-error">{shippingError}</div>
               ) : (
@@ -351,12 +354,12 @@ export default function CheckoutPage() {
                       <div className="payment-option-content">
                         <div className="shipping-option-header">
                           <strong>{option.name}</strong>
-                          <span>{option.cost === 0 ? 'Free' : `$${option.cost.toFixed(2)}`}</span>
+                          <span>{option.cost === 0 ? translateUi("Free") : `$${option.cost.toFixed(2)}`}</span>
                         </div>
                         {option.description && <p>{option.description}</p>}
                         <p className="shipping-option-meta">
-                          {option.matchedZone ? `Applies to: ${option.matchedZone}` : 'Default shipping rule'}
-                          {option.freeShipMinOrder ? ` | Free from $${option.freeShipMinOrder.toFixed(2)}` : ''}
+                          {option.matchedZone ? translateUi("Applies to: {{value1}}", { value1: option.matchedZone }) : translateUi("Default shipping rule")}
+                          {option.freeShipMinOrder ? translateUi(" | Free from ${{value1}}", { value1: option.freeShipMinOrder.toFixed(2) }) : ''}
                         </p>
                       </div>
                     </label>
@@ -365,9 +368,9 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            <div className="form-group"><label className="form-label" htmlFor="note">Order Notes (Optional)</label><textarea id="note" title="Order Notes" className="form-input" rows={3} value={form.note} onChange={(e) => update('note', e.target.value)} placeholder="Special instructions for delivery..." /></div>
+            <div className="form-group"><label className="form-label" htmlFor="note">{translateUi("Order Notes (Optional)")}</label><textarea id="note" title={translateUi("Order Notes")} className="form-input" rows={3} value={form.note} onChange={(e) => update('note', e.target.value)} placeholder={translateUi("Special instructions for delivery...")} /></div>
 
-            <h3 className="checkout-section-title mt-4">Payment Method</h3>
+            <h3 className="checkout-section-title mt-4">{translateUi("Payment Method")}</h3>
             <div className="payment-methods-list">
               {(Object.keys(paymentDescriptions) as PaymentMethod[]).map((method) => (
                 <label key={method} className={`payment-option ${form.paymentMethod === method ? 'active' : ''}`}>
@@ -383,64 +386,60 @@ export default function CheckoutPage() {
             {form.paymentMethod === 'BANK_TRANSFER' && (
               <div className="bank-info">
                 <div className="bank-info-copy">
-                  <h4>Bank Account Details</h4>
-                  <p>Bank: {settings.bankName || 'Vietcombank'}</p>
-                  <p>Account: {settings.accountNumber || '1234567890'}</p>
-                  <p>Name: {settings.accountOwner || 'NURFIA FASHION CO., LTD'}</p>
-                  <p>Transfer content: the order number shown after checkout</p>
-                  <p className="payment-help-text">You can upload payment proof right after the order is created.</p>
+                  <h4>{translateUi("Bank Account Details")}</h4>
+                  <p>{translateUi("Bank:")} {settings.bankName || translateUi("Vietcombank")}</p>
+                  <p>{translateUi("Account:")} {settings.accountNumber || '1234567890'}</p>
+                  <p>{translateUi("Name:")} {settings.accountOwner || translateUi("NURFIA FASHION CO., LTD")}</p>
+                  <p>{translateUi("Transfer content: the order number shown after checkout")}</p>
+                  <p className="payment-help-text">{translateUi("You can upload payment proof right after the order is created.")}</p>
                 </div>
                 {settings.qrCodeUrl && (
                   <div className="bank-qr-box">
-                    <img src={resolveSiteAssetUrl(settings.qrCodeUrl || '')} alt="Bank QR" className="bank-qr-image" />
+                    <img src={resolveSiteAssetUrl(settings.qrCodeUrl || '')} alt={translateUi("Bank QR")} className="bank-qr-image" />
                   </div>
                 )}
               </div>
             )}
 
             {form.paymentMethod === 'MOMO' && (
-              <div className="payment-help-panel">
-                Your order will be created first, then you will be redirected to Momo to finish payment. If the redirect fails, the order remains pending and you can retry from the order page.
-              </div>
+              <div className="payment-help-panel">{translateUi("Your order will be created first, then you will be redirected to Momo to finish payment. If the redirect fails, the order remains pending and you can retry from the order page.")}</div>
             )}
 
             {form.paymentMethod === 'STRIPE' && (
-              <div className="payment-help-panel">
-                Your order will be created first, then Stripe Checkout will open so you can complete card payment securely.
-              </div>
+              <div className="payment-help-panel">{translateUi("Your order will be created first, then Stripe Checkout will open so you can complete card payment securely.")}</div>
             )}
           </div>
 
           <div className="checkout-summary">
-            <h3>Order Summary</h3>
+            <h3>{translateUi("Order Summary")}</h3>
             <div className="checkout-items">
               {items.map((item) => {
                 const price = item.variant?.salePrice ?? item.variant?.price ?? item.product.salePrice ?? item.product.price;
                 return (
                   <div key={item.id} className="checkout-item">
-                    <span className="checkout-item-name">{item.product.name} × {item.quantity}</span>
+                    <span className="checkout-item-name">{item.product.name} {translateUi("×")} {item.quantity}</span>
                     <span>${(Number(price) * item.quantity).toFixed(2)}</span>
                   </div>
                 );
               })}
             </div>
             <div className="summary-divider" />
-            <div className="form-group"><label className="form-label" htmlFor="couponCode">Coupon Code</label>
+            <div className="form-group"><label className="form-label" htmlFor="couponCode">{translateUi("Coupon Code")}</label>
               <div className="coupon-input-group">
-                <input id="couponCode" title="Coupon Code" className="form-input coupon-input" placeholder="Enter code" value={form.couponCode} onChange={(e) => update('couponCode', e.target.value)} />
-                <button type="button" className="btn btn-outline apply-coupon-btn" onClick={handleApplyCoupon}>Apply</button>
+                <input id="couponCode" title={translateUi("Coupon Code")} className="form-input coupon-input" placeholder={translateUi("Enter code")} value={form.couponCode} onChange={(e) => update('couponCode', e.target.value)} />
+                <button type="button" className="btn btn-outline apply-coupon-btn" onClick={handleApplyCoupon}>{translateUi("Apply")}</button>
               </div>
             </div>
-            <div className="summary-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-            {discount > 0 && <div className="summary-row discount-row"><span>Discount ({couponCodeApplied})</span><span>-${discount.toFixed(2)}</span></div>}
+            <div className="summary-row"><span>{translateUi("Subtotal")}</span><span>${subtotal.toFixed(2)}</span></div>
+            {discount > 0 && <div className="summary-row discount-row"><span>{translateUi("Discount (")}{couponCodeApplied})</span><span>-${discount.toFixed(2)}</span></div>}
             <div className="summary-row">
-              <span>Shipping{selectedShippingOption ? ` (${selectedShippingOption.name})` : ''}</span>
-              <span>{selectedShippingOption ? (shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`) : 'Select method'}</span>
+              <span>{translateUi("Shipping")}{selectedShippingOption ? ` (${selectedShippingOption.name})` : ''}</span>
+              <span>{selectedShippingOption ? (shipping === 0 ? translateUi("Free") : `$${shipping.toFixed(2)}`) : translateUi("Select method")}</span>
             </div>
             <div className="summary-divider" />
-            <div className="summary-row summary-total"><span>Total</span><span>${total.toFixed(2)}</span></div>
+            <div className="summary-row summary-total"><span>{translateUi("Total")}</span><span>${total.toFixed(2)}</span></div>
             <button type="submit" className="btn btn-primary submit-order-btn" disabled={isSubmitting}>
-              {isSubmitting ? 'Processing...' : form.paymentMethod === 'MOMO' ? 'Continue to Momo' : form.paymentMethod === 'STRIPE' ? 'Continue to Stripe' : 'Place Order'}
+              {isSubmitting ? translateUi("Processing...") : form.paymentMethod === 'MOMO' ? translateUi("Continue to Momo") : form.paymentMethod === 'STRIPE' ? translateUi("Continue to Stripe") : translateUi("Place Order")}
             </button>
           </div>
         </form>

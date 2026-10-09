@@ -5,7 +5,7 @@
 .word-editor-wrap .rsw-editor.word-editor-surface {
   border: 1px solid rgba(17, 24, 39, 0.12);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface, #fff);
   overflow: hidden;
 }
 
@@ -21,7 +21,7 @@
   gap: 2px;
   padding: 6px 8px;
   border-bottom: 1px solid rgba(17, 24, 39, 0.08);
-  background: #f8fafc;
+  background: var(--surface-soft, #f8fafc);
 }
 
 .word-editor-wrap .rsw-btn,
@@ -38,7 +38,7 @@
   padding: 12px 14px;
   font-size: 14px;
   line-height: 1.65;
-  color: #1f2937;
+  color: var(--color-text, #1f2937);
 }
 
 .word-editor-wrap .rsw-ce:focus {

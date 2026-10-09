@@ -1,3 +1,5 @@
+import { translateUi, getLocale } from '../../i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Heart, Star, Maximize2, X, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
@@ -14,6 +16,7 @@ import PageLoader from '../../components/PageLoader/PageLoader';
 import './ProductDetailPage.css';
 
 export default function ProductDetailPage() {
+  useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
@@ -54,7 +57,7 @@ export default function ProductDetailPage() {
       try {
         const { data } = await api.get(`/products/${slug}`);
         setProduct(data.data);
-        
+
         // Manage Recently Viewed
         try {
           const viewedStr = localStorage.getItem('nurfia_recent_views');
@@ -201,7 +204,7 @@ export default function ProductDetailPage() {
 
   // 2. Exact selected variant for pricing & SKU display
   const isSelectionComplete = (!colors.length || selectedColor) && (!sizes.length || selectedSize);
-  
+
   let selectedVariant = null;
   if (isSelectionComplete) {
     selectedVariant = product.variants?.find((v: any) => {
@@ -213,8 +216,8 @@ export default function ProductDetailPage() {
     });
   }
 
-  const originalPrice = (selectedVariant && Number(selectedVariant.price) > 0) 
-    ? Number(selectedVariant.price) 
+  const originalPrice = (selectedVariant && Number(selectedVariant.price) > 0)
+    ? Number(selectedVariant.price)
     : Number(product.price);
 
   const currentPrice = (selectedVariant && Number(selectedVariant.salePrice) > 0)
@@ -236,15 +239,15 @@ export default function ProductDetailPage() {
     e.preventDefault();
     if (!isAuthenticated) return addToast('Please login to leave a review', 'error');
     if (!reviewForm.comment.trim()) return addToast('Please enter a review comment', 'error');
-    
+
     setIsSubmittingReview(true);
     try {
       await api.post(`/products/${product.id}/reviews`, reviewForm);
       addToast('Review submitted successfully!', 'success');
-      
+
       setCanReview(false);
       setReviewForm({ rating: 5, comment: '' });
-      
+
       // re-fetch the product so the new review is shown
       const { data } = await api.get(`/products/${slug}`);
       setProduct(data.data);
@@ -317,7 +320,7 @@ export default function ProductDetailPage() {
       <div className="container">
         {/* Breadcrumb */}
         <div className="pd-breadcrumb">
-          <Link to="/">Home</Link>
+          <Link to="/">{translateUi("Home")}</Link>
           <span>/</span>
           {product.category && <><Link to={`/category/${product.category.slug}`}>{product.category.name}</Link><span>/</span></>}
           <span>{product.name}</span>
@@ -334,13 +337,13 @@ export default function ProductDetailPage() {
                 onClick={() => setIsLightboxOpen(true)}
                 style={{ cursor: 'zoom-in' }}
               />
-              <button className="pd-gallery-zoom-btn" onClick={() => setIsLightboxOpen(true)} aria-label="Zoom Image">
+              <button className="pd-gallery-zoom-btn" onClick={() => setIsLightboxOpen(true)} aria-label={translateUi("Zoom Image")}>
                 <Maximize2 size={20} color="#333" />
               </button>
             </div>
             {/* Mobile Image Scroller (hidden on desktop) */}
             <div className="pd-gallery-mobile">
-              <div 
+              <div
                 className="pd-mobile-scroller"
                 onScroll={(e) => {
                   const target = e.currentTarget;
@@ -359,13 +362,13 @@ export default function ProductDetailPage() {
                 ))}
               </div>
             </div>
-            
+
             {/* Thumbnails below for both Desktop and Mobile (styled differently in CSS) */}
             {product.images.length > 1 && (
               <div className="pd-gallery-thumbnails">
                 {product.images.map((img: any, i: number) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className={`pd-gallery-thumb ${i === activeImageIndex ? 'active' : ''}`}
                     onMouseEnter={() => setActiveImageIndex(i)}
                     onClick={() => {
@@ -408,7 +411,7 @@ export default function ProductDetailPage() {
                 <span className="review-count">{Number(product.avgRating).toFixed(2)} ({product.reviewCount})</span>
               </div>
               <div className="pd-sku">
-                <span>SKU:</span> {displaySku}
+                <span>{translateUi("SKU:")}</span> {displaySku}
               </div>
             </div>
 
@@ -424,7 +427,7 @@ export default function ProductDetailPage() {
             {/* Color Selector */}
             {colors.length > 0 && (
               <div className="pd-option">
-                <label>Color: <strong>{selectedColor || 'Select'}</strong></label>
+                <label>{translateUi("Color:")} <strong>{selectedColor || translateUi("Select")}</strong></label>
                 <div className="pd-colors">
                   {colors.map(c => {
                     const cName = c.name.replace(/\s+/g, '-').toLowerCase();
@@ -434,8 +437,8 @@ export default function ProductDetailPage() {
                         key={c.name}
                         className={`color-swatch ${selectedColor === c.name ? 'active' : ''} ${!available ? 'disabled out-of-stock-style' : ''}`}
                         onClick={() => available && setSelectedColor(selectedColor === c.name ? '' : c.name)}
-                        title={`Select color ${c.name}${!available ? ' (Out of Stock)' : ''}`}
-                        aria-label={`Select color ${c.name}`}
+                        title={translateUi("Select color {{value1}}{{value2}}", { value1: c.name, value2: !available ? ' (Out of Stock)' : '' })}
+                        aria-label={translateUi("Select color {{value1}}", { value1: c.name })}
                         disabled={!available}
                         style={{ opacity: available ? 1 : 0.4, cursor: available ? 'pointer' : 'not-allowed' }}
                       >
@@ -450,7 +453,7 @@ export default function ProductDetailPage() {
             {/* Size Selector */}
             {sizes.length > 0 && (
               <div className="pd-option">
-                <label>Size: <strong>{selectedSize || 'Select'}</strong></label>
+                <label>{translateUi("Size:")} <strong>{selectedSize || translateUi("Select")}</strong></label>
                 <div className="pd-sizes">
                   {sizes.map((s: string) => {
                     const available = isSizeAvailable(s);
@@ -460,7 +463,7 @@ export default function ProductDetailPage() {
                         className={`size-btn ${selectedSize === s ? 'active' : ''} ${!available ? 'disabled out-of-stock-style' : ''}`}
                         onClick={() => available && setSelectedSize(selectedSize === s ? '' : s)}
                         disabled={!available}
-                        title={`Select size ${s}${!available ? ' (Out of Stock)' : ''}`}
+                        title={translateUi("Select size {{value1}}{{value2}}", { value1: s, value2: !available ? ' (Out of Stock)' : '' })}
                         style={{ opacity: available ? 1 : 0.4, cursor: available ? 'pointer' : 'not-allowed' }}
                       >{s}</button>
                     );
@@ -471,7 +474,7 @@ export default function ProductDetailPage() {
 
             {/* Stock */}
             <div className="pd-stock">
-              {inStock ? <span className="in-stock">✓ {stockCount} in stock</span> : <span className="out-stock">✗ Out of Stock</span>}
+              {inStock ? <span className="in-stock">✓ {stockCount} {translateUi("in stock")}</span> : <span className="out-stock">{translateUi("✗ Out of Stock")}</span>}
             </div>
 
             {/* Add to Cart */}
@@ -479,39 +482,35 @@ export default function ProductDetailPage() {
               <div className="pd-qty">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  aria-label="Decrease quantity"
-                  title="Decrease quantity"
+                  aria-label={translateUi("Decrease quantity")}
+                  title={translateUi("Decrease quantity")}
                   disabled={quantity <= 1}
                 ><Minus size={16} /></button>
                 <span>{quantity}</span>
                 <button
                   onClick={() => setQuantity(Math.min(maxSelectableQuantity, quantity + 1))}
-                  aria-label="Increase quantity"
-                  title={quantity >= maxSelectableQuantity ? `Maximum available: ${normalizedStockCount}` : 'Increase quantity'}
+                  aria-label={translateUi("Increase quantity")}
+                  title={quantity >= maxSelectableQuantity ? translateUi("Maximum available: {{value1}}", { value1: normalizedStockCount }) : translateUi("Increase quantity")}
                   disabled={!inStock || quantity >= maxSelectableQuantity}
                 ><Plus size={16} /></button>
               </div>
-              <button className="btn btn-primary btn-lg pd-atc" onClick={handleAddToCart} disabled={!inStock || quantity > maxSelectableQuantity}>
-                ADD TO CART
-              </button>
-              <button className="btn btn-outline btn-lg pd-buy-now" onClick={handleBuyNow} disabled={!inStock || quantity > maxSelectableQuantity}>
-                BUY NOW
-              </button>
+              <button className="btn btn-primary btn-lg pd-atc" onClick={handleAddToCart} disabled={!inStock || quantity > maxSelectableQuantity}>{translateUi("ADD TO CART")}</button>
+              <button className="btn btn-outline btn-lg pd-buy-now" onClick={handleBuyNow} disabled={!inStock || quantity > maxSelectableQuantity}>{translateUi("BUY NOW")}</button>
             </div>
 
             {/* Secondary Actions */}
             <div className="pd-secondary-actions">
-                <button 
+                <button
                   className={`pd-text-btn ${product && isInWishlist(product.id) ? 'text-red-500' : ''}`}
                   onClick={() => {
                     if (!isAuthenticated) return addToast('Please login to add to wishlist', 'error');
                     if (product) toggleWishlist(product.id);
                   }}
                 >
-                  <Heart size={16} fill={product && isInWishlist(product.id) ? 'currentColor' : 'none'} /> 
-                  {product && isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                  <Heart size={16} fill={product && isInWishlist(product.id) ? 'currentColor' : 'none'} />
+                  {product && isInWishlist(product.id) ? translateUi("Remove from wishlist") : translateUi("Add to wishlist")}
                 </button>
-                <button 
+                <button
                   className="pd-text-btn"
                   onClick={() => {
                     if (product) {
@@ -529,37 +528,37 @@ export default function ProductDetailPage() {
                       addToast('Added to compare', 'success');
                     }
                   }}
-                ><Repeat size={16} /> Compare</button>
+                ><Repeat size={16} /> {translateUi("Compare")}</button>
               </div>
 
             {/* Shipping Box */}
             <div className="pd-shipping-box">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shipping-icon"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
-              <strong>Shipping within 3 days</strong>
+              <strong>{translateUi("Shipping within 3 days")}</strong>
               <span className="shipping-divider">|</span>
-              <span className="shipping-note">Speedy and reliable parcel delivery!</span>
+              <span className="shipping-note">{translateUi("Speedy and reliable parcel delivery!")}</span>
             </div>
 
             {/* Guarantee Box */}
             <div className="pd-guarantee-box">
               <div className="guarantee-row">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="guarantee-icon"><path d="M1 4h5v4H1zM8 4h5v4H8zM15 4h5v4h-5zM1 10h5v4H1zM8 10h5v4H8zM15 10h5v4h-5z"/><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" d="M20 16h2a1 1 0 0 0 1-1v-4l-3-4h-4v9M3 16h4M11 16h6"/><circle cx="9" cy="17" r="2" stroke="currentColor" strokeWidth="2" fill="none"/><circle cx="18" cy="17" r="2" stroke="currentColor" strokeWidth="2" fill="none"/></svg>
-                <div className="guarantee-text">Dispatch within <strong>24 Hours</strong>: Your product will be shipped quickly.</div>
+                <div className="guarantee-text">{translateUi("Dispatch within")} <strong>{translateUi("24 Hours")}</strong>{translateUi(": Your product will be shipped quickly.")}</div>
               </div>
               <div className="guarantee-row">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="guarantee-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <div className="guarantee-text"><strong>3-Year</strong> Warranty: Nurfia is safe with warranty conditions.</div>
+                <div className="guarantee-text"><strong>{translateUi("3-Year")}</strong> {translateUi("Warranty: Nurfia is safe with warranty conditions.")}</div>
               </div>
             </div>
 
             {/* Share & Meta */}
             <div className="pd-share-meta">
               <div className="pd-share">
-                <span>Share:</span>
-                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="share-icon facebook" title="Share on Facebook" aria-label="Share on Facebook"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product?.name || '')}`} target="_blank" rel="noopener noreferrer" className="share-icon twitter" title="Share on Twitter" aria-label="Share on Twitter"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a>
-                <a href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(window.location.href)}&description=${encodeURIComponent(product?.name || '')}`} target="_blank" rel="noopener noreferrer" className="share-icon pinterest" title="Share on Pinterest" aria-label="Share on Pinterest"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="20" x2="12" y2="11"></line><path d="M10.7 14c.4.9 1.4 1.5 2.5 1.5 3 0 5-2.5 5-5.5S15.6 4 12 4 7 6.5 7 9.5c0 1.2.6 2.6 1.8 3.3"></path></svg></a>
-                <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent((product?.name || '') + ' ' + window.location.href)}`} target="_blank" rel="noopener noreferrer" className="share-icon whatsapp" title="Share on WhatsApp" aria-label="Share on WhatsApp"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></a>
+                <span>{translateUi("Share:")}</span>
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="share-icon facebook" title={translateUi("Share on Facebook")} aria-label={translateUi("Share on Facebook")}><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product?.name || '')}`} target="_blank" rel="noopener noreferrer" className="share-icon twitter" title={translateUi("Share on Twitter")} aria-label={translateUi("Share on Twitter")}><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a>
+                <a href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(window.location.href)}&description=${encodeURIComponent(product?.name || '')}`} target="_blank" rel="noopener noreferrer" className="share-icon pinterest" title={translateUi("Share on Pinterest")} aria-label={translateUi("Share on Pinterest")}><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="20" x2="12" y2="11"></line><path d="M10.7 14c.4.9 1.4 1.5 2.5 1.5 3 0 5-2.5 5-5.5S15.6 4 12 4 7 6.5 7 9.5c0 1.2.6 2.6 1.8 3.3"></path></svg></a>
+                <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent((product?.name || '') + ' ' + window.location.href)}`} target="_blank" rel="noopener noreferrer" className="share-icon whatsapp" title={translateUi("Share on WhatsApp")} aria-label={translateUi("Share on WhatsApp")}><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></a>
               </div>
             </div>
           </div>
@@ -569,9 +568,9 @@ export default function ProductDetailPage() {
         <div className="pd-tabs-container">
           {/* Desktop Tabs Header */}
           <div className="pd-tab-header desktop-only">
-            <button className={activeTab === 'description' ? 'active' : ''} onClick={() => setActiveTab('description')}>Description</button>
-            <button className={activeTab === 'info' ? 'active' : ''} onClick={() => setActiveTab('info')}>Additional information</button>
-            <button className={activeTab === 'reviews' ? 'active' : ''} onClick={() => setActiveTab('reviews')}>Reviews ({product.reviews?.length || 0})</button>
+            <button className={activeTab === 'description' ? 'active' : ''} onClick={() => setActiveTab('description')}>{translateUi("Description")}</button>
+            <button className={activeTab === 'info' ? 'active' : ''} onClick={() => setActiveTab('info')}>{translateUi("Additional information")}</button>
+            <button className={activeTab === 'reviews' ? 'active' : ''} onClick={() => setActiveTab('reviews')}>{translateUi("Reviews (")}{product.reviews?.length || 0})</button>
           </div>
 
           {/* Tab Content - Desktop */}
@@ -582,8 +581,8 @@ export default function ProductDetailPage() {
             {activeTab === 'info' && (
               <table className="pd-info-table">
                 <tbody>
-                  {colors.length > 0 && <tr><td>color</td><td>{colors.map(c => c.name).join(', ')}</td></tr>}
-                  {sizes.length > 0 && <tr><td>size</td><td>{(sizes as string[]).join(', ')}</td></tr>}
+                  {colors.length > 0 && <tr><td>{translateUi("color")}</td><td>{colors.map(c => c.name).join(', ')}</td></tr>}
+                  {sizes.length > 0 && <tr><td>{translateUi("size")}</td><td>{(sizes as string[]).join(', ')}</td></tr>}
                 </tbody>
               </table>
             )}
@@ -597,20 +596,20 @@ export default function ProductDetailPage() {
           {/* Mobile Stacked Sections */}
           <div className="pd-mobile-sections mobile-only">
             <div className="pd-mobile-section">
-              <h3 className="section-title">Description</h3>
+              <h3 className="section-title">{translateUi("Description")}</h3>
               <div className="pd-description" dangerouslySetInnerHTML={{ __html: sanitizedDescription }} />
             </div>
             <div className="pd-mobile-section">
-              <h3 className="section-title">Additional information</h3>
+              <h3 className="section-title">{translateUi("Additional information")}</h3>
               <table className="pd-info-table">
                 <tbody>
-                  {colors.length > 0 && <tr><td>color</td><td>{colors.map(c => c.name).join(', ')}</td></tr>}
-                  {sizes.length > 0 && <tr><td>size</td><td>{(sizes as string[]).join(', ')}</td></tr>}
+                  {colors.length > 0 && <tr><td>{translateUi("color")}</td><td>{colors.map(c => c.name).join(', ')}</td></tr>}
+                  {sizes.length > 0 && <tr><td>{translateUi("size")}</td><td>{(sizes as string[]).join(', ')}</td></tr>}
                 </tbody>
               </table>
             </div>
             <div className="pd-mobile-section">
-              <h3 className="section-title">Reviews ({product.reviews?.length || 0})</h3>
+              <h3 className="section-title">{translateUi("Reviews (")}{product.reviews?.length || 0})</h3>
               <ReviewSection product={product} canReview={canReview} isSubmittingReview={isSubmittingReview} reviewForm={reviewForm} setReviewForm={setReviewForm} handleReviewSubmit={handleReviewSubmit} />
             </div>
           </div>
@@ -618,7 +617,7 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="pd-related">
-            <h2 className="pd-related-title">Related products</h2>
+            <h2 className="pd-related-title">{translateUi("Related products")}</h2>
             <div className="grid grid-4">
               {relatedProducts.slice(0, 4).map(p => <ProductCard key={p.id} product={p} />)}
             </div>
@@ -628,7 +627,7 @@ export default function ProductDetailPage() {
         {/* Recently Viewed */}
         {recentlyViewed.length > 0 && (
           <div className="pd-recently-viewed" style={{marginTop: '40px'}}>
-            <h2 className="pd-related-title">Recently viewed</h2>
+            <h2 className="pd-related-title">{translateUi("Recently viewed")}</h2>
             <div className="grid grid-4">
               {recentlyViewed.slice(0, 4).map(p => <ProductCard key={p.id} product={p} />)}
             </div>
@@ -638,25 +637,25 @@ export default function ProductDetailPage() {
 
       {isLightboxOpen && (
         <div className="pd-lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
-          <button className="pd-lightbox-close" onClick={() => setIsLightboxOpen(false)} aria-label="Close" title="Close">
+          <button className="pd-lightbox-close" onClick={() => setIsLightboxOpen(false)} aria-label={translateUi("Close")} title={translateUi("Close")}>
             <X size={32} />
           </button>
-          
+
           {product.images.length > 1 && (
             <>
-              <button className="pd-lightbox-nav-btn prev" onClick={handlePrevImage} aria-label="Previous Image">
+              <button className="pd-lightbox-nav-btn prev" onClick={handlePrevImage} aria-label={translateUi("Previous Image")}>
                 <ChevronLeft size={48} />
               </button>
-              <button className="pd-lightbox-nav-btn next" onClick={handleNextImage} aria-label="Next Image">
+              <button className="pd-lightbox-nav-btn next" onClick={handleNextImage} aria-label={translateUi("Next Image")}>
                 <ChevronRight size={48} />
               </button>
             </>
           )}
 
           <div className="pd-lightbox-content" onClick={(e) => e.stopPropagation()}>
-            <img 
+            <img
               src={resolveSiteAssetUrl(product.images[activeImageIndex]?.url)}
-              alt={product.images[activeImageIndex]?.alt || product.name} 
+              alt={product.images[activeImageIndex]?.alt || product.name}
               className="pd-lightbox-img"
             />
           </div>
@@ -667,9 +666,10 @@ export default function ProductDetailPage() {
 }
 
 function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, setReviewForm, handleReviewSubmit }: any) {
+  useTranslation();
   return (
     <div className="pd-reviews-wrapper">
-      <h3 className="pd-reviews-count-title">{product.reviews?.length || 0} reviews for {product.name}</h3>
+      <h3 className="pd-reviews-count-title">{product.reviews?.length || 0} {translateUi("reviews for")} {product.name}</h3>
       <div className="pd-reviews-summary">
         <div className="pd-reviews-avg">
           <div className="avg-score">{Number(product.avgRating).toFixed(2)}</div>
@@ -677,7 +677,7 @@ function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, set
             <div className="stars">
               {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill={s <= Number(product.avgRating) ? '#ffc107' : '#ddd'} color={s <= Number(product.avgRating) ? '#ffc107' : '#ddd'} />)}
             </div>
-            <span>Average of {product.reviews?.length || 0} reviews</span>
+            <span>{translateUi("Average of")} {product.reviews?.length || 0} {translateUi("reviews")}</span>
           </div>
         </div>
         <div className="pd-reviews-bars">
@@ -697,11 +697,11 @@ function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, set
       </div>
 
       <div className="pd-reviews-list">
-        {product.reviews?.length === 0 && <p className="no-reviews">No reviews yet.</p>}
+        {product.reviews?.length === 0 && <p className="no-reviews">{translateUi("No reviews yet.")}</p>}
         {product.reviews?.map((r: any) => (
           <div key={r.id} className="review-item">
             <div className="reviewer-avatar">
-              <img src={`https://ui-avatars.com/api/?name=${r.user.fullName || r.user.username}&background=random`} alt="avatar" />
+              <img src={`https://ui-avatars.com/api/?name=${r.user.fullName || r.user.username}&background=random`} alt={translateUi("avatar")} />
             </div>
             <div className="review-content">
               <div className="stars">
@@ -710,7 +710,7 @@ function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, set
                 ))}
               </div>
               <div className="review-meta">
-                <strong>{r.user.fullName || r.user.username}</strong> – {new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                <strong>{r.user.fullName || r.user.username}</strong> – {new Date(r.createdAt).toLocaleDateString(getLocale(), { year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
               <p className="review-text">{r.comment}</p>
             </div>
@@ -719,16 +719,16 @@ function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, set
 
         {canReview && (
           <div className="review-form-container">
-            <h4 className="review-form-title">Add a review</h4>
+            <h4 className="review-form-title">{translateUi("Add a review")}</h4>
             <form onSubmit={handleReviewSubmit} className="review-form">
               <div className="review-form-rating">
-                <span className="review-form-label">Your rating *</span>
+                <span className="review-form-label">{translateUi("Your rating *")}</span>
                 <div className="review-star-container">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       type="button"
                       className="review-star-button"
-                      title={`Rate ${star} stars`}
+                      title={translateUi("Rate {{value1}} stars", { value1: star })}
                       key={star}
                       onClick={() => setReviewForm({ ...reviewForm, rating: star })}
                     >
@@ -739,7 +739,7 @@ function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, set
               </div>
 
               <div className="review-input-group">
-                <label htmlFor="comment" className="review-form-label">Your review *</label>
+                <label htmlFor="comment" className="review-form-label">{translateUi("Your review *")}</label>
                 <textarea
                   id="comment"
                   className="review-textarea"
@@ -747,7 +747,7 @@ function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, set
                   onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
                   required
                   rows={5}
-                  placeholder="What do you think about this product?"
+                  placeholder={translateUi("What do you think about this product?")}
                 ></textarea>
               </div>
 
@@ -756,7 +756,7 @@ function ReviewSection({ product, canReview, isSubmittingReview, reviewForm, set
                 disabled={isSubmittingReview}
                 className={`btn btn-primary review-submit-btn ${isSubmittingReview ? 'disabled' : ''}`}
               >
-                {isSubmittingReview ? 'SUBMITTING...' : 'SUBMIT'}
+                {isSubmittingReview ? translateUi("SUBMITTING...") : translateUi("SUBMIT")}
               </button>
             </form>
           </div>
