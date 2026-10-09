@@ -6,7 +6,7 @@ import { authenticate } from '../middlewares/auth.js';
 const router = express.Router();
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products:
  *   get:
  *     tags: [Products]
@@ -30,7 +30,7 @@ const router = express.Router();
 router.get('/', productController.getProducts);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/filters:
  *   get:
  *     tags: [Products]
@@ -41,7 +41,7 @@ router.get('/', productController.getProducts);
 router.get('/filters', productController.getFilterOptions);
 router.get('/search-suggest', productController.searchSuggest);
 /**
- /** * @swagger
+ * @swagger
  * /api/products/featured:
  *   get:
  *     tags: [Products]
@@ -52,7 +52,7 @@ router.get('/search-suggest', productController.searchSuggest);
 router.get('/featured', productController.getFeatured);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/bestsellers:
  *   get:
  *     tags: [Products]
@@ -63,7 +63,7 @@ router.get('/featured', productController.getFeatured);
 router.get('/bestsellers', productController.getBestsellers);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/new:
  *   get:
  *     tags: [Products]
@@ -74,7 +74,7 @@ router.get('/bestsellers', productController.getBestsellers);
 router.get('/new', productController.getNew);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/by-category/{categoryId}:
  *   get:
  *     tags: [Products]
@@ -90,7 +90,7 @@ router.get('/new', productController.getNew);
 router.get('/by-category/:categoryId', productController.getByCategory);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/by-ids:
  *   post:
  *     tags: [Products]
@@ -109,7 +109,7 @@ router.get('/by-category/:categoryId', productController.getByCategory);
 router.post('/by-ids', productController.getByIds);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/{slug}:
  *   get:
  *     tags: [Products]
@@ -142,7 +142,7 @@ router.get('/:slug', productController.getBySlug);
 router.get('/:productId/reviews', reviewController.getReviews);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/{productId}/reviews/can-review:
  *   get:
  *     tags: [Products]
@@ -159,7 +159,7 @@ router.get('/:productId/reviews', reviewController.getReviews);
 router.get('/:productId/reviews/can-review', authenticate, reviewController.checkCanReview);
 
 /**
- /** * @swagger
+ * @swagger
  * /api/products/{productId}/reviews:
  *   post:
  *     tags: [Products]
