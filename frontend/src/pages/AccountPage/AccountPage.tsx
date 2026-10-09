@@ -194,7 +194,10 @@ export function ProfileSection() {
       });
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       resetOtpState();
-      addToast('Password changed successfully!', 'success');
+      await useAuthStore.getState().logout({
+        forceLogin: true,
+        notice: 'Password changed successfully. Please log in again.',
+      });
     } catch (err: any) {
       addToast(err.response?.data?.error || 'Failed to change password', 'error');
     } finally {

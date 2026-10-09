@@ -6,6 +6,7 @@ import config from '../config/index.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { resolveTrustedAppOrigin } from '../utils/security.js';
+import { momoCallbackSchema } from '../validators/commerce.validator.js';
 
 const STRIPE_API_VERSION = '2026-04-22.dahlia';
 
@@ -28,7 +29,7 @@ const getStripeClient = () => {
 const getOrderAmountInSmallestUnit = (amount: unknown) => Math.round(Number(amount) * 100);
 
 const shouldUseStripeDemoMode = () =>
-  config.stripe.demoMode || (!config.stripe.secretKey && config.env !== 'production');
+  config.env !== 'production' && (config.stripe.demoMode || !config.stripe.secretKey);
 
 const markOrderPaid = async (order: { id: number; status: string }) => {
   await prisma.order.update({
@@ -144,6 +145,9 @@ export const paymentController = {
 
   createStripeCheckoutSession: async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      if (config.env === 'production' && config.stripe.demoMode) {
+        throw new AppError('Stripe demo mode is disabled in production.', 503);
+      }
       const orderId = req.body.orderId;
       if (!orderId) throw new AppError('Order ID is required.', 400);
 
@@ -244,17 +248,28 @@ export const paymentController = {
 
   handleIpn: async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { accessKey, secretKey, partnerCode: configuredPartnerCode } = config.momo;
+      if (!accessKey || !secretKey || !configuredPartnerCode) {
+        throw new AppError('Momo payment is not configured.', 503);
+      }
+
+      const parsed = momoCallbackSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError('Invalid Momo callback payload.', 400);
+      }
       const {
         partnerCode, orderId, requestId, amount, orderInfo,
         orderType, transId, resultCode, message, payType, responseTime,
         extraData, signature
-      } = req.body;
+      } = parsed.data;
 
-      const { accessKey, secretKey } = config.momo;
+      if (partnerCode !== configuredPartnerCode) {
+        throw new AppError('Invalid Momo partner code.', 400);
+      }
       const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
       const expectedSignature = crypto.createHmac('sha256', secretKey).update(rawSignature).digest('hex');
 
-      if (signature !== expectedSignature) {
+      if (!crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expectedSignature, 'hex'))) {
         res.status(400).json({ message: 'Invalid signature' });
         return;
       }

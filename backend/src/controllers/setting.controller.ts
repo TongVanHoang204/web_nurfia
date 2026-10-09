@@ -25,6 +25,15 @@ const SETTING_RULES: Record<string, { maxLength: number; type?: 'email' | 'http-
   twitter: { maxLength: 500, type: 'http-url' },
 };
 
+const PUBLIC_SETTING_KEYS = [
+  ...Object.keys(SETTING_RULES),
+  'site_name', 'site_tagline', 'site_description',
+  'contact_email', 'contact_phone', 'contact_address',
+  'social_facebook', 'social_instagram', 'social_twitter', 'social_pinterest',
+  'currency_symbol',
+];
+const publicSettingKeys = new Set(PUBLIC_SETTING_KEYS);
+
 const isSafeHttpUrl = (value: string) => {
   try {
     const url = new URL(value);
@@ -76,8 +85,13 @@ const normalizeSettingValue = (key: string, value: unknown) => {
 export const settingController = {
   getSettings: async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const settings = await prisma.setting.findMany();
-      const settingsMap = settings.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {});
+      const settings = await prisma.setting.findMany({
+        where: { key: { in: PUBLIC_SETTING_KEYS } },
+        select: { key: true, value: true },
+      });
+      const settingsMap = Object.fromEntries(
+        settings.filter((setting) => publicSettingKeys.has(setting.key)).map((setting) => [setting.key, setting.value])
+      );
       res.json({ success: true, data: settingsMap });
     } catch (err) { next(err); }
   },

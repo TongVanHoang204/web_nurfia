@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import { notifySessionsRevoked } from './session.service.js';
 import { Prisma } from '@prisma/client';
 import prisma from '../models/prisma.js';
 import config from '../config/index.js';
@@ -68,7 +69,7 @@ export const authService = {
           fullName,
           phone: phone || null,
         },
-        select: { id: true, email: true, username: true, fullName: true, role: true },
+        select: { id: true, email: true, username: true, fullName: true, role: true, tokenVersion: true },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -84,7 +85,7 @@ export const authService = {
       throw error;
     }
 
-    const token = this.generateToken(user.id, user.role);
+    const token = this.generateToken(user.id, user.role, user.tokenVersion);
     return { user, token };
   },
 
@@ -112,7 +113,7 @@ export const authService = {
       throw new AppError('Invalid username or password.', 401);
     }
 
-    const token = this.generateToken(user.id, user.role);
+    const token = this.generateToken(user.id, user.role, user.tokenVersion);
     return {
       user: {
         id: user.id,
@@ -161,7 +162,8 @@ export const authService = {
     }
 
     const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
+    await prisma.user.update({ where: { id: userId }, data: { password: hashed, tokenVersion: { increment: 1 } } });
+    notifySessionsRevoked(userId);
     changePasswordOtpStore.delete(userId);
     return { message: 'Password changed successfully.' };
   },
@@ -311,16 +313,18 @@ export const authService = {
       where: { id: user.id },
       data: {
         password: hashedPassword,
+        tokenVersion: { increment: 1 },
         resetToken: null,
         resetExpires: null,
       },
     });
 
+    notifySessionsRevoked(user.id);
     return { message: 'Password has been reset successfully.' };
   },
 
-  generateToken(userId: number, role: string): string {
-    return jwt.sign({ userId, role }, config.jwt.secret as string, {
+  generateToken(userId: number, role: string, tokenVersion: number): string {
+    return jwt.sign({ userId, role, tokenVersion }, config.jwt.secret as string, {
       expiresIn: config.jwt.expiresIn as any,
     });
   },

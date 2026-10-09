@@ -3,6 +3,8 @@ import { authService } from '../services/auth.service.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { logActivity } from '../services/activity.service.js';
 import { clearAuthCookie, setAuthCookie } from '../utils/security.js';
+import config from '../config/index.js';
+import { revokePresentedTokens } from '../services/session.service.js';
 
 export const authController = {
   async register(req: Request, res: Response, next: NextFunction) {
@@ -26,8 +28,13 @@ export const authController = {
     } catch (err) { next(err); }
   },
 
-  async logout(_req: Request, res: Response, next: NextFunction) {
+  async logout(req: Request, res: Response, next: NextFunction) {
     try {
+      const header = req.headers.authorization;
+      await revokePresentedTokens([
+        header?.startsWith('Bearer ') ? header.slice(7) : '',
+        req.cookies?.[config.jwt.cookieName] || '',
+      ]);
       clearAuthCookie(res);
       res.json({ success: true, message: 'Logged out successfully.' });
     } catch (err) { next(err); }

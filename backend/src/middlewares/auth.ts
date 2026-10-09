@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
-import prisma from '../models/prisma.js';
 import { AppError } from './errorHandler.js';
+import { getAuthenticatedUser } from '../services/session.service.js';
 
 export const ADMIN_PERMISSIONS = [
   'MANAGE_BANNERS',
@@ -86,6 +85,8 @@ export interface AuthRequest extends Request {
   userId?: number;
   userRole?: string;
   userPermissions?: AdminPermission[];
+  tokenVersion?: number;
+  tokenExpiresAt?: number;
 }
 
 const getTokenFromRequest = (req: AuthRequest) => {
@@ -111,22 +112,16 @@ export const authenticate = async (
   }
 
   try {
-    const decoded = jwt.verify(token, config.jwt.secret) as { userId: number; role: string };
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, role: true, permissions: true, isActive: true },
-    });
-
-    if (!user || !user.isActive) {
-      return next(new AppError('User account not found or deactivated.', 401));
-    }
+    const user = await getAuthenticatedUser(token);
 
     req.userId = user.id;
     req.userRole = user.role;
     req.userPermissions = normalizeAdminPermissions(user.permissions);
+    req.tokenVersion = user.tokenVersion;
+    req.tokenExpiresAt = user.tokenExpiresAt;
     next();
-  } catch {
-    return next(new AppError('Invalid or expired authentication token.', 401));
+  } catch (error) {
+    return next(error);
   }
 };
 
@@ -197,9 +192,11 @@ export const optionalAuth = async (
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, config.jwt.secret) as { userId: number; role: string };
-      req.userId = decoded.userId;
-      req.userRole = decoded.role;
+      const user = await getAuthenticatedUser(token);
+      req.userId = user.id;
+      req.userRole = user.role;
+      req.tokenVersion = user.tokenVersion;
+      req.tokenExpiresAt = user.tokenExpiresAt;
     } catch {
       // Token invalid — proceed as unauthenticated
     }

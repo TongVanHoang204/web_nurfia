@@ -195,14 +195,18 @@ app.use(errorHandler);
 // Start server
 const httpServer = createServer(app);
 if (config.env !== 'test') {
-  initSocketServer(httpServer);
-  startChatHistoryRetentionJob();
-
-  httpServer.listen(config.port, () => {
-    console.log(`[Server] Running on http://localhost:${config.port}`);
-    console.log(`[Server] Environment: ${config.env}`);
-    console.log(`[Socket] Running on ws://localhost:${config.port}`);
-    ensureStartupDatabaseCompatibility();
+  ensureStartupDatabaseCompatibility().then(() => {
+    initSocketServer(httpServer);
+    startChatHistoryRetentionJob();
+    httpServer.listen(config.port, () => {
+      console.log(`[Server] Running on http://localhost:${config.port}`);
+      console.log(`[Server] Environment: ${config.env}`);
+      console.log(`[Socket] Running on ws://localhost:${config.port}`);
+    });
+  }).catch(async (error) => {
+    console.error('[Startup] Cannot initialize authentication schema:', error);
+    await prisma.$disconnect();
+    process.exitCode = 1;
   });
 }
 

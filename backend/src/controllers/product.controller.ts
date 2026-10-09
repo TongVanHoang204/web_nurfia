@@ -39,8 +39,8 @@ export const productController = {
       const categorySlug = req.query.category as string;
       const search = req.query.search as string;
       const sort = req.query.sort as string || 'newest';
-      const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined;
-      const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined;
+      const minPrice = req.query.minPrice !== undefined ? Number(req.query.minPrice) : undefined;
+      const maxPrice = req.query.maxPrice !== undefined ? Number(req.query.maxPrice) : undefined;
       const featured = req.query.featured === 'true';
       const onSale = req.query.onSale === 'true';
         

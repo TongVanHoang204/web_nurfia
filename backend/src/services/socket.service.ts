@@ -1,14 +1,15 @@
 import type { Server as HttpServer } from 'node:http';
-import jwt from 'jsonwebtoken';
 import { Server, type Socket } from 'socket.io';
 import config from '../config/index.js';
-import prisma from '../models/prisma.js';
+import { getAuthenticatedUser, watchAuthenticatedSession } from './session.service.js';
 import { subscribeCustomerStatusChanged, type CustomerStatusChangedEvent } from './customer-stream.service.js';
 import { getAllowedOrigins, parseCookieHeader } from '../utils/security.js';
 
 type AuthenticatedSocketUser = {
   userId: number;
   role: string;
+  tokenVersion: number;
+  tokenExpiresAt: number;
 };
 
 type AuthenticatedSocket = Socket & {
@@ -69,20 +70,13 @@ export const initSocketServer = (httpServer: HttpServer) => {
         return;
       }
 
-      const decoded = jwt.verify(token, config.jwt.secret) as { userId: number; role: string };
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { id: true, role: true, isActive: true },
-      });
-
-      if (!user || !user.isActive) {
-        next(new Error('User account not found or deactivated.'));
-        return;
-      }
+      const user = await getAuthenticatedUser(token);
 
       socket.data.user = {
         userId: user.id,
         role: user.role,
+        tokenVersion: user.tokenVersion,
+        tokenExpiresAt: user.tokenExpiresAt,
       };
 
       next();
@@ -102,6 +96,9 @@ export const initSocketServer = (httpServer: HttpServer) => {
     if (ADMIN_ROLES.has(user.role)) {
       socket.join(ADMIN_ROOM);
     }
+
+    const stopWatching = watchAuthenticatedSession(user.userId, user.tokenVersion, user.tokenExpiresAt, () => socket.disconnect(true));
+    socket.once('disconnect', stopWatching);
 
     socket.emit('socket-connected', {
       ok: true,

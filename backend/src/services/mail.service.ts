@@ -3,7 +3,8 @@ import { promises as dnsPromises } from 'node:dns';
 import sanitizeHtml from 'sanitize-html';
 import config from '../config/index.js';
 
-let transporter: nodemailer.Transporter | null = null;
+type MailTransporter = ReturnType<typeof nodemailer.createTransport>;
+let transporter: MailTransporter | null = null;
 // Cache resolved IPv4 address to avoid repeated DNS lookups
 let resolvedSmtpHost: string | null = null;
 
@@ -15,7 +16,7 @@ type MailSendResult = {
 
 const hasSmtpCredentials = Boolean(config.smtp.user && config.smtp.pass);
 
-const getTransporter = async (): Promise<nodemailer.Transporter | null> => {
+const getTransporter = async (): Promise<MailTransporter | null> => {
   if (!hasSmtpCredentials) {
     return null;
   }
@@ -89,7 +90,7 @@ const sanitizeEmailHtml = (value: string) => sanitizeHtml(value, {
 const sendMailSafely = async (
   label: string,
   fallbackLog: string,
-  sendAction: (activeTransporter: nodemailer.Transporter) => Promise<void>
+  sendAction: (activeTransporter: MailTransporter) => Promise<void>
 ): Promise<MailSendResult> => {
   const maxRetries = 2;
   let lastError: unknown = null;

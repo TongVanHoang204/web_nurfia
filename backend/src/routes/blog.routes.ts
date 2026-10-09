@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { blogController } from '../controllers/blog.controller.js';
+import { validateQuery } from '../middlewares/validate.js';
+import { publicPaginationSchema } from '../validators/public-query.validator.js';
 
 const router = Router();
 
@@ -12,7 +14,7 @@ const router = Router();
  *     responses:
  *       200: { description: Blog posts list }
  */
-router.get('/', blogController.getPosts);
+router.get('/', validateQuery(publicPaginationSchema(5)), blogController.getPosts);
 
 /**
  * @swagger

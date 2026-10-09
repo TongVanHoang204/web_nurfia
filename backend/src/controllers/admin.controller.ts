@@ -5,6 +5,7 @@ import slugify from 'slugify';
 import { AuthRequest } from '../middlewares/auth.js';
 import { logActivity } from '../services/activity.service.js';
 import { emitCustomerStatusChanged, subscribeCustomerStatusChanged } from '../services/customer-stream.service.js';
+import { watchAuthenticatedSession } from '../services/session.service.js';
 import { sanitizeRichText } from '../utils/html.js';
 import { getProtectedBankTransferProofUrl } from '../utils/bankTransferProof.js';
 import { notificationService } from '../services/notification.service.js';
@@ -1850,10 +1851,11 @@ export const adminController = {
         res.write(': keep-alive\n\n');
       }, 25000);
 
-      req.on('close', () => {
+      const stopWatching = watchAuthenticatedSession(req.userId!, req.tokenVersion!, req.tokenExpiresAt!, () => res.end());
+      res.on('close', () => {
         clearInterval(heartbeat);
         unsubscribe();
-        res.end();
+        stopWatching();
       });
     } catch (err) {
       next(err);

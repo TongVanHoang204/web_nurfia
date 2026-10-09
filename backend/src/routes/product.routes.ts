@@ -2,6 +2,8 @@ import express from 'express';
 import { productController } from '../controllers/product.controller.js';
 import { reviewController } from '../controllers/review.controller.js';
 import { authenticate } from '../middlewares/auth.js';
+import { validateQuery } from '../middlewares/validate.js';
+import { publicProductQuerySchema, publicLimitQuerySchema } from '../validators/public-query.validator.js';
 
 const router = express.Router();
 
@@ -27,7 +29,7 @@ const router = express.Router();
  *     responses:
  *       200: { description: Products list }
  */
-router.get('/', productController.getProducts);
+router.get('/', validateQuery(publicProductQuerySchema), productController.getProducts);
 
 /**
  * @swagger
@@ -87,7 +89,7 @@ router.get('/new', productController.getNew);
  *     responses:
  *       200: { description: Products by category }
  */
-router.get('/by-category/:categoryId', productController.getByCategory);
+router.get('/by-category/:categoryId', validateQuery(publicLimitQuerySchema(8)), productController.getByCategory);
 
 /**
  * @swagger
@@ -122,7 +124,7 @@ router.post('/by-ids', productController.getByIds);
  *     responses:
  *       200: { description: Product detail }
  */
-router.get('/:id/related', productController.getRelatedProducts);
+router.get('/:id/related', validateQuery(publicLimitQuerySchema(4)), productController.getRelatedProducts);
 router.get('/:slug', productController.getBySlug);
 
 /**

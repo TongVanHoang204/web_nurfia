@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import api from '../api/client';
 import { useCompareStore } from './compareStore';
 import { useCartStore } from './cartStore';
+import { useUIStore } from './uiStore';
+import { isAxiosError } from 'axios';
 
 interface User {
   id: number;
@@ -81,7 +83,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     try {
       await api.post('/auth/logout');
-    } catch {}
+    } catch (error) {
+      if (!shouldForceLogin && (!isAxiosError(error) || error.response?.status !== 401)) {
+        useUIStore.getState().addToast('Unable to log out. Please check your connection and try again.', 'error');
+        return;
+      }
+    }
 
     localStorage.removeItem('nurfia_user');
     if (shouldForceLogin) {

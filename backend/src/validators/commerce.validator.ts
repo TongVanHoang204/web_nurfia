@@ -11,6 +11,28 @@ const positiveIntSchema = z.preprocess(
 const orderAddressText = (field: string, max = 100) =>
   z.string().trim().min(1, `${field} is required`).max(max, `${field} must be at most ${max} characters`);
 
+// Preserve the original representation: MoMo signs the exact field values.
+const callbackInteger = z.union([
+  z.number().int().nonnegative().safe(),
+  z.string().max(16).regex(/^\d+$/).refine((value) => Number.isSafeInteger(Number(value))),
+]);
+
+export const momoCallbackSchema = z.object({
+  partnerCode: z.string().min(1).max(255),
+  orderId: z.string().min(1).max(255),
+  requestId: z.string().min(1).max(255),
+  amount: callbackInteger.refine((value) => Number(value) > 0),
+  orderInfo: z.string().max(2000),
+  orderType: z.string().min(1).max(100),
+  transId: callbackInteger,
+  resultCode: callbackInteger,
+  message: z.string().max(2000),
+  payType: z.string().max(100),
+  responseTime: callbackInteger,
+  extraData: z.string().max(4096),
+  signature: z.string().regex(/^[a-fA-F0-9]{64}$/),
+});
+
 export const contactSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be at most 100 characters'),
   email: z.string().trim().email('Invalid email format').max(255, 'Email must be at most 255 characters'),
