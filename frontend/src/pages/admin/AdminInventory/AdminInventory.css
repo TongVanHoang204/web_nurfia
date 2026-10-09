@@ -99,7 +99,7 @@
   font-size: 14px;
 }
 
-.ai-toolbar select,
+.ai-toolbar :is(select, .ui-select-trigger),
 .ai-toolbar input[type='date'],
 .ai-toolbar input[type='number'] {
   width: 100%;

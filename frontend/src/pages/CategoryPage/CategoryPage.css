@@ -70,7 +70,7 @@
 .sort-select {
   position: relative;
 }
-.sort-select select {
+.sort-select :is(select, .ui-select-trigger) {
   appearance: none;
   border: 1px solid var(--color-border);
   padding: 8px 32px 8px 12px;

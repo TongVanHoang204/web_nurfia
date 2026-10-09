@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 ﻿import { useState, useEffect, useMemo, Fragment } from 'react';
@@ -558,18 +559,18 @@ export default function AdminProducts() {
           )}
           <div className="ap-filter-group">
             <span className="ap-filter-label">{translateUi("Status")}</span>
-            <select className="ap-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} title={translateUi("Filter by Status")}>
+            <Select className="ap-filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} title={translateUi("Filter by Status")}>
               <option value="All">{translateUi("All Status")}</option>
               <option value="Active">{translateUi("Active")}</option>
               <option value="Inactive">{translateUi("Inactive")}</option>
-            </select>
+            </Select>
           </div>
           <div className="ap-filter-group">
             <span className="ap-filter-label">{translateUi("Brand")}</span>
-            <select className="ap-filter-select" value={brandFilter} onChange={e => setBrandFilter(e.target.value)} title={translateUi("Filter by Brand")}>
+            <Select className="ap-filter-select" value={brandFilter} onChange={e => setBrandFilter(e.target.value)} title={translateUi("Filter by Brand")}>
               <option value="All">{translateUi("All Brands")}</option>
               {brands.map((b: any) => <option key={b.id} value={b.slug}>{b.name}</option>)}
-            </select>
+            </Select>
           </div>
         </div>
       </div>
@@ -605,10 +606,10 @@ export default function AdminProducts() {
                 </td>
                 <td className="ap-text-muted">{p.sku}</td>
                 <td>
-                  <select className="ap-filter-select min-w-[120px]" title={translateUi("Quick Select Brand")} value={p.brandId || ''} onChange={e => handleQuickBrandChange(p, e.target.value)}>
+                  <Select className="ap-filter-select min-w-[120px]" title={translateUi("Quick Select Brand")} value={p.brandId || ''} onChange={e => handleQuickBrandChange(p, e.target.value)}>
                     <option value="">{translateUi("Unassigned")}</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
+                  </Select>
                 </td>
                 <td><strong className="ap-price-bold">${Number(p.salePrice || p.price).toFixed(0)}</strong></td>
                 <td><span className={`ap-badge ${p.stock < 10 ? 'ap-badge-inactive' : 'ap-badge-active'}`}>{p.stock} {translateUi("Units")}</span></td>
@@ -668,17 +669,17 @@ export default function AdminProducts() {
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label htmlFor="product-category">{translateUi("Category")}</label>
-                  <select id="product-category" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} title={translateUi("Product Category")}>
+                  <Select id="product-category" value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} title={translateUi("Product Category")}>
                     <option value="">{translateUi("Select Category")}</option>
                     {hierarchicalCategories.map((c: any) => <option key={c.id} value={c.id}>{c.displayName || c.name}</option>)}
-                  </select>
+                  </Select>
                 </div>
                 <div className="admin-form-group">
                   <label htmlFor="product-brand">{translateUi("Brand")}</label>
-                  <select id="product-brand" value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})} title={translateUi("Product Brand")}>
+                  <Select id="product-brand" value={formData.brandId} onChange={e => setFormData({...formData, brandId: e.target.value})} title={translateUi("Product Brand")}>
                     <option value="">{translateUi("Unassigned")}</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
+                  </Select>
                 </div>
               </div>
 

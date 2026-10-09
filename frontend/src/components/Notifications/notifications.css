@@ -37,8 +37,6 @@
 .notif-open-arrow { flex-shrink: 0; color: var(--color-text-muted); margin-top: 3px; opacity: .6; }
 .notif-item:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 .notif-dropdown .notif-footer { border-top: 1px solid var(--color-border); padding: 15px 20px; background: var(--surface-soft); }
-@media (max-width: 600px) { .notif-dropdown { position: fixed; top: 100px; right: 12px; left: 12px; width: auto; } .admin-topbar .notif-dropdown { top: 70px; } }
-@media (prefers-reduced-motion: reduce) { .notif-dropdown { animation: none; } }
 
 /* ── Bell Wrapper ───────────────────────────────────────────── */
 .notif-bell-wrapper {
@@ -61,23 +59,33 @@
   flex-shrink: 0;
 }
 
-.notif-trigger-btn:hover {
+.notif-bell-wrapper .notif-trigger-btn:hover {
+  opacity: 1;
   background: rgba(0, 0, 0, 0.06);
 }
 
-.notif-trigger-btn .cart-count {
+.notif-trigger-btn .notif-count {
   position: absolute;
-  top: 0;
-  right: 0;
-  min-width: 18px;
-  height: 18px;
+  top: -2px;
+  right: -7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  width: auto;
+  height: 20px;
   padding: 0 5px;
+  border: 2px solid var(--surface);
   border-radius: 999px;
-  background: #ef4444;
+  background: #dc3545;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
-  line-height: 18px;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
   text-align: center;
 }
 
@@ -292,3 +300,9 @@
 
 .notif-load-more-btn:hover { background: #eff6ff; }
 .notif-load-more-btn:disabled { color: #9ca3af; cursor: default; background: none; }
+
+@media (max-width: 600px) {
+  .notif-dropdown { position: fixed; top: 100px; right: 12px; left: 12px; width: auto; }
+  .admin-topbar .notif-dropdown { top: 70px; }
+}
+@media (prefers-reduced-motion: reduce) { .notif-dropdown { animation: none; } }

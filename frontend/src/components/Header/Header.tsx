@@ -220,11 +220,11 @@ export default function Header() {
           {/* Actions */}
           <div className="header-actions">
             <HeaderPreferences />
-            <button className="action-btn" onClick={toggleSearch} aria-label={translateUi("Search")}>
+            <button className="action-btn search-btn" onClick={toggleSearch} aria-label={translateUi("Search")}>
               <Search size={18} />
             </button>
             <NotificationBell />
-            <Link to={isAuthenticated ? '/account' : '/login'} className="action-btn" aria-label={translateUi("Account")}>
+            <Link to={isAuthenticated ? '/account' : '/login'} className="action-btn account-btn" aria-label={translateUi("Account")}>
               <User size={18} />
             </Link>
             <Link to={isAuthenticated ? '/account/wishlist' : '/login'} className="action-btn wishlist-btn" aria-label={translateUi("Wishlist")}>

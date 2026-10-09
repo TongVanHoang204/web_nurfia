@@ -80,7 +80,7 @@
   cursor: pointer;
 }
 
-.reviews-select-wrap select {
+.reviews-select-wrap :is(select, .ui-select-trigger) {
   border: none;
   background: transparent;
   font-size: 13px;

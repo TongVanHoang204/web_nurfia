@@ -105,7 +105,7 @@
 }
 
 .activity-logs-input-wrap input,
-.activity-logs-input-wrap select {
+.activity-logs-input-wrap :is(select, .ui-select-trigger) {
   border: none;
   outline: none;
   width: 100%;

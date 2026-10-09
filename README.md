@@ -29,7 +29,7 @@ A professional, full-stack eCommerce platform clone built with modern web techno
 | **Frontend** | React, TypeScript, Vite, CSS (Vanilla), Context API, Socket.io Client |
 | **Backend** | Node.js, Express, TypeScript, Prisma ORM, Socket.io Server |
 | **Database** | SQLite / PostgreSQL (Prisma compatible) |
-| **Testing/Tools** | Jest, Concurrent, ESLint, Prettier |
+| **Development Tools** | Concurrently, ESLint, tsx |
 
 ## 📁 Project Structure
 
@@ -44,7 +44,7 @@ A professional, full-stack eCommerce platform clone built with modern web techno
 ## ⚙️ Installation & Setup
 
 ### Prerequisites
-- Node.js (v18.x or higher)
+- Node.js (v22.12.0 or higher)
 - npm or yarn
 
 ### Setup Steps

@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi, getLocale } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -322,11 +323,11 @@ export default function AdminContacts() {
 
           <div className="contacts-select-wrap">
             <Mail size={16} />
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} title={translateUi("Filter contact status")}>
+            <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} title={translateUi("Filter contact status")}>
               <option value="ALL">{translateUi("All Messages")}</option>
               <option value="UNREAD">{translateUi("Unread")}</option>
               <option value="READ">{translateUi("Read")}</option>
-            </select>
+            </Select>
           </div>
 
           <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>

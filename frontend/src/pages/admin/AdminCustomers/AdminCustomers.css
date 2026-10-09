@@ -79,7 +79,7 @@
   background: var(--surface, #fff);
 }
 
-.customers-select-wrap select {
+.customers-select-wrap :is(select, .ui-select-trigger) {
   border: none;
   outline: none;
   font-size: 13px;
@@ -664,7 +664,7 @@
     width: 100%;
   }
 
-  .customers-select-wrap select {
+  .customers-select-wrap :is(select, .ui-select-trigger) {
     width: 100%;
   }
 

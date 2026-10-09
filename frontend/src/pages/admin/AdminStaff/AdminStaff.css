@@ -6,7 +6,7 @@
 .staff-stat-card strong { font-family: var(--font-heading); font-size: 30px; line-height: 1; }
 .staff-team-card { padding: 0; }
 .staff-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 20px; }
-.staff-toolbar select { background: var(--surface); padding: 10px 12px; border: 1px solid var(--color-border); min-height: 42px; font: inherit; font-size: 13px; }
+.staff-toolbar :is(select, .ui-select-trigger) { background: var(--surface); padding: 10px 12px; border: 1px solid var(--color-border); min-height: 42px; font: inherit; font-size: 13px; }
 .staff-search-wrap { position: relative; flex: 1; min-width: 230px; }
 .staff-search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); }
 .staff-search-wrap input { width: 100%; padding: 11px 12px 11px 38px; border: 1px solid var(--color-border); background: var(--surface); min-height: 42px; font: inherit; font-size: 13px; }
@@ -67,8 +67,8 @@
 .staff-drawer .admin-form-group { margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .staff-drawer .admin-form-group label { font-size: 13px; font-weight: 600; }
 .staff-drawer .admin-form-group small { color: var(--color-text-muted); font-size: 11px; line-height: 1.6; }
-.staff-drawer .admin-form-group input, .staff-drawer .admin-form-group select { font: inherit; font-size: 13px; padding: 12px; border: 1px solid var(--color-border); background: var(--surface); min-width: 0; width: 100%; }
-.staff-drawer .admin-form-group input:disabled, .staff-drawer .admin-form-group select:disabled { background: var(--color-bg-alt); color: var(--color-text-muted); }
+.staff-drawer .admin-form-group input, .staff-drawer .admin-form-group :is(select, .ui-select-trigger) { font: inherit; font-size: 13px; padding: 12px; border: 1px solid var(--color-border); background: var(--surface); min-width: 0; width: 100%; }
+.staff-drawer .admin-form-group input:disabled, .staff-drawer .admin-form-group :is(select, .ui-select-trigger):disabled { background: var(--color-bg-alt); color: var(--color-text-muted); }
 .staff-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .staff-account-toggle { display: flex; gap: 9px; align-items: center; font-size: 13px; }
 .staff-created-note { display: flex; align-items: center; gap: 8px; margin-top: 24px; font-size: 11px; color: var(--color-text-muted); }
@@ -127,7 +127,7 @@
   .staff-stat-card strong { font-size: 24px; }
   .staff-toolbar { padding: 16px; gap: 8px; }
   .staff-search-wrap { flex-basis: 100%; }
-  .staff-toolbar select { flex: 1; min-width: 110px; max-width: 100%; }
+  .staff-toolbar :is(select, .ui-select-trigger) { flex: 1; min-width: 110px; max-width: 100%; }
   .staff-selection-bar { flex-wrap: wrap; padding: 12px 16px; }
   .staff-selection-bar > .staff-muted { display: none; }
   .staff-pagination-wrap { flex-direction: column; align-items: flex-start; }

@@ -77,7 +77,7 @@ export default function NotificationBell() {
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="cart-count" aria-label={translateUi("{{value1}} unread notifications", { value1: unreadCount })}>
+            <span className="notif-count" aria-label={translateUi("{{value1}} unread notifications", { value1: unreadCount })}>
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -93,7 +93,7 @@ export default function NotificationBell() {
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="cart-count" aria-label={translateUi("{{value1}} unread notifications", { value1: unreadCount })}>
+            <span className="notif-count" aria-label={translateUi("{{value1}} unread notifications", { value1: unreadCount })}>
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

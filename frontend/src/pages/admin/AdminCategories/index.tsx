@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -499,7 +500,7 @@ export default function AdminCategories() {
             />
           </div>
 
-          <select
+          <Select
             value={filter}
             onChange={(e) => setFilter(e.target.value as CategoryFilter)}
             title={translateUi("Filter categories")}
@@ -511,7 +512,7 @@ export default function AdminCategories() {
             <option value="active">{translateUi("Active only")}</option>
             <option value="inactive">{translateUi("Inactive only")}</option>
             <option value="has-children">{translateUi("Has children")}</option>
-          </select>
+          </Select>
         </div>
 
         <div className="category-toolbar-right">
@@ -566,7 +567,7 @@ export default function AdminCategories() {
               <div className="admin-form-row category-form-row-tight">
                 <div className="admin-form-group">
                   <label htmlFor="parentId">{translateUi("Parent Category")}</label>
-                  <select
+                  <Select
                     id="parentId"
                     title={translateUi("Parent Category")}
                     value={formData.parentId}
@@ -578,7 +579,7 @@ export default function AdminCategories() {
                         {translateUi(option.label)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="admin-form-group">

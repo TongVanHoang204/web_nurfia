@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 ﻿import { useEffect, useMemo, useState } from 'react';
@@ -968,7 +969,7 @@ export default function AdminInventory() {
                 />
               </div>
 
-              <select
+              <Select
                 title={translateUi("Filter stock status")}
                 aria-label={translateUi("Filter stock status")}
                 value={stockStatus}
@@ -978,9 +979,9 @@ export default function AdminInventory() {
                 <option value="LOW_STOCK">{translateUi("Low Stock")}</option>
                 <option value="OUT_OF_STOCK">{translateUi("Out Of Stock")}</option>
                 <option value="IN_STOCK">{translateUi("Healthy Stock")}</option>
-              </select>
+              </Select>
 
-              <select
+              <Select
                 title={translateUi("Filter by product SKU")}
                 aria-label={translateUi("Filter by product SKU")}
                 value={stockSkuFilter}
@@ -990,7 +991,7 @@ export default function AdminInventory() {
                 {availableSkuOptions.map((sku) => (
                   <option key={sku} value={sku}>{sku}</option>
                 ))}
-              </select>
+              </Select>
 
               <label className="ai-threshold-input">{translateUi("Low Threshold")}<input
                   type="number"
@@ -1087,7 +1088,7 @@ export default function AdminInventory() {
                 />
               </div>
 
-              <select
+              <Select
                 title={translateUi("Filter log action type")}
                 aria-label={translateUi("Filter log action type")}
                 value={logType}
@@ -1098,7 +1099,7 @@ export default function AdminInventory() {
                 <option value="OUT">{translateUi("OUT")}</option>
                 <option value="RETURN">{translateUi("RETURN")}</option>
                 <option value="ADJUSTMENT">{translateUi("ADJUSTMENT")}</option>
-              </select>
+              </Select>
 
               <input
                 type="date"
@@ -1231,7 +1232,7 @@ export default function AdminInventory() {
             <form className="admin-form" onSubmit={handleCreateTransaction}>
               <div className="admin-form-group">
                 <label htmlFor="inv-product">{translateUi("Product")}</label>
-                <select
+                <Select
                   id="inv-product"
                   value={formData.productId}
                   onChange={(event) => setFormData((prev) => ({ ...prev, productId: event.target.value, variantId: '' }))}
@@ -1241,13 +1242,13 @@ export default function AdminInventory() {
                   {selectableProducts.map((item) => (
                     <option key={item.id} value={item.id}>{item.name} {translateUi("(Stock:")} {item.stock})</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {selectedProduct && (selectedProduct.variants || []).length > 0 && (
                 <div className="admin-form-group">
                   <label htmlFor="inv-variant">{translateUi("Variant (Required)")}</label>
-                  <select
+                  <Select
                     id="inv-variant"
                     value={formData.variantId}
                     onChange={(event) => setFormData((prev) => ({ ...prev, variantId: event.target.value }))}
@@ -1259,7 +1260,7 @@ export default function AdminInventory() {
                         {buildVariantLabel(variant)} {translateUi("(Stock:")} {variant.stock})
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <small className="ai-form-helper">{translateUi("Product stock is aggregated from variants, so updates must target a specific SKU.")}</small>
                 </div>
               )}
@@ -1267,7 +1268,7 @@ export default function AdminInventory() {
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label htmlFor="inv-type">{translateUi("Action")}</label>
-                  <select
+                  <Select
                     id="inv-type"
                     value={formData.type}
                     onChange={(event) => setFormData((prev) => ({ ...prev, type: event.target.value as InventoryType }))}
@@ -1276,7 +1277,7 @@ export default function AdminInventory() {
                     <option value="OUT">{translateUi("OUT (Damaged/Loss)")}</option>
                     <option value="RETURN">{translateUi("RETURN (Customer Return)")}</option>
                     <option value="ADJUSTMENT">{translateUi("ADJUSTMENT (Set Exact Stock)")}</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="admin-form-group">

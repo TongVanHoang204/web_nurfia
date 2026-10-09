@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi, getLocale } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -395,27 +396,27 @@ export default function AdminCoupons() {
 
           <label className="coupons-select-wrap" aria-label={translateUi("Filter coupon status")}>
             <Filter size={15} />
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
+            <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
               <option value="ALL">{translateUi("All status")}</option>
               <option value="ACTIVE">{translateUi("Active")}</option>
               <option value="SCHEDULED">{translateUi("Scheduled")}</option>
               <option value="EXPIRED">{translateUi("Expired")}</option>
               <option value="INACTIVE">{translateUi("Disabled")}</option>
-            </select>
+            </Select>
           </label>
 
           <label className="coupons-select-wrap" aria-label={translateUi("Filter coupon type")}>
             <Filter size={15} />
-            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as TypeFilter)}>
+            <Select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as TypeFilter)}>
               <option value="ALL">{translateUi("All types")}</option>
               <option value="PERCENTAGE">{translateUi("Percentage")}</option>
               <option value="FIXED_AMOUNT">{translateUi("Fixed amount")}</option>
-            </select>
+            </Select>
           </label>
 
           <label className="coupons-select-wrap" aria-label={translateUi("Sort coupons")}>
             <Filter size={15} />
-            <select value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}>
+            <Select value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}>
               <option value="NEWEST">{translateUi("Sort: Newest")}</option>
               <option value="OLDEST">{translateUi("Sort: Oldest")}</option>
               <option value="CODE_ASC">{translateUi("Sort: Code A-Z")}</option>
@@ -424,7 +425,7 @@ export default function AdminCoupons() {
               <option value="VALUE_DESC">{translateUi("Sort: Value high-low")}</option>
               <option value="USAGE_DESC">{translateUi("Sort: Most used")}</option>
               <option value="ENDING_SOON">{translateUi("Sort: Ending soon")}</option>
-            </select>
+            </Select>
           </label>
 
           <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>
@@ -480,10 +481,10 @@ export default function AdminCoupons() {
               <div className="admin-modal-grid">
                 <div className="admin-form-group">
                   <label htmlFor="type">{translateUi("Discount Type *")}</label>
-                  <select id="type" title={translateUi("Discount Type")} value={form.type} onChange={e => setForm((prev) => ({ ...prev, type: e.target.value as CouponForm['type'] }))}>
+                  <Select id="type" title={translateUi("Discount Type")} value={form.type} onChange={e => setForm((prev) => ({ ...prev, type: e.target.value as CouponForm['type'] }))}>
                     <option value="PERCENTAGE">{translateUi("Percentage (%)")}</option>
                     <option value="FIXED_AMOUNT">{translateUi("Fixed Amount ($)")}</option>
-                  </select>
+                  </Select>
                 </div>
                 <div className="admin-form-group">
                   <label htmlFor="value">{translateUi("Value *")}</label>

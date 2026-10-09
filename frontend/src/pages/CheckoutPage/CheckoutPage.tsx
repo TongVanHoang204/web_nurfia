@@ -1,3 +1,4 @@
+import Select from '../../components/Select/Select';
 import { translateUi } from '../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
@@ -302,7 +303,7 @@ export default function CheckoutPage() {
             {savedAddresses.length > 0 && (
               <div className="form-group saved-addresses-selector">
                 <label className="form-label" htmlFor="savedAddress">{translateUi("Select a Saved Address")}</label>
-                <select
+                <Select
                   id="savedAddress"
                   className="form-input"
                   onChange={handleSelectAddress}
@@ -314,7 +315,7 @@ export default function CheckoutPage() {
                       {address.fullName} - {address.phone} ({address.streetAddress}, {address.ward}, {address.district}, {address.province})
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             )}
 

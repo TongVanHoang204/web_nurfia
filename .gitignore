@@ -8,5 +8,7 @@ backend/.env
 frontend/.env
 .env
 *.log
+*.zip
+*.tsbuildinfo
 backend/nurfia.sql
 claude_system/

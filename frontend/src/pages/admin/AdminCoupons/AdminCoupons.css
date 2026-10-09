@@ -86,7 +86,7 @@
   background: var(--surface, #fff);
 }
 
-.coupons-select-wrap select {
+.coupons-select-wrap :is(select, .ui-select-trigger) {
   border: none;
   outline: none;
   font-size: 13px;
@@ -413,7 +413,7 @@
     width: 100%;
   }
 
-  .coupons-select-wrap select {
+  .coupons-select-wrap :is(select, .ui-select-trigger) {
     width: 100%;
   }
 

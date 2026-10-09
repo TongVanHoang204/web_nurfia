@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
@@ -108,9 +109,9 @@ export default function AdminStaff() {
       <div className="admin-card staff-team-card">
         <form className="staff-toolbar" onSubmit={event => { event.preventDefault(); setQuery({ ...query, page: 1, search: keyword.trim() }); }}>
           <label className="staff-search-wrap"><Search size={17} /><input aria-label={translateUi("Search team")} placeholder={translateUi("Search name, username or email")} value={keyword} onChange={event => setKeyword(event.target.value)} maxLength={120} /></label>
-          <select aria-label={translateUi("Filter role")} value={query.role} onChange={e => setQuery({ ...query, page: 1, role: e.target.value })}><option value="ALL">{translateUi("All roles")}</option><option value="OWNER">{translateUi("Owner")}</option><option value="ADMIN">{translateUi("Admin")}</option><option value="MANAGER">{translateUi("Manager")}</option><option value="STAFF">{translateUi("Staff")}</option></select>
-          <select aria-label={translateUi("Filter status")} value={query.status} onChange={e => setQuery({ ...query, page: 1, status: e.target.value })}><option value="ALL">{translateUi("All statuses")}</option><option value="ACTIVE">{translateUi("Active")}</option><option value="INACTIVE">{translateUi("Disabled")}</option></select>
-          <select aria-label={translateUi("Sort team")} value={query.sort} onChange={e => setQuery({ ...query, page: 1, sort: e.target.value })}><option value="NEWEST">{translateUi("Newest first")}</option><option value="NAME_ASC">{translateUi("Name A–Z")}</option><option value="UPDATED_DESC">{translateUi("Recently updated")}</option></select>
+          <Select aria-label={translateUi("Filter role")} value={query.role} onChange={e => setQuery({ ...query, page: 1, role: e.target.value })}><option value="ALL">{translateUi("All roles")}</option><option value="OWNER">{translateUi("Owner")}</option><option value="ADMIN">{translateUi("Admin")}</option><option value="MANAGER">{translateUi("Manager")}</option><option value="STAFF">{translateUi("Staff")}</option></Select>
+          <Select aria-label={translateUi("Filter status")} value={query.status} onChange={e => setQuery({ ...query, page: 1, status: e.target.value })}><option value="ALL">{translateUi("All statuses")}</option><option value="ACTIVE">{translateUi("Active")}</option><option value="INACTIVE">{translateUi("Disabled")}</option></Select>
+          <Select aria-label={translateUi("Sort team")} value={query.sort} onChange={e => setQuery({ ...query, page: 1, sort: e.target.value })}><option value="NEWEST">{translateUi("Newest first")}</option><option value="NAME_ASC">{translateUi("Name A–Z")}</option><option value="UPDATED_DESC">{translateUi("Recently updated")}</option></Select>
           <button className="admin-btn admin-btn-primary" type="submit">{translateUi("Search")}</button>
           {(query.search || query.role !== 'ALL' || query.status !== 'ALL' || query.sort !== 'NEWEST') && <button type="button" className="staff-reset-button" onClick={() => { setKeyword(''); setQuery(defaultQuery); }}>{translateUi("Reset")}</button>}
         </form>

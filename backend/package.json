@@ -12,7 +12,6 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "test": "jest",
     "owner:provision": "tsx scripts/provision-owner.ts"
   },
   "prisma": {
@@ -54,11 +53,6 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/supertest": "^7.2.0",
-    "mysql2": "^3.22.2",
-    "prisma": "^6.6.0",
-    "socket.io-client": "^4.8.4",
-    "supertest": "^7.2.2"
+    "prisma": "^6.6.0"
   }
 }

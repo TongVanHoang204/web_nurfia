@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi, getLocale } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -775,7 +776,7 @@ export default function AdminActivityLogs() {
 
           <label className="activity-logs-input-wrap" aria-label={translateUi("Filter by action")}>
             <Filter size={15} />
-            <select
+            <Select
               value={actionFilter}
               onChange={(event) => {
                 setActionFilter(event.target.value);
@@ -786,12 +787,12 @@ export default function AdminActivityLogs() {
               {filterOptions.actions.map((action) => (
                 <option key={action} value={action}>{humanizeToken(action)}</option>
               ))}
-            </select>
+            </Select>
           </label>
 
           <label className="activity-logs-input-wrap" aria-label={translateUi("Filter by entity")}>
             <Filter size={15} />
-            <select
+            <Select
               value={entityFilter}
               onChange={(event) => {
                 setEntityFilter(event.target.value);
@@ -802,7 +803,7 @@ export default function AdminActivityLogs() {
               {filterOptions.entityTypes.map((entityType) => (
                 <option key={entityType} value={entityType}>{humanizeToken(entityType)}</option>
               ))}
-            </select>
+            </Select>
           </label>
 
           <label className="activity-logs-input-wrap" aria-label={translateUi("Start date")}>
@@ -843,19 +844,19 @@ export default function AdminActivityLogs() {
 
           <label className="activity-logs-input-wrap" aria-label={translateUi("Sort logs")}>
             <Filter size={15} />
-            <select value={sortOption} onChange={(event) => { setSortOption(event.target.value as SortOption); setPage(1); }}>
+            <Select value={sortOption} onChange={(event) => { setSortOption(event.target.value as SortOption); setPage(1); }}>
               <option value="NEWEST">{translateUi("Sort: Newest first")}</option>
               <option value="OLDEST">{translateUi("Sort: Oldest first")}</option>
-            </select>
+            </Select>
           </label>
 
           <label className="activity-logs-input-wrap" aria-label={translateUi("Page size")}>
             <Users size={15} />
-            <select value={limit} onChange={(event) => { setLimit(Number(event.target.value)); setPage(1); }}>
+            <Select value={limit} onChange={(event) => { setLimit(Number(event.target.value)); setPage(1); }}>
               <option value={20}>{translateUi("20 / page")}</option>
               <option value={50}>{translateUi("50 / page")}</option>
               <option value={100}>{translateUi("100 / page")}</option>
-            </select>
+            </Select>
           </label>
 
           <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>

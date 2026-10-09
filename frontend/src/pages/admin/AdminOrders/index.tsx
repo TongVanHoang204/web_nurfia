@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi, getLocale } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -173,7 +174,7 @@ export default function AdminOrders() {
         </div>
 
         <div className="admin-orders-filters">
-          <select
+          <Select
             className="admin-order-filter-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -181,9 +182,9 @@ export default function AdminOrders() {
           >
             <option value="">{translateUi("All Shipping")}</option>
             {SHIPPING_OPTIONS.map(opt => <option key={opt} value={opt}>{translateUi(opt)}</option>)}
-          </select>
+          </Select>
 
-          <select
+          <Select
             className="admin-order-filter-select"
             value={paymentStatusFilter}
             onChange={(e) => setPaymentStatusFilter(e.target.value)}
@@ -191,7 +192,7 @@ export default function AdminOrders() {
           >
             <option value="">{translateUi("All Payments")}</option>
             {PAYMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{translateUi(opt)}</option>)}
-          </select>
+          </Select>
 
           <button className="btn btn-outline btn-sm" onClick={() => { setSearchTerm(''); setStatusFilter(''); setPaymentStatusFilter(''); }}>{translateUi("Reset")}</button>
         </div>
@@ -227,26 +228,26 @@ export default function AdminOrders() {
               <div className="admin-order-card-controls">
                 <div className="admin-order-select-group">
                   <label>{translateUi("Shipping")}</label>
-                  <select
+                  <Select
                     className="admin-order-mini-select"
                     value={order.status}
                     onChange={(e) => updateStatus(order.id, e.target.value)}
                     title={translateUi("Change status")}
                   >
                     {SHIPPING_OPTIONS.map(opt => <option key={opt} value={opt}>{translateUi(opt)}</option>)}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="admin-order-select-group">
                   <label>{translateUi("Payment")}</label>
-                  <select
+                  <Select
                     className="admin-order-mini-select"
                     value={order.paymentStatus}
                     onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
                     title={translateUi("Change payment status")}
                   >
                     {PAYMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{translateUi(opt)}</option>)}
-                  </select>
+                  </Select>
                 </div>
 
                 <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setSelectedOrder(order)}>

@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi, getLocale } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -407,23 +408,23 @@ export default function AdminCustomers() {
 
           <label className="customers-select-wrap" aria-label={translateUi("Filter engagement")}>
             <Filter size={15} />
-            <select value={engagementFilter} onChange={(e) => setEngagementFilter(e.target.value as EngagementFilter)}>
+            <Select value={engagementFilter} onChange={(e) => setEngagementFilter(e.target.value as EngagementFilter)}>
               <option value="ALL">{translateUi("All segments")}</option>
               <option value="NEW">{translateUi("New in 30 days")}</option>
               <option value="NO_ORDERS">{translateUi("No orders")}</option>
               <option value="RETURNING">{translateUi("Returning (2+ orders)")}</option>
               <option value="HAS_PHONE">{translateUi("Has phone number")}</option>
-            </select>
+            </Select>
           </label>
 
           <label className="customers-select-wrap" aria-label={translateUi("Sort customers")}>
             <Users size={15} />
-            <select value={sortOption} onChange={(e) => setSortOption(e.target.value as SortOption)}>
+            <Select value={sortOption} onChange={(e) => setSortOption(e.target.value as SortOption)}>
               <option value="NEWEST">{translateUi("Sort: Newest")}</option>
               <option value="OLDEST">{translateUi("Sort: Oldest")}</option>
               <option value="ORDERS_DESC">{translateUi("Sort: Most orders")}</option>
               <option value="NAME_ASC">{translateUi("Sort: Name A-Z")}</option>
-            </select>
+            </Select>
           </label>
 
           <button className="admin-btn admin-btn-primary" type="submit">{translateUi("Search")}</button>

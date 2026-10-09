@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi, getLocale } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -666,7 +667,7 @@ export default function AdminReports() {
 
         <div className="reports-analytics-toolbar">
           <div className="reports-analytics-period-wrap">
-            <select
+            <Select
               title={translateUi("Select report period")}
               value={isCustomRangeActive ? 'custom' : String(filters.days)}
               onChange={(event) => {
@@ -682,7 +683,7 @@ export default function AdminReports() {
                 <option key={option.value} value={option.value}>{translateUi(option.label)}</option>
               ))}
               <option value="custom">{translateUi("Custom range")}</option>
-            </select>
+            </Select>
             <Calendar size={15} className="reports-analytics-period-icon" />
           </div>
 

@@ -1,8 +1,9 @@
+import Select from '../../components/Select/Select';
 import { translateUi } from '../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
-import { ChevronDown, Grid3X3, LayoutGrid, List } from 'lucide-react';
+import { Grid3X3, LayoutGrid, List } from 'lucide-react';
 import api from '../../api/client';
 import ProductCard from "../../components/ProductCard/ProductCard";
 import FilterSidebar from "../../components/FilterSidebar/FilterSidebar";
@@ -126,7 +127,7 @@ export default function CategoryPage() {
               <button title={translateUi("5 Columns")} aria-label={translateUi("5 Columns")} className={gridCols === 5 ? 'active' : ''} onClick={() => setGridCols(5)}><List size={16} /></button>
             </div>
             <div className="sort-select">
-              <select title={translateUi("Sort by")} aria-label={translateUi("Sort by")} value={sort} onChange={(e) => handleSort(e.target.value)}>
+              <Select title={translateUi("Sort by")} aria-label={translateUi("Sort by")} value={sort} onChange={(e) => handleSort(e.target.value)}>
                 <option value="newest">{translateUi("Newest")}</option>
                 <option value="price_asc">{translateUi("Price: Low to High")}</option>
                 <option value="price_desc">{translateUi("Price: High to Low")}</option>
@@ -134,8 +135,7 @@ export default function CategoryPage() {
                 <option value="name_desc">{translateUi("Name: Z-A")}</option>
                 <option value="popular">{translateUi("Popularity")}</option>
                 <option value="rating">{translateUi("Rating")}</option>
-              </select>
-              <ChevronDown size={14} className="select-arrow" />
+              </Select>
             </div>
           </div>
         </div>

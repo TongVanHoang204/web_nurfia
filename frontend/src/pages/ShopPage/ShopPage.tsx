@@ -1,3 +1,4 @@
+import Select from '../../components/Select/Select';
 import { translateUi } from '../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
@@ -119,13 +120,13 @@ export default function ShopPage() {
               </div>
               <div className="sort-select">
                 <label className="visually-hidden" htmlFor="sort-select">{translateUi("Sort by")}</label>
-                <select id="sort-select" title={translateUi("Sort products")} aria-label={translateUi("Sort products")} value={sort} onChange={(e) => handleSort(e.target.value)}>
+                <Select id="sort-select" title={translateUi("Sort products")} aria-label={translateUi("Sort products")} value={sort} onChange={(e) => handleSort(e.target.value)}>
                   <option value="default">{translateUi("Default sorting")}</option>
                   <option value="newest">{translateUi("Sort by latest")}</option>
                   <option value="price_asc">{translateUi("Sort by price: low to high")}</option>
                   <option value="price_desc">{translateUi("Sort by price: high to low")}</option>
                   <option value="rating">{translateUi("Sort by average rating")}</option>
-                </select>
+                </Select>
               </div>
             </div>
           </div>

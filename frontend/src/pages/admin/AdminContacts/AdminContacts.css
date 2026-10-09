@@ -59,7 +59,7 @@
 }
 
 .contacts-search-wrap input,
-.contacts-select-wrap select {
+.contacts-select-wrap :is(select, .ui-select-trigger) {
   width: 100%;
   border: none;
   background: transparent;

@@ -246,7 +246,7 @@
   margin-bottom: 12px;
 }
 
-.admin-form input, .admin-form select, .admin-form textarea {
+.admin-form input, .admin-form :is(select, .ui-select-trigger), .admin-form textarea {
   padding: 14px 16px;
   border: 1px solid var(--color-border);
   font-size: 14px;
@@ -355,7 +355,7 @@
 }
 
 .ap-variant-row .admin-form-group input,
-.ap-variant-row .admin-form-group select {
+.ap-variant-row .admin-form-group :is(select, .ui-select-trigger) {
   padding: 9px 12px;
   font-size: 13px;
   width: 100%;
@@ -365,7 +365,7 @@
 }
 
 .ap-variant-row .admin-form-group input:focus,
-.ap-variant-row .admin-form-group select:focus {
+.ap-variant-row .admin-form-group :is(select, .ui-select-trigger):focus {
   border-color: var(--color-black);
   outline: none;
 }

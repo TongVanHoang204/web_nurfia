@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -266,7 +267,7 @@ export default function AdminBrands() {
             />
           </div>
 
-          <select
+          <Select
             title={translateUi("Brand status filter")}
             aria-label={translateUi("Brand status filter")}
             className="brands-filter-select"
@@ -276,9 +277,9 @@ export default function AdminBrands() {
             <option value="all">{translateUi("All statuses")}</option>
             <option value="active">{translateUi("Active")}</option>
             <option value="inactive">{translateUi("Inactive")}</option>
-          </select>
+          </Select>
 
-          <select
+          <Select
             title={translateUi("Brand sort")}
             aria-label={translateUi("Brand sort")}
             className="brands-filter-select"
@@ -289,7 +290,7 @@ export default function AdminBrands() {
             <option value="name-asc">{translateUi("Sort: Name A-Z")}</option>
             <option value="name-desc">{translateUi("Sort: Name Z-A")}</option>
             <option value="products-desc">{translateUi("Sort: Most Products")}</option>
-          </select>
+          </Select>
         </div>
 
         <div className="brands-controls-summary">

@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi, getLocale } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -317,33 +318,33 @@ export default function AdminReviews() {
 
           <label className="reviews-select-wrap" aria-label={translateUi("Filter review status")}>
             <Filter size={15} />
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ReviewStatusFilter)}>
+            <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ReviewStatusFilter)}>
               <option value="ALL">{translateUi("All status")}</option>
               <option value="APPROVED">{translateUi("Approved")}</option>
               <option value="HIDDEN">{translateUi("Hidden")}</option>
-            </select>
+            </Select>
           </label>
 
           <label className="reviews-select-wrap" aria-label={translateUi("Filter by rating")}>
             <Star size={15} />
-            <select value={ratingFilter} onChange={(event) => setRatingFilter(event.target.value as RatingFilter)}>
+            <Select value={ratingFilter} onChange={(event) => setRatingFilter(event.target.value as RatingFilter)}>
               <option value="ALL">{translateUi("All ratings")}</option>
               <option value="5">{translateUi("5 stars")}</option>
               <option value="4">{translateUi("4 stars")}</option>
               <option value="3">{translateUi("3 stars")}</option>
               <option value="2">{translateUi("2 stars")}</option>
               <option value="1">{translateUi("1 star")}</option>
-            </select>
+            </Select>
           </label>
 
           <label className="reviews-select-wrap" aria-label={translateUi("Sort reviews")}>
             <Filter size={15} />
-            <select value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}>
+            <Select value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}>
               <option value="NEWEST">{translateUi("Sort: Newest")}</option>
               <option value="OLDEST">{translateUi("Sort: Oldest")}</option>
               <option value="RATING_DESC">{translateUi("Sort: Rating high to low")}</option>
               <option value="RATING_ASC">{translateUi("Sort: Rating low to high")}</option>
-            </select>
+            </Select>
           </label>
 
           <button type="submit" className="admin-btn admin-btn-primary">{translateUi("Search")}</button>

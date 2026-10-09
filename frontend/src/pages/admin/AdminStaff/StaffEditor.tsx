@@ -1,3 +1,4 @@
+import Select from '../../../components/Select/Select';
 import { translateUi } from '../../../i18n';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
@@ -64,7 +65,7 @@ export default function StaffEditor({ member, actor, editable, onSave, onClose, 
       if (event.key === 'Escape') { event.preventDefault(); void closeRef.current(); }
       if (event.key !== 'Tab') return;
       const elements = Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), a[href]') || [])
-        .filter(element => !element.closest('[hidden]'));
+        .filter(element => !element.closest('[hidden]') && element.tabIndex >= 0 && element.getAttribute('aria-hidden') !== 'true');
       const first = elements[0], last = elements[elements.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -114,9 +115,9 @@ export default function StaffEditor({ member, actor, editable, onSave, onClose, 
                   <div className="admin-form-group"><label htmlFor="staffUsername">{translateUi("Username")}</label><input id="staffUsername" required maxLength={50} disabled={Boolean(member)} value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} autoComplete="off" /></div>
                   <div className="admin-form-group"><label htmlFor="staffEmail">{translateUi("Email")}</label><input id="staffEmail" type="email" required maxLength={255} disabled={Boolean(member)} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} autoComplete="off" /></div>
                 </div>
-                <div className="admin-form-group"><label htmlFor="staffRole">{translateUi("Role")}</label>{member?.role === 'OWNER' ? <input id="staffRole" value="OWNER" readOnly /> : <select id="staffRole" value={form.role} onChange={e => setForm({ ...form, role: e.target.value as TeamRole })}>
+                <div className="admin-form-group"><label htmlFor="staffRole">{translateUi("Role")}</label>{member?.role === 'OWNER' ? <input id="staffRole" value="OWNER" readOnly /> : <Select id="staffRole" value={form.role} onChange={e => setForm({ ...form, role: e.target.value as TeamRole })}>
                   {Array.from(new Set([...roles, form.role])).map(role => <option key={role} value={role} disabled={!roles.includes(role)}>{translateUi(role)}</option>)}
-                </select>}<small>{translateUi("Only Owner can grant or manage Admin access.")}</small></div>
+                </Select>}<small>{translateUi("Only Owner can grant or manage Admin access.")}</small></div>
                 {editable && <div className="admin-form-group"><label htmlFor="staffPassword">{member ? translateUi("New Password (optional)") : translateUi("Password")}</label><input id="staffPassword" type="password" required={!member} minLength={6} maxLength={128} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} autoComplete="new-password" /><small>{member ? translateUi("Changing a password signs this member out of existing sessions.") : translateUi("Share the initial password securely with this member.")}</small></div>}
                 <label className="staff-account-toggle"><input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} /><span>{translateUi("Account active")}</span></label>
               </fieldset>

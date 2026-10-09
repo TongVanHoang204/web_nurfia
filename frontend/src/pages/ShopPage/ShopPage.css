@@ -314,7 +314,7 @@
   background: transparent;
 }
 
-.sort-select select {
+.sort-select :is(select, .ui-select-trigger) {
   border: none;
   background: transparent;
   outline: none;
