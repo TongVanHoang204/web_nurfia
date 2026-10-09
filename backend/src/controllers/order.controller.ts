@@ -615,7 +615,7 @@ export const orderController = {
         throw new AppError('Payment proof not found.', 404);
       }
 
-      const hasAdminAccess = ['ADMIN', 'STAFF', 'MANAGER'].includes(String(req.userRole || '').toUpperCase());
+      const hasAdminAccess = ['OWNER', 'ADMIN', 'STAFF', 'MANAGER'].includes(String(req.userRole || '').toUpperCase());
       if (!hasAdminAccess && order.userId !== req.userId) {
         throw new AppError('Unauthorized.', 403);
       }

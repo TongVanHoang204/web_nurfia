@@ -1,746 +1,137 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
-import { Check, Filter, Pencil, Plus, Search, Shield, Trash2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, ChevronLeft, ChevronRight, Crown, Eye, Pencil, Plus, Search, Shield, X } from 'lucide-react';
 import api from '../../../api/client';
+import { useAuthStore } from '../../../stores/authStore';
 import { useUIStore } from '../../../stores/uiStore';
 import { useAdminConfirm } from '../../../components/AdminConfirmDialog/AdminConfirmDialog';
+import StaffEditor from './StaffEditor';
+import StaffActions from './StaffActions';
+import { assignableRoles, canManageMember, formatDate, fullAccess, permissionLabel } from './staffModel';
+import type { StaffForm, StaffMember } from './staffModel';
 import './AdminStaff.css';
 
-const PERMISSION_DEFINITIONS = [
-  { value: 'MANAGE_BANNERS', label: 'Banners & Popups', group: 'Storefront', unlocks: 'Banners, popups' },
-  { value: 'MANAGE_BLOG', label: 'Blog Posts', group: 'Storefront', unlocks: 'Blog posts' },
-  { value: 'MANAGE_SETTINGS', label: 'Settings', group: 'Storefront', unlocks: 'Site settings' },
-  { value: 'MANAGE_PRODUCTS', label: 'Products', group: 'Catalog', unlocks: 'Products, brands, attributes' },
-  { value: 'MANAGE_INVENTORY', label: 'Inventory', group: 'Catalog', unlocks: 'Stock and inventory history' },
-  { value: 'MANAGE_CATEGORIES', label: 'Categories', group: 'Catalog', unlocks: 'Product categories' },
-  { value: 'MANAGE_ORDERS', label: 'Orders', group: 'Sales Ops', unlocks: 'Orders and fulfillment status' },
-  { value: 'MANAGE_CUSTOMERS', label: 'Customers', group: 'Sales Ops', unlocks: 'Customer accounts and activity' },
-  { value: 'MANAGE_COUPONS', label: 'Coupons', group: 'Sales Ops', unlocks: 'Discount codes' },
-  { value: 'MANAGE_SHIPPING', label: 'Shipping', group: 'Sales Ops', unlocks: 'Shipping methods' },
-  { value: 'VIEW_REPORTS', label: 'Reports', group: 'Sales Ops', unlocks: 'Reports and charts' },
-  { value: 'MANAGE_REVIEWS', label: 'Reviews', group: 'Trust & Support', unlocks: 'Product reviews' },
-  { value: 'MANAGE_CONTACTS', label: 'Contacts', group: 'Trust & Support', unlocks: 'Contact messages and replies' },
-  { value: 'VIEW_ACTIVITY_LOGS', label: 'Activity Logs', group: 'Trust & Support', unlocks: 'Admin activity logs' },
-  { value: 'MANAGE_STAFF', label: 'Staff Management', group: 'Trust & Support', unlocks: 'Staff accounts and permissions' },
-] as const;
-
-const PERMISSION_OPTIONS = PERMISSION_DEFINITIONS.map((permission) => permission.value);
-const PERMISSION_GROUPS = Array.from(new Set(PERMISSION_DEFINITIONS.map((permission) => permission.group)));
-const PERMISSION_META = new Map(PERMISSION_DEFINITIONS.map((permission) => [permission.value, permission]));
-
-type TeamRole = 'STAFF' | 'MANAGER';
-
-const ROLE_DEFAULT_PERMISSIONS: Record<TeamRole, string[]> = {
-  STAFF: ['MANAGE_ORDERS', 'MANAGE_CUSTOMERS', 'MANAGE_CONTACTS', 'MANAGE_REVIEWS'],
-  MANAGER: [
-    'MANAGE_BANNERS',
-    'MANAGE_PRODUCTS',
-    'MANAGE_INVENTORY',
-    'MANAGE_CATEGORIES',
-    'MANAGE_ORDERS',
-    'MANAGE_CUSTOMERS',
-    'MANAGE_REVIEWS',
-    'VIEW_REPORTS',
-    'MANAGE_COUPONS',
-    'MANAGE_SHIPPING',
-    'MANAGE_BLOG',
-    'MANAGE_CONTACTS',
-    'VIEW_ACTIVITY_LOGS',
-  ],
-};
-
-const PERMISSION_PRESETS: Record<string, { label: string; permissions: string[] }> = {
-  STAFF_DEFAULT: {
-    label: 'Staff Default',
-    permissions: ROLE_DEFAULT_PERMISSIONS.STAFF,
-  },
-  MANAGER_DEFAULT: {
-    label: 'Manager Default',
-    permissions: ROLE_DEFAULT_PERMISSIONS.MANAGER,
-  },
-  SALES: {
-    label: 'Sales Ops',
-    permissions: ['MANAGE_ORDERS', 'MANAGE_CUSTOMERS', 'MANAGE_COUPONS', 'MANAGE_SHIPPING'],
-  },
-  CATALOG: {
-    label: 'Catalog Ops',
-    permissions: ['MANAGE_PRODUCTS', 'MANAGE_INVENTORY', 'MANAGE_CATEGORIES', 'MANAGE_BANNERS', 'MANAGE_BLOG'],
-  },
-  SUPPORT: {
-    label: 'Support',
-    permissions: ['MANAGE_CONTACTS', 'MANAGE_REVIEWS', 'VIEW_ACTIVITY_LOGS'],
-  },
-};
-
-type StaffMember = {
-  id: number;
-  username: string;
-  email: string;
-  fullName: string;
-  role: string;
-  permissions: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type Pagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
-type StaffStats = {
-  totalStaff: number;
-  activeStaff: number;
-  inactiveStaff: number;
-  staffCount?: number;
-  managerCount?: number;
-};
-
-type StaffStatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
-type StaffRoleFilter = 'ALL' | 'ADMIN' | 'STAFF' | 'MANAGER';
-type StaffSortOption = 'NEWEST' | 'OLDEST' | 'NAME_ASC' | 'NAME_DESC' | 'UPDATED_DESC';
-
-const formatDate = (value: string) => {
-  return new Date(value).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
-const formatPermissionLabel = (permission: string) => {
-  return PERMISSION_META.get(permission as (typeof PERMISSION_OPTIONS)[number])?.label
-    || permission.replace('MANAGE_', '').replace('VIEW_', '').split('_').join(' ').toLowerCase();
-};
-
-const formatPermissionTitle = (permission: string) => {
-  const permissionMeta = PERMISSION_META.get(permission as (typeof PERMISSION_OPTIONS)[number]);
-  if (permissionMeta) return permissionMeta.label;
-
-  return permission
-    .split('_')
-    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-    .join(' ');
-};
-
-const getPageNumbers = (current: number, total: number) => {
-  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
-
-  const pages: number[] = [1];
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-
-  if (start > 2) pages.push(-1);
-  for (let page = start; page <= end; page += 1) {
-    pages.push(page);
-  }
-  if (end < total - 1) pages.push(-2);
-  pages.push(total);
-
-  return pages;
-};
+type Query = { page: number; search: string; role: string; status: string; sort: string };
+const defaultQuery: Query = { page: 1, search: '', role: 'ALL', status: 'ALL', sort: 'NEWEST' };
 
 export default function AdminStaff() {
-  const [staffs, setStaffs] = useState<StaffMember[]>([]);
-  const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0 });
-  const [stats, setStats] = useState<StaffStats>({ totalStaff: 0, activeStaff: 0, inactiveStaff: 0 });
-  const [isLoading, setIsLoading] = useState(true);
-  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StaffStatusFilter>('ALL');
-  const [roleFilter, setRoleFilter] = useState<StaffRoleFilter>('ALL');
-  const [sortOption, setSortOption] = useState<StaffSortOption>('NEWEST');
-
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    fullName: '',
-    role: 'STAFF' as TeamRole,
-    permissions: [] as string[],
-    isActive: true
-  });
-
+  const { user } = useAuthStore();
   const { addToast } = useUIStore();
   const { confirm, dialog: confirmDialog } = useAdminConfirm();
-
-  const fetchStaffs = (
-    page = 1,
-    options?: {
-      keyword?: string;
-      status?: StaffStatusFilter;
-      role?: StaffRoleFilter;
-      sort?: StaffSortOption;
-    },
-  ) => {
-    setIsLoading(true);
-    const keyword = options?.keyword ?? search;
-    const nextStatus = options?.status ?? statusFilter;
-    const nextRole = options?.role ?? roleFilter;
-    const nextSort = options?.sort ?? sortOption;
-    const query = new URLSearchParams({
-      page: String(page),
-      limit: '20',
-      sort: nextSort,
-      ...(nextStatus !== 'ALL' ? { status: nextStatus } : {}),
-      ...(nextRole !== 'ALL' ? { role: nextRole } : {}),
-      ...(keyword ? { search: keyword } : {}),
-    });
-
-    api.get(`/admin/staffs?${query.toString()}`)
-      .then((response) => {
-        const responseData = response.data;
-        setStaffs(responseData.data || []);
-        setPagination(responseData.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
-        setStats(responseData.stats || { totalStaff: 0, activeStaff: 0, inactiveStaff: 0 });
-        setSelectedIds([]);
-      })
-      .catch((error) => {
-        console.error(error);
-        addToast('Failed to load staff list', 'error');
-      })
-      .finally(() => setIsLoading(false));
-  };
-
+  const [members, setMembers] = useState<StaffMember[]>([]);
+  const [query, setQuery] = useState(defaultQuery);
+  const [keyword, setKeyword] = useState('');
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+  const [stats, setStats] = useState({ totalStaff: 0, activeStaff: 0, inactiveStaff: 0 });
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [editor, setEditor] = useState<StaffMember | null | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+  const requestSequence = useRef(0);
   useEffect(() => {
-    fetchStaffs(1);
-  }, [statusFilter, roleFilter, sortOption]);
+    const sequence = ++requestSequence.current;
+    let cancelled = false;
+    setLoading(true); setLoadError(false);
+    const parameters = new URLSearchParams({ page: String(query.page), limit: '20', sort: query.sort,
+      ...(query.search ? { search: query.search } : {}), ...(query.role !== 'ALL' ? { role: query.role } : {}),
+      ...(query.status !== 'ALL' ? { status: query.status } : {}) });
+    api.get(`/admin/staffs?${parameters}`).then(response => {
+      if (cancelled || sequence !== requestSequence.current) return;
+      const data = response.data;
+      const next = data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 };
+      if (query.page > Math.max(1, next.totalPages)) { setQuery(current => ({ ...current, page: Math.max(1, next.totalPages) })); return; }
+      setMembers(data.data || []); setStats(data.stats || { totalStaff: 0, activeStaff: 0, inactiveStaff: 0 });
+      setPagination(next); setSelected([]);
+    }).catch(() => { if (!cancelled && sequence === requestSequence.current) setLoadError(true); })
+      .finally(() => { if (!cancelled && sequence === requestSequence.current) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [query, refresh]);
 
-  const handleSearch = (event: FormEvent) => {
-    event.preventDefault();
-    const keyword = searchInput.trim();
-    setSearch(keyword);
-    fetchStaffs(1, { keyword });
+  const editableIds = members.filter(member => canManageMember(user, member)).map(member => member.id);
+  const allSelected = editableIds.length > 0 && editableIds.every(id => selected.includes(id));
+  const reload = () => setRefresh(value => value + 1);
+  const save = async (form: StaffForm) => {
+    if (editor) {
+      const data: Partial<StaffForm> = {};
+      if (form.fullName !== editor.fullName) data.fullName = form.fullName;
+      if (form.role !== editor.role) data.role = form.role;
+      if (JSON.stringify([...form.permissions].sort()) !== JSON.stringify([...editor.permissions].sort())) data.permissions = form.permissions;
+      if (form.isActive !== editor.isActive) data.isActive = form.isActive;
+      if (form.password) data.password = form.password;
+      await api.put(`/admin/staffs/${editor.id}`, data);
+    } else await api.post('/admin/staffs', form);
+    addToast(editor ? 'Staff updated' : 'Staff created', 'success');
+    setEditor(undefined); reload();
   };
-
-  const resetFilters = () => {
-    setSearch('');
-    setSearchInput('');
-    setStatusFilter('ALL');
-    setRoleFilter('ALL');
-    setSortOption('NEWEST');
-    fetchStaffs(1, { keyword: '', status: 'ALL', role: 'ALL', sort: 'NEWEST' });
+  const changeStatus = async (member: StaffMember) => {
+    if (!canManageMember(user, member) || busy) return;
+    if (member.isActive && !await confirm({ title: `Disable ${member.fullName}?`, message: 'Existing sessions will be revoked. This member can sign in again after you enable their account.', confirmText: 'Disable account', tone: 'danger' })) return;
+    setBusy(true);
+    try { await api.put(`/admin/staffs/${member.id}`, { isActive: !member.isActive }); addToast(member.isActive ? 'Account disabled' : 'Account enabled', 'success'); reload(); }
+    catch { addToast('Unable to update account status', 'error'); }
+    finally { setBusy(false); }
   };
-
-  const resetForm = () => {
-    setFormData({
-      username: '',
-      email: '',
-      password: '',
-      fullName: '',
-      role: 'STAFF',
-      permissions: ROLE_DEFAULT_PERMISSIONS.STAFF,
-      isActive: true,
-    });
-    setEditingStaff(null);
-    setIsModalOpen(false);
+  const remove = async (member: StaffMember) => {
+    if (!canManageMember(user, member) || busy) return;
+    if (!await confirm({ title: `Delete ${member.fullName}?`, message: 'This permanently deletes the account. Disable it instead if you only want to stop access.', confirmText: 'Delete account', tone: 'danger' })) return;
+    setBusy(true);
+    try { await api.delete(`/admin/staffs/${member.id}`); addToast('Account deleted', 'success'); reload(); }
+    catch { addToast('Unable to delete this account', 'error'); }
+    finally { setBusy(false); }
   };
-
-  const handleOpenModal = (staff: StaffMember | null = null) => {
-    if (staff) {
-      setEditingStaff(staff);
-      setFormData({
-        username: staff.username,
-        email: staff.email,
-        password: '',
-        fullName: staff.fullName,
-        role: staff.role === 'MANAGER' ? 'MANAGER' : 'STAFF',
-        permissions: (staff.permissions as string[]) || [],
-        isActive: staff.isActive
-      });
-    } else {
-      resetForm();
-    }
-    setIsModalOpen(true);
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const bulkStatus = async (isActive: boolean) => {
+    const ids = selected.filter(id => editableIds.includes(id));
+    if (!ids.length || busy) return;
+    if (!isActive && !await confirm({ title: `Disable ${ids.length} accounts?`, message: 'These members will be signed out and lose access until their accounts are enabled.', confirmText: 'Disable accounts', tone: 'danger' })) return;
+    setBusy(true);
     try {
-      if (editingStaff) {
-        const { username, email, ...updateData } = formData;
-        await api.put(`/admin/staffs/${editingStaff.id}`, updateData);
-        addToast('Staff updated', 'success');
-      } else {
-        await api.post('/admin/staffs', formData);
-        addToast('Staff created', 'success');
-      }
-      resetForm();
-      fetchStaffs(pagination.page);
-    } catch (err: any) {
-      addToast(err.response?.data?.message || 'Failed to save staff', 'error');
-    }
+      const results = await Promise.allSettled(ids.map(id => api.put(`/admin/staffs/${id}`, { isActive })));
+      const successes = results.filter(result => result.status === 'fulfilled').length;
+      const failed = ids.length - successes;
+      addToast(failed ? `${successes} updated; ${failed} could not be updated. Please review the list.` : `${successes} accounts ${isActive ? 'enabled' : 'disabled'}.`, failed ? 'error' : 'success');
+      reload();
+    } finally { setBusy(false); }
   };
-
-  const handleDelete = async (id: number, role: string) => {
-    if (role === 'ADMIN') {
-       addToast('Cannot delete an ADMIN account', 'error');
-       return;
-    }
-    const shouldDelete = await confirm({
-      title: 'Delete staff account',
-      message: 'This staff account will be permanently removed.',
-      confirmText: 'Delete',
-      tone: 'danger',
-    });
-    if (!shouldDelete) return;
-    try {
-      await api.delete(`/admin/staffs/${id}`);
-      addToast('Deleted', 'success');
-      fetchStaffs(pagination.page);
-    } catch (err: any) {
-      addToast(err.response?.data?.message || 'Deletion failed', 'error');
-    }
-  };
-
-  const handleToggleActive = async (staff: StaffMember) => {
-    const nextActive = !staff.isActive;
-    if (!nextActive) {
-      const shouldDisable = await confirm({
-        title: 'Disable staff account',
-        message: 'This staff member will no longer be able to access the admin area until re-enabled.',
-        confirmText: 'Disable',
-        tone: 'danger',
-      });
-      if (!shouldDisable) return;
-    }
-
-    try {
-      await api.put(`/admin/staffs/${staff.id}`, { isActive: nextActive });
-      addToast(`Account ${nextActive ? 'activated' : 'deactivated'}`, 'success');
-      fetchStaffs(pagination.page);
-    } catch (error: any) {
-      addToast(error.response?.data?.message || 'Failed to update account status', 'error');
-    }
-  };
-
-  const togglePermission = (perm: string) => {
-    setFormData(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(perm)
-        ? prev.permissions.filter(p => p !== perm)
-        : [...prev.permissions, perm]
-    }));
-  };
-
-  const applyPermissionPreset = (presetKey: string) => {
-    const preset = PERMISSION_PRESETS[presetKey];
-    if (!preset) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      permissions: [...preset.permissions],
-    }));
-  };
-
-  const toggleSelected = (staffId: number) => {
-    const target = staffs.find((staff) => staff.id === staffId);
-    if (!target || target.role === 'ADMIN') return;
-
-    setSelectedIds((current) => current.includes(staffId)
-      ? current.filter((id) => id !== staffId)
-      : [...current, staffId]);
-  };
-
-  const toggleSelectAllVisible = () => {
-    const currentIds = staffs.filter((staff) => staff.role !== 'ADMIN').map((staff) => staff.id);
-    const allSelected = currentIds.length > 0 && currentIds.every((id) => selectedIds.includes(id));
-
-    if (allSelected) {
-      setSelectedIds((current) => current.filter((id) => !currentIds.includes(id)));
-      return;
-    }
-
-    setSelectedIds((current) => Array.from(new Set([...current, ...currentIds])));
-  };
-
-  const applyBulkStatus = async (nextActive: boolean) => {
-    const updatableIds = selectedIds.filter((id) => {
-      const target = staffs.find((staff) => staff.id === id);
-      return target?.role !== 'ADMIN';
-    });
-
-    if (!updatableIds.length) {
-      addToast('Select at least one staff account', 'info');
-      return;
-    }
-
-    setIsBulkUpdating(true);
-    try {
-      await Promise.all(updatableIds.map((id) => api.put(`/admin/staffs/${id}`, { isActive: nextActive })));
-      addToast(`Selected accounts ${nextActive ? 'activated' : 'deactivated'}`, 'success');
-      fetchStaffs(pagination.page);
-    } catch (error: any) {
-      addToast(error.response?.data?.message || 'Failed to update selected staff accounts', 'error');
-    } finally {
-      setIsBulkUpdating(false);
-    }
-  };
-
-  const pageNumbers = useMemo(() => getPageNumbers(pagination.page, pagination.totalPages), [pagination.page, pagination.totalPages]);
-  const permissionSummary = useMemo(() => {
-    const roleDefaults = ROLE_DEFAULT_PERMISSIONS[formData.role];
-    const selected = Array.from(new Set(formData.permissions));
-    const extra = selected.filter((permission) => !roleDefaults.includes(permission));
-    const missing = roleDefaults.filter((permission) => !selected.includes(permission));
-
-    return {
-      selected,
-      extra,
-      missing,
-      defaultCount: roleDefaults.length,
-    };
-  }, [formData.permissions, formData.role]);
-  const selectableStaffIds = useMemo(
-    () => staffs.filter((staff) => staff.role !== 'ADMIN').map((staff) => staff.id),
-    [staffs],
-  );
-  const allVisibleSelected = selectableStaffIds.length > 0 && selectableStaffIds.every((id) => selectedIds.includes(id));
-
+  const toggle = (id: number) => setSelected(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
+  if (!user) return null;
   return (
     <div className="staff-admin-page">
-      <div className="admin-page-header">
-        <div>
-          <h1 className="admin-page-title">Staff Management ({pagination.total})</h1>
-          <p className="staff-admin-subtitle">Manage admin team permissions, account status, and security from one place.</p>
-        </div>
-        <button className="admin-btn admin-btn-primary" onClick={() => handleOpenModal()}>
-          <Plus size={16} /> New Staff
-        </button>
+      <div className="admin-page-header"><div><h1 className="admin-page-title">Staff Management</h1><p className="staff-admin-subtitle">Your team, their responsibilities and access.</p></div>
+        {assignableRoles(user).length > 0 && <button className="admin-btn admin-btn-primary" onClick={() => setEditor(null)}><Plus size={16} />New Staff</button>}
       </div>
-
-      <div className="staff-stats-grid">
-        <article className="staff-stat-card">
-          <span>Total Staff</span>
-          <strong>{stats.totalStaff}</strong>
-        </article>
-        <article className="staff-stat-card">
-          <span>Active Accounts</span>
-          <strong>{stats.activeStaff}</strong>
-        </article>
-        <article className="staff-stat-card">
-          <span>Inactive Accounts</span>
-          <strong>{stats.inactiveStaff}</strong>
-        </article>
-        <article className="staff-stat-card">
-          <span>Selected</span>
-          <strong>{selectedIds.length}</strong>
-        </article>
-      </div>
-
-      <div className="admin-card staff-toolbar-card">
-        <form className="staff-toolbar" onSubmit={handleSearch}>
-          <div className="staff-search-wrap">
-            <Search size={16} />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by name, username, or email"
-            />
-          </div>
-
-          <label className="staff-select-wrap" aria-label="Filter staff status">
-            <Filter size={15} />
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StaffStatusFilter)}>
-              <option value="ALL">All status</option>
-              <option value="ACTIVE">Active only</option>
-              <option value="INACTIVE">Inactive only</option>
-            </select>
-          </label>
-
-          <label className="staff-select-wrap" aria-label="Filter staff role">
-            <Shield size={15} />
-            <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as StaffRoleFilter)}>
-              <option value="ALL">All roles</option>
-              <option value="ADMIN">Admin</option>
-              <option value="MANAGER">Manager</option>
-              <option value="STAFF">Staff</option>
-            </select>
-          </label>
-
-          <label className="staff-select-wrap" aria-label="Sort staff list">
-            <Filter size={15} />
-            <select value={sortOption} onChange={(event) => setSortOption(event.target.value as StaffSortOption)}>
-              <option value="NEWEST">Sort: Newest</option>
-              <option value="OLDEST">Sort: Oldest</option>
-              <option value="NAME_ASC">Sort: Name A-Z</option>
-              <option value="NAME_DESC">Sort: Name Z-A</option>
-              <option value="UPDATED_DESC">Sort: Recently updated</option>
-            </select>
-          </label>
-
-          <button type="submit" className="admin-btn admin-btn-primary">Search</button>
-          <button type="button" className="admin-btn admin-btn-outline" onClick={resetFilters}>Reset</button>
+      <div className="staff-stats-grid">{[{ label: 'Team members', value: stats.totalStaff }, { label: 'Active accounts', value: stats.activeStaff }, { label: 'Disabled accounts', value: stats.inactiveStaff }].map(stat => <article className="staff-stat-card" key={stat.label}><span>{stat.label}</span><strong>{stat.value}</strong></article>)}</div>
+      <div className="admin-card staff-team-card">
+        <form className="staff-toolbar" onSubmit={event => { event.preventDefault(); setQuery({ ...query, page: 1, search: keyword.trim() }); }}>
+          <label className="staff-search-wrap"><Search size={17} /><input aria-label="Search team" placeholder="Search name, username or email" value={keyword} onChange={event => setKeyword(event.target.value)} maxLength={120} /></label>
+          <select aria-label="Filter role" value={query.role} onChange={e => setQuery({ ...query, page: 1, role: e.target.value })}><option value="ALL">All roles</option><option value="OWNER">Owner</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="STAFF">Staff</option></select>
+          <select aria-label="Filter status" value={query.status} onChange={e => setQuery({ ...query, page: 1, status: e.target.value })}><option value="ALL">All statuses</option><option value="ACTIVE">Active</option><option value="INACTIVE">Disabled</option></select>
+          <select aria-label="Sort team" value={query.sort} onChange={e => setQuery({ ...query, page: 1, sort: e.target.value })}><option value="NEWEST">Newest first</option><option value="NAME_ASC">Name A–Z</option><option value="UPDATED_DESC">Recently updated</option></select>
+          <button className="admin-btn admin-btn-primary" type="submit">Search</button>
+          {(query.search || query.role !== 'ALL' || query.status !== 'ALL' || query.sort !== 'NEWEST') && <button type="button" className="staff-reset-button" onClick={() => { setKeyword(''); setQuery(defaultQuery); }}>Reset</button>}
         </form>
-      </div>
-
-      <div className="admin-card staff-list-card">
-        {isLoading ? <div className="loading-page"><div className="spinner" /></div> : staffs.length === 0 ? (
-          <p className="staff-empty-state">No staff accounts found for this filter set.</p>
-        ) : (
-          <>
-            <div className="staff-sticky-actions">
-              <label className="staff-select-all">
-                <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} />
-                <span>Select page ({staffs.length})</span>
-              </label>
-
-              <div className="staff-bulk-actions">
-                <span className="staff-selected-count">{selectedIds.length} selected</span>
-                <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyBulkStatus(true)} disabled={isBulkUpdating || selectedIds.length === 0}>
-                  <Check size={13} /> Activate
-                </button>
-                <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyBulkStatus(false)} disabled={isBulkUpdating || selectedIds.length === 0}>
-                  <X size={13} /> Deactivate
-                </button>
-              </div>
-            </div>
-
-            <div className="staff-list">
-              {staffs.map((staff) => {
-                const isSelected = selectedIds.includes(staff.id);
-                const isAdminAccount = staff.role === 'ADMIN';
-                const visiblePermissions = staff.permissions.slice(0, 4);
-                const hiddenPermissionCount = Math.max(0, staff.permissions.length - visiblePermissions.length);
-
-                return (
-                  <article key={staff.id} className={`staff-row-card ${isSelected ? 'is-selected' : ''}`}>
-                    <div className="staff-row-main">
-                      <label className="staff-item-check">
-                        <input
-                          type="checkbox"
-                          aria-label={`Select ${staff.fullName}`}
-                          title={isAdminAccount ? 'Admin accounts are read-only in this screen' : undefined}
-                          disabled={isAdminAccount}
-                          checked={isSelected}
-                          onChange={() => toggleSelected(staff.id)}
-                        />
-                      </label>
-
-                      <div className="staff-identity-col">
-                        <h3>{staff.fullName}</h3>
-                        <p>{staff.email}</p>
-                        <small>@{staff.username}</small>
-                      </div>
-
-                      <div className="staff-role-col">
-                        <span className={`staff-role-pill staff-role-pill-${staff.role.toLowerCase()}`}>
-                          {staff.role}
-                        </span>
-                        <span className={`staff-status-pill ${staff.isActive ? 'is-active' : 'is-inactive'}`}>
-                          {staff.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-
-                      <div className="staff-permissions-col">
-                        <div className="staff-permission-chips">
-                          {visiblePermissions.map((permission) => (
-                            <span key={permission} className="staff-permission-chip">
-                              <Shield size={12} /> {formatPermissionLabel(permission)}
-                            </span>
-                          ))}
-                          {hiddenPermissionCount > 0 && <span className="staff-permission-chip is-muted">+{hiddenPermissionCount}</span>}
-                        </div>
-                      </div>
-
-                      <div className="staff-date-col">
-                        <span>Joined {formatDate(staff.createdAt)}</span>
-                        <small>Updated {formatDate(staff.updatedAt)}</small>
-                      </div>
-                    </div>
-
-                    <div className="staff-row-actions">
-                      <button
-                        className="admin-btn admin-btn-outline admin-btn-sm"
-                        onClick={() => handleOpenModal(staff)}
-                        disabled={isAdminAccount}
-                        title={isAdminAccount ? 'Admin accounts are read-only in this screen' : undefined}
-                      >
-                        <Pencil size={13} /> Edit
-                      </button>
-                      <button
-                        className="admin-btn admin-btn-outline admin-btn-sm"
-                        disabled={isAdminAccount}
-                        title={isAdminAccount ? 'Admin accounts are read-only in this screen' : undefined}
-                        onClick={() => handleToggleActive(staff)}
-                      >
-                        {staff.isActive ? <><X size={13} /> Disable</> : <><Check size={13} /> Enable</>}
-                      </button>
-                      <button
-                        className="admin-btn admin-btn-danger admin-btn-sm"
-                        onClick={() => handleDelete(staff.id, staff.role)}
-                        disabled={isAdminAccount}
-                        title={isAdminAccount ? 'Admin accounts cannot be deleted' : undefined}
-                      >
-                        <Trash2 size={13} /> Delete
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {pagination.totalPages > 1 && (
-          <div className="staff-pagination-wrap">
-            <div className="staff-pagination-text">
-              Showing <strong>{(pagination.page - 1) * pagination.limit + 1}</strong> to <strong>{Math.min(pagination.page * pagination.limit, pagination.total)}</strong> of <strong>{pagination.total}</strong> staff accounts
-            </div>
-            <div className="staff-pagination">
-              <button className="staff-page-btn staff-page-arrow" onClick={() => fetchStaffs(pagination.page - 1)} disabled={pagination.page === 1}>
-                &lsaquo;
-              </button>
-              {pageNumbers.map((page, index) => page < 0 ? (
-                <span key={`ellipsis-${index}`} className="staff-page-ellipsis">...</span>
-              ) : (
-                <button key={page} className={`staff-page-btn ${page === pagination.page ? 'is-active' : ''}`} onClick={() => fetchStaffs(page)}>
-                  {page}
-                </button>
-              ))}
-              <button className="staff-page-btn staff-page-arrow" onClick={() => fetchStaffs(pagination.page + 1)} disabled={pagination.page === pagination.totalPages}>
-                &rsaquo;
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {isModalOpen && (
-        <div className="admin-modal-overlay">
-          <div className="admin-modal-content staff-modal-content">
-            <div className="admin-modal-header">
-              <h2 className="admin-modal-title">{editingStaff ? 'Edit Staff' : 'Add Staff'}</h2>
-              <button onClick={resetForm} className="admin-modal-close" aria-label="Close" title="Close"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="admin-form staff-modal-form">
-              <div className="admin-form-group">
-                <label htmlFor="staffFullName">Full Name</label>
-                <input id="staffFullName" type="text" required value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} />
-              </div>
-
-              <div className="admin-modal-grid">
-                <div className="admin-form-group">
-                  <label htmlFor="staffUsername">Username</label>
-                  <input id="staffUsername" type="text" required disabled={!!editingStaff} value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
-                </div>
-                <div className="admin-form-group">
-                  <label htmlFor="staffEmail">Email</label>
-                  <input id="staffEmail" type="email" required disabled={!!editingStaff} value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label htmlFor="staffRole">Role</label>
-                <select
-                  id="staffRole"
-                  value={formData.role}
-                  onChange={(event) => {
-                    const nextRole = event.target.value as TeamRole;
-                    setFormData((prev) => ({
-                      ...prev,
-                      role: nextRole,
-                      permissions: ROLE_DEFAULT_PERMISSIONS[nextRole],
-                    }));
-                  }}
-                >
-                  <option value="STAFF">Staff</option>
-                  <option value="MANAGER">Manager</option>
-                </select>
-              </div>
-
-              <div className="admin-form-group">
-                <label htmlFor="staffPassword">{editingStaff ? 'New Password (optional)' : 'Password'}</label>
-                <input id="staffPassword" type="password" required={!editingStaff} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
-              </div>
-
-              <div className="admin-form-group">
-                <label>Permissions Overview</label>
-                <div className="staff-permission-summary">
-                  <div>
-                    <span>Selected</span>
-                    <strong>{permissionSummary.selected.length} / {PERMISSION_OPTIONS.length}</strong>
-                  </div>
-                  <div>
-                    <span>{formData.role} default</span>
-                    <strong>{permissionSummary.defaultCount}</strong>
-                  </div>
-                  <div>
-                    <span>Extra</span>
-                    <strong>{permissionSummary.extra.length}</strong>
-                  </div>
-                  <div>
-                    <span>Missing default</span>
-                    <strong>{permissionSummary.missing.length}</strong>
-                  </div>
-                </div>
-                {(permissionSummary.extra.length > 0 || permissionSummary.missing.length > 0) && (
-                  <div className="staff-permission-diff">
-                    {permissionSummary.extra.length > 0 && (
-                      <p><strong>Extra:</strong> {permissionSummary.extra.map(formatPermissionTitle).join(', ')}</p>
-                    )}
-                    {permissionSummary.missing.length > 0 && (
-                      <p><strong>Missing default:</strong> {permissionSummary.missing.map(formatPermissionTitle).join(', ')}</p>
-                    )}
-                  </div>
-                )}
-                <div className="staff-permission-presets">
-                  {Object.entries(PERMISSION_PRESETS).map(([presetKey, preset]) => (
-                    <button key={presetKey} type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => applyPermissionPreset(presetKey)}>
-                      {preset.label}
-                    </button>
-                  ))}
-                  <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setFormData((prev) => ({ ...prev, permissions: [] }))}>
-                    Clear
-                  </button>
-                </div>
-
-                <div className="staff-permission-grid">
-                  {PERMISSION_GROUPS.map((group) => (
-                    <section key={group} className="staff-permission-group" aria-label={`${group} permissions`}>
-                      <div className="staff-permission-group-title">{group}</div>
-                      {PERMISSION_DEFINITIONS.filter((permission) => permission.group === group).map((permission) => (
-                        <label key={permission.value} htmlFor={`perm-${permission.value}`} className="staff-permission-option">
-                          <input
-                            id={`perm-${permission.value}`}
-                            type="checkbox"
-                            checked={formData.permissions.includes(permission.value)}
-                            onChange={() => togglePermission(permission.value)}
-                          />
-                          <span>
-                            <strong>{permission.label}</strong>
-                            <small>{permission.unlocks}</small>
-                          </span>
-                        </label>
-                      ))}
-                    </section>
-                  ))}
-                </div>
-              </div>
-
-              <label htmlFor="isActive" className="staff-account-toggle">
-                <input type="checkbox" id="isActive" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} />
-                <span>Account Active</span>
-              </label>
-
-              <div className="admin-modal-actions">
-                <button type="button" className="admin-btn admin-btn-outline" onClick={resetForm}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary">{editingStaff ? 'Save Changes' : 'Create Staff'}</button>
-              </div>
-            </form>
-          </div>
+        <div className="staff-selection-bar"><label><input type="checkbox" aria-label="Select manageable accounts on this page" disabled={busy || loading || !editableIds.length} checked={allSelected} onChange={() => setSelected(allSelected ? [] : [...editableIds])} /><span>{selected.length ? `${selected.length} selected` : `${pagination.total} team members`}</span></label>
+          {selected.length > 0 ? <div><button className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy} onClick={() => void bulkStatus(true)}><Check size={13} />Enable</button><button className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy} onClick={() => void bulkStatus(false)}><X size={13} />Disable</button><button className="staff-reset-button" disabled={busy} onClick={() => setSelected([])}>Clear selection</button></div> : <span className="staff-muted">Select members for bulk actions</span>}
         </div>
-      )}
+        {loadError ? <div className="staff-empty-state" role="alert"><p>Unable to load the team.</p><button className="admin-btn admin-btn-outline" onClick={reload}>Try again</button></div> : loading ? <div className="loading-page" aria-label="Loading team"><div className="spinner" /></div> : !members.length ? <div className="staff-empty-state"><Shield size={28} /><h3>No team members found</h3><p>Try another search or reset your filters.</p><button className="admin-btn admin-btn-outline" onClick={() => { setKeyword(''); setQuery(defaultQuery); }}>Reset filters</button></div> :
+          <div className="staff-table-wrap"><table className="staff-table"><thead><tr><th className="staff-checkbox-cell" aria-label="Selection" /><th>Team member</th><th>Role</th><th>Access</th><th>Status</th><th>Joined</th><th className="staff-action-heading">Actions</th></tr></thead><tbody>{members.map(member => {
+            const manageable = canManageMember(user, member);
+            return <tr key={member.id} className={selected.includes(member.id) ? 'is-selected' : ''}>
+              <td className="staff-checkbox-cell"><input type="checkbox" aria-label={`Select ${member.fullName}`} checked={selected.includes(member.id)} disabled={!manageable || busy} onChange={() => toggle(member.id)} /></td>
+              <td className="staff-identity-cell"><span className="staff-avatar">{member.fullName.slice(0, 1).toUpperCase()}</span><div><strong>{member.fullName}</strong><span>{member.email}</span><small>@{member.username}{member.id === user.id ? ' · You' : ''}</small></div></td>
+              <td data-label="Role"><span className={`staff-role-pill staff-role-${member.role.toLowerCase()}`}>{member.role === 'OWNER' && <Crown size={13} />}{member.role}</span></td>
+              <td data-label="Access"><button className="staff-access-button" onClick={() => setEditor(member)} title={fullAccess(member.role) ? 'All admin modules' : member.permissions.map(permissionLabel).join(', ')}>{fullAccess(member.role) ? 'Full access' : `${member.permissions.length} modules`}<span>{fullAccess(member.role) ? member.role === 'OWNER' ? 'Store ownership' : 'Administration' : member.permissions.slice(0, 2).map(permissionLabel).join(', ') || 'Dashboard only'}</span></button></td>
+              <td data-label="Status"><span className={`staff-status-pill ${member.isActive ? 'is-active' : 'is-inactive'}`}><i />{member.isActive ? 'Active' : 'Disabled'}</span></td>
+              <td data-label="Joined" className="staff-date-cell">{formatDate(member.createdAt)}</td>
+              <td className="staff-row-actions"><button className="staff-icon-button" aria-label={`${manageable ? 'Edit' : 'View'} ${member.fullName}`} title={manageable ? 'Edit account' : 'View account'} disabled={busy} onClick={() => setEditor(member)}>{manageable ? <Pencil size={16} /> : <Eye size={16} />}</button>
+                {manageable && <StaffActions name={member.fullName} active={member.isActive} disabled={busy} onStatus={() => void changeStatus(member)} onDelete={() => void remove(member)} />}
+              </td>
+            </tr>;
+          })}</tbody></table></div>}
+        {!loading && !loadError && pagination.total > 0 && <div className="staff-pagination-wrap"><span>Showing {(pagination.page - 1) * pagination.limit + 1}–{Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}</span><div><button className="staff-icon-button" aria-label="Previous page" disabled={query.page === 1} onClick={() => setQuery({ ...query, page: query.page - 1 })}><ChevronLeft size={17} /></button><span>Page {pagination.page} of {Math.max(1, pagination.totalPages)}</span><button className="staff-icon-button" aria-label="Next page" disabled={query.page >= pagination.totalPages} onClick={() => setQuery({ ...query, page: query.page + 1 })}><ChevronRight size={17} /></button></div></div>}
+      </div>
+      {editor !== undefined && <StaffEditor key={editor?.id || 'new'} member={editor} actor={user} editable={editor ? canManageMember(user, editor) : assignableRoles(user).length > 0} onSave={save} onClose={() => setEditor(undefined)} confirmDiscard={() => confirm({ title: 'Discard unsaved changes?', message: 'Your changes have not been saved.', confirmText: 'Discard changes', tone: 'danger' })} />}
       {confirmDialog}
     </div>
   );
 }
-

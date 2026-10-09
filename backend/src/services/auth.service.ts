@@ -9,6 +9,7 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { normalizeAdminPermissions } from '../middlewares/auth.js';
 import { mailService } from './mail.service.js';
 import { resolveTrustedAppOrigin } from '../utils/security.js';
+import { effectiveRole, publicTeamMember } from '../utils/teamAccess.js';
 
 const SALT_ROUNDS = 12;
 const CHANGE_PASSWORD_OTP_TTL_MS = 10 * 60 * 1000;
@@ -113,14 +114,15 @@ export const authService = {
       throw new AppError('Invalid username or password.', 401);
     }
 
-    const token = this.generateToken(user.id, user.role, user.tokenVersion);
+    const role = effectiveRole(user);
+    const token = this.generateToken(user.id, role, user.tokenVersion);
     return {
       user: {
         id: user.id,
         email: user.email,
         username: user.username,
         fullName: user.fullName,
-        role: user.role,
+        role,
         permissions: normalizeAdminPermissions(user.permissions),
       },
       token,
@@ -132,13 +134,13 @@ export const authService = {
       where: { id: userId },
       select: {
         id: true, email: true, username: true, fullName: true,
-        phone: true, role: true, permissions: true, createdAt: true,
+        phone: true, role: true, isOwner: true, permissions: true, createdAt: true,
         addresses: true,
       },
     });
     if (!user) throw new AppError('User not found.', 404);
     return {
-      ...user,
+      ...publicTeamMember(user),
       permissions: normalizeAdminPermissions(user.permissions),
     };
   },

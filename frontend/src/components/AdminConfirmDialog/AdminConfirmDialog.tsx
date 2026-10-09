@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import './AdminConfirmDialog.css';
 
@@ -18,6 +18,8 @@ type ConfirmState = ConfirmOptions & {
 
 export function useAdminConfirm() {
   const [state, setState] = useState<ConfirmState | null>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const titleId = useId();
 
   const close = useCallback((result: boolean) => {
     setState((current) => {
@@ -38,9 +40,24 @@ export function useAdminConfirm() {
     })
   ), []);
 
+  useEffect(() => {
+    if (!state) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    panel.current?.querySelector<HTMLElement>('.admin-btn-outline')?.focus();
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); close(false); }
+      if (event.key !== 'Tab') return;
+      const buttons = Array.from(panel.current?.querySelectorAll<HTMLButtonElement>('button') || []);
+      if (event.shiftKey && document.activeElement === buttons[0]) { event.preventDefault(); buttons.at(-1)?.focus(); }
+      else if (!event.shiftKey && document.activeElement === buttons.at(-1)) { event.preventDefault(); buttons[0]?.focus(); }
+    };
+    document.addEventListener('keydown', keyboard);
+    return () => { document.removeEventListener('keydown', keyboard); previousFocus?.focus(); };
+  }, [state, close]);
+
   const dialog = state ? (
     <div className="admin-modal-overlay admin-confirm-overlay" onClick={() => close(false)}>
-      <div className="admin-modal-content admin-confirm-dialog" onClick={(event) => event.stopPropagation()}>
+      <div ref={panel} role="dialog" aria-modal="true" aria-labelledby={titleId} className="admin-modal-content admin-confirm-dialog" onClick={(event) => event.stopPropagation()}>
         <div className="admin-confirm-header">
           <span className={`admin-confirm-icon ${state.tone === 'danger' ? 'is-danger' : ''}`}>
             <AlertTriangle size={20} />
@@ -51,7 +68,7 @@ export function useAdminConfirm() {
         </div>
 
         <div className="admin-confirm-body">
-          <h2>{state.title}</h2>
+          <h2 id={titleId}>{state.title}</h2>
           <p>{state.message}</p>
         </div>
 

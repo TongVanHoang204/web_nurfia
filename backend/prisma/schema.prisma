@@ -17,6 +17,7 @@ model User {
   fullName     String    @map("full_name") @db.VarChar(100)
   phone        String?   @db.VarChar(20)
   role         UserRole  @default(CUSTOMER)
+  isOwner      Boolean   @default(false) @map("is_owner")
   permissions  Json?     @db.Json
   isActive     Boolean   @default(true) @map("is_active")
   resetToken   String?   @map("reset_token") @db.VarChar(255)

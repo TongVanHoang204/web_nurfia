@@ -4,6 +4,7 @@ import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Ticket, Truc
 import { useAuthStore } from '../../../stores/authStore';
 import NotificationBell from '../../../components/Notifications/NotificationBell';
 import PageLoader from '../../../components/PageLoader/PageLoader';
+import { hasAdminAccess, hasFullAdminAccess } from '../../../utils/teamAccess';
 import './AdminLayout.css';
 import '../admin.css';
 
@@ -32,7 +33,7 @@ const NAV_ITEMS = [
 
 const canAccessItem = (user: { role?: string; permissions?: string[] } | null, permissions: string[]) => {
   if (!user) return false;
-  if (user.role === 'ADMIN') return true;
+  if (hasFullAdminAccess(user.role)) return true;
   if (user.role !== 'STAFF' && user.role !== 'MANAGER') return false;
   if (permissions.length === 0) return true;
 
@@ -63,7 +64,7 @@ export default function AdminLayout() {
   useEffect(() => {
     if (isHydrating) return;
 
-    if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'STAFF' && user?.role !== 'MANAGER')) {
+    if (!isAuthenticated || !hasAdminAccess(user?.role)) {
       navigate('/login');
       return;
     }
@@ -82,7 +83,7 @@ export default function AdminLayout() {
     return <PageLoader />;
   }
 
-  if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'STAFF' && user?.role !== 'MANAGER')) return null;
+  if (!isAuthenticated || !hasAdminAccess(user?.role)) return null;
 
   const handleLogout = () => logout();
   const handleNavClick = () => {
@@ -146,7 +147,7 @@ export default function AdminLayout() {
             <div className="admin-user-profile">
               <span className="admin-user-name">{user?.fullName}</span>
               <span className={`admin-user-role admin-user-role-${String(user?.role || 'staff').toLowerCase()}`}>
-                {user?.role === 'ADMIN' ? 'ADMIN' : user?.role === 'MANAGER' ? 'Manager' : 'Staff'}
+                {user?.role === 'OWNER' ? 'Owner' : user?.role === 'ADMIN' ? 'Admin' : user?.role === 'MANAGER' ? 'Manager' : 'Staff'}
               </span>
             </div>
             <div className="admin-user-avatar">{user?.fullName?.[0]}</div>

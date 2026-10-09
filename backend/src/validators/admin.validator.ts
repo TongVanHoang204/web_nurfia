@@ -55,7 +55,7 @@ export const adminListQuerySchema = paginationQueryBase.extend({
   search: boundedString(120).optional(),
   sort: boundedString(40).optional(),
   status: boundedString(40).optional(),
-  role: z.enum(['ALL', 'ADMIN', 'STAFF', 'MANAGER']).optional(),
+  role: z.enum(['ALL', 'OWNER', 'ADMIN', 'STAFF', 'MANAGER']).optional(),
 });
 
 export const adminOrderQuerySchema = paginationQueryBase.extend({
@@ -215,18 +215,18 @@ export const createStaffSchema = z.object({
   email: z.string().trim().email().max(255),
   password: passwordSchema,
   fullName: z.string().trim().min(1).max(100),
-  role: z.enum(['STAFF', 'MANAGER']).optional().default('STAFF'),
+  role: z.enum(['STAFF', 'MANAGER', 'ADMIN']).optional().default('STAFF'),
   permissions: z.array(permissionSchema).max(ADMIN_PERMISSIONS.length).optional(),
   isActive: z.boolean().optional().default(true),
-});
+}).strict();
 
 export const updateStaffSchema = z.object({
   fullName: z.string().trim().min(1).max(100).optional(),
-  role: z.enum(['STAFF', 'MANAGER']).optional(),
+  role: z.enum(['STAFF', 'MANAGER', 'ADMIN']).optional(),
   permissions: z.array(permissionSchema).max(ADMIN_PERMISSIONS.length).optional(),
   isActive: z.boolean().optional(),
   password: z.union([passwordSchema, z.literal('')]).optional(),
-});
+}).strict().refine(value => Object.keys(value).length > 0, { message: 'At least one field is required' });
 
 export const updateOrderStatusSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED']),

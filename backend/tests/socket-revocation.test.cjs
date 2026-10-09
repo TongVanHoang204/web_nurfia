@@ -47,3 +47,10 @@ test('Socket.IO closes an active connection when its account sessions are revoke
   const result = await Promise.race([disconnected, new Promise(resolve => { const timer = setTimeout(() => resolve('still connected'), 500); timer.unref(); })]);
   expect(result).toBe('io server disconnect');
 });
+
+test('a persisted Owner joins the admin notification room', async () => {
+  user.isOwner = true;
+  const socket = open(1);
+  await new Promise((resolve, reject) => { socket.once('connect', resolve); socket.once('connect_error', reject); });
+  expect(io.sockets.sockets.get(socket.id).rooms.has('admin-room')).toBe(true);
+});

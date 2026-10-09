@@ -457,7 +457,7 @@ export default function AdminActivityLogs() {
 
   const { addToast, openConfirm } = useUIStore();
   const { user } = useAuthStore();
-  const canManageRollback = user?.role === 'ADMIN'
+  const canManageRollback = user?.role === 'OWNER' || user?.role === 'ADMIN'
     || (user?.role === 'MANAGER' || user?.role === 'STAFF')
     && Array.isArray(user?.permissions)
     && user.permissions.includes('MANAGE_SETTINGS');

@@ -57,6 +57,18 @@ test('legacy tokens without a version require a new login', async () => {
   expect((await request(app()).get('/private').set('Authorization', 'Bearer ' + token(null))).status).toBe(401);
 });
 
+test('owner login, profile and authenticated requests expose OWNER without leaking the storage flag', async () => {
+  user.isOwner = true;
+  const login = await authService.login('test-admin', 'old-password');
+  expect(login.user.role).toBe('OWNER');
+  expect(jwt.verify(login.token, config.jwt.secret).role).toBe('OWNER');
+  const profile = await authService.getProfile(user.id);
+  expect(profile.role).toBe('OWNER');
+  expect(profile.isOwner).toBeUndefined();
+  const response = await request(app()).get('/private').set('Authorization', 'Bearer ' + login.token);
+  expect(response.body.role).toBe('OWNER');
+});
+
 test('optional authentication must not accept revoked tokens', async () => {
   const copied = token();
   user.tokenVersion = 1;

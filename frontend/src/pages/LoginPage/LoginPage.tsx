@@ -170,7 +170,7 @@ export default function LoginPage() {
         const currentUser = useAuthStore.getState().user;
         const target = redirect && redirect !== '/'
           ? redirect
-          : (currentUser?.role === 'ADMIN' || currentUser?.role === 'STAFF' || currentUser?.role === 'MANAGER' ? '/admin' : '/');
+          : (['OWNER', 'ADMIN', 'STAFF', 'MANAGER'].includes(currentUser?.role || '') ? '/admin' : '/');
         navigate(target);
         return;
       }

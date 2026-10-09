@@ -178,6 +178,13 @@
   animation: admin-role-rgb-shift 2.8s linear infinite;
 }
 
+.admin-user-role-owner {
+  padding: 3px 8px;
+  border: 1px solid #d8c79e;
+  background: #f3ead5;
+  color: #71541b;
+}
+
 .admin-user-role-manager,
 .admin-user-role-staff {
   padding: 2px 7px;

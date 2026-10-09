@@ -95,7 +95,7 @@ export default function NotificationBell() {
           page={page}
           totalPages={totalPages}
           isLoading={isLoading}
-          viewAllLink={['ADMIN', 'STAFF', 'MANAGER'].includes(user?.role || '') ? '/admin/notifications' : '/notifications'}
+          viewAllLink={['OWNER', 'ADMIN', 'STAFF', 'MANAGER'].includes(user?.role || '') ? '/admin/notifications' : '/notifications'}
           onRead={markAsRead}
           onMarkAllRead={markAllAsRead}
           onLoadMore={handleLoadMore}

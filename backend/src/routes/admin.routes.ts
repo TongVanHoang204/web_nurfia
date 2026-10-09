@@ -368,6 +368,7 @@ router.delete('/brands/:id', requirePermission('MANAGE_PRODUCTS'), validateParam
  */
 router.get('/staffs', requirePermission('MANAGE_STAFF'), validateQuery(adminListQuerySchema), staffController.getStaffs);
 router.post('/staffs', requirePermission('MANAGE_STAFF'), validate(createStaffSchema), staffController.createStaff);
+router.get('/staffs/:id/history', requirePermission('MANAGE_STAFF'), validateParams(adminIdParamSchema), staffController.getStaffHistory);
 
 /**
  * @swagger

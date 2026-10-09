@@ -10,6 +10,8 @@ import {
   type AuthRequest,
 } from '../middlewares/auth.js';
 import { logActivity } from '../services/activity.service.js';
+import { assertTeamManagement } from '../utils/teamAccess.js';
+import { notifySessionsRevoked } from '../services/session.service.js';
 
 const SALT_ROUNDS = 10;
 const STAFF_ROLES = ['STAFF', 'MANAGER'] as const;
@@ -723,6 +725,8 @@ export const activityController = {
           result = await prisma.contactMessage.update({ where: { id: log.entityId }, data: rollbackTarget.data });
         }
       } else if (rollbackTarget.model === 'user') {
+        const target = await prisma.user.findUnique({ where: { id: log.entityId }, select: { id: true, role: true, isOwner: true } });
+        assertTeamManagement(req, target || undefined, String(rollbackTarget.data.role), rollbackTarget.data.permissions as string[]);
         if (action === 'DELETE') {
           const temporaryPasswordHash = await bcrypt.hash(crypto.randomBytes(24).toString('base64url'), SALT_ROUNDS);
           result = await prisma.user.create({
@@ -745,8 +749,8 @@ export const activityController = {
           });
         } else {
           result = await prisma.user.update({
-            where: { id: log.entityId },
-            data: rollbackTarget.data as Prisma.UserUpdateInput,
+            where: { id: log.entityId, isOwner: false, ...(target ? { role: target.role } : {}) },
+            data: { ...rollbackTarget.data, tokenVersion: { increment: 1 } } as Prisma.UserUpdateInput,
             select: {
               id: true,
               username: true,
@@ -760,6 +764,7 @@ export const activityController = {
             },
           });
         }
+        notifySessionsRevoked(log.entityId);
       } else {
         throw new AppError('Unsupported rollback target.', 400);
       }

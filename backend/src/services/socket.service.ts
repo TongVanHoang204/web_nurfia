@@ -18,7 +18,7 @@ type AuthenticatedSocket = Socket & {
   };
 };
 
-const ADMIN_ROLES = new Set(['ADMIN', 'STAFF', 'MANAGER']);
+const ADMIN_ROLES = new Set(['OWNER', 'ADMIN', 'STAFF', 'MANAGER']);
 const ADMIN_ROOM = 'admin-room';
 
 let io: Server | null = null;

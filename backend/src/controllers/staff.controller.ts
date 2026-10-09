@@ -4,9 +4,11 @@ import prisma from '../models/prisma.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { ADMIN_PERMISSIONS, AuthRequest, normalizeAdminPermissions, ROLE_PERMISSION_DEFAULTS } from '../middlewares/auth.js';
 import { logActivity } from '../services/activity.service.js';
+import { notifySessionsRevoked } from '../services/session.service.js';
+import { assertTeamManagement, publicTeamMember, TEAM_ROLES } from '../utils/teamAccess.js';
 
 const SALT_ROUNDS = 12;
-const STAFF_ROLES = ['STAFF', 'MANAGER'] as const;
+const STAFF_ROLES = ['STAFF', 'MANAGER', 'ADMIN'] as const;
 const STAFF_MANAGEMENT_ROLES = ['STAFF', 'MANAGER', 'ADMIN'] as const;
 
 type StaffRole = (typeof STAFF_ROLES)[number];
@@ -21,7 +23,14 @@ const parseStaffRole = (value: unknown, fallback: StaffRole = 'STAFF'): StaffRol
     return normalized as StaffRole;
   }
 
-  throw new AppError('Role must be either STAFF or MANAGER.', 400);
+  throw new AppError('Role must be STAFF, MANAGER or ADMIN.', 400);
+};
+
+const safeSnapshot = (value: unknown) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value as Record<string, unknown>;
+  return Object.fromEntries(['username', 'email', 'fullName', 'role', 'permissions', 'isActive']
+    .filter(key => key in source).map(key => [key, source[key]]));
 };
 
 export const staffController = {
@@ -48,7 +57,10 @@ export const staffController = {
         andClauses.push({ isActive: false });
       }
       if (STAFF_MANAGEMENT_ROLES.includes(roleFilter as any)) {
-        andClauses.push({ role: roleFilter as any });
+        andClauses.push({ role: roleFilter as any, ...(roleFilter === 'ADMIN' ? { isOwner: false } : {}) });
+      }
+      if (roleFilter === 'OWNER') {
+        andClauses.push({ role: 'ADMIN', isOwner: true });
       }
 
       if (search) {
@@ -82,6 +94,7 @@ export const staffController = {
             email: true,
             fullName: true,
             role: true,
+            isOwner: true,
             permissions: true,
             isActive: true,
             createdAt: true,
@@ -94,13 +107,13 @@ export const staffController = {
         prisma.user.count({ where: { ...staffRoleWhere, isActive: false } }),
         prisma.user.count({ where: { role: 'STAFF' as any } }),
         prisma.user.count({ where: { role: 'MANAGER' as any } }),
-        prisma.user.count({ where: { role: 'ADMIN' as any } }),
+        prisma.user.count({ where: { role: 'ADMIN', isOwner: false } }),
       ]);
 
       res.status(200).json({
         success: true,
         data: staffs.map((staff) => ({
-          ...staff,
+          ...publicTeamMember(staff),
           permissions: normalizeAdminPermissions(staff.permissions),
         })),
         pagination: {
@@ -145,11 +158,13 @@ export const staffController = {
       }
       const normalizedPermissions = hasExplicitPermissions
         ? normalizeAdminPermissions(permissions)
-        : ROLE_PERMISSION_DEFAULTS[role];
+        : role === 'ADMIN' ? [...ADMIN_PERMISSIONS] : ROLE_PERMISSION_DEFAULTS[role];
 
       if (hasExplicitPermissions && normalizedPermissions.length !== permissions.length) {
         throw new AppError(`Invalid staff permissions. Allowed values: ${ADMIN_PERMISSIONS.join(', ')}.`, 400);
       }
+
+      assertTeamManagement(req, undefined, role, normalizedPermissions);
 
       const existingUser = await prisma.user.findFirst({
         where: {
@@ -214,6 +229,9 @@ export const staffController = {
         select: {
           id: true,
           role: true,
+          isOwner: true,
+          username: true,
+          email: true,
           fullName: true,
           permissions: true,
           isActive: true,
@@ -223,9 +241,7 @@ export const staffController = {
       if (!existingStaff || !STAFF_MANAGEMENT_ROLES.includes(existingStaff.role as any)) {
         throw new AppError('Staff member not found.', 404);
       }
-      if (existingStaff.role === 'ADMIN') {
-        throw new AppError('Cannot modify ADMIN account.', 403);
-      }
+      assertTeamManagement(req, existingStaff);
 
       const { fullName, permissions, isActive, password } = req.body;
       const updateData: Record<string, unknown> = {};
@@ -250,7 +266,7 @@ export const staffController = {
         }
         updateData.permissions = normalizedPermissions;
       } else if (nextRole !== existingStaff.role) {
-        updateData.permissions = ROLE_PERMISSION_DEFAULTS[nextRole];
+        updateData.permissions = nextRole === 'ADMIN' ? [...ADMIN_PERMISSIONS] : ROLE_PERMISSION_DEFAULTS[nextRole];
       }
       if (typeof isActive === 'boolean') {
         updateData.isActive = isActive;
@@ -268,8 +284,15 @@ export const staffController = {
         updateData.password = await bcrypt.hash(password, SALT_ROUNDS);
       }
 
+      assertTeamManagement(req, existingStaff, nextRole, updateData.permissions as string[] | undefined);
+      const permissionsChanged = updateData.permissions !== undefined
+        && JSON.stringify([...(updateData.permissions as string[])].sort()) !== JSON.stringify(normalizeAdminPermissions(existingStaff.permissions).sort());
+      const revokeSessions = Boolean(updateData.password) || nextRole !== existingStaff.role || permissionsChanged
+        || (typeof isActive === 'boolean' && isActive !== existingStaff.isActive);
+      if (revokeSessions) updateData.tokenVersion = { increment: 1 };
+
       const staff = await prisma.user.update({
-        where: { id },
+        where: { id, isOwner: false, role: existingStaff.role },
         data: updateData,
         select: {
           id: true,
@@ -277,6 +300,7 @@ export const staffController = {
           email: true,
           fullName: true,
           role: true,
+          isOwner: true,
           permissions: true,
           isActive: true,
           createdAt: true,
@@ -284,9 +308,12 @@ export const staffController = {
         }
       });
 
+      if (revokeSessions) notifySessionsRevoked(id);
+
       if (req.userId) {
         await logActivity(req.userId, 'UPDATE', 'STAFF', staff.id, {
-          previous: existingStaff,
+          previous: publicTeamMember(existingStaff),
+          passwordChanged: Boolean(updateData.password),
           current: {
             role: staff.role,
             fullName: staff.fullName,
@@ -296,7 +323,7 @@ export const staffController = {
         }, req.ip);
       }
 
-      res.status(200).json({ success: true, data: staff });
+      res.status(200).json({ success: true, data: publicTeamMember(staff) });
     } catch (error) {
       next(error);
     }
@@ -319,6 +346,7 @@ export const staffController = {
           email: true,
           fullName: true,
           role: true,
+          isOwner: true,
           permissions: true,
           isActive: true,
         }
@@ -327,19 +355,40 @@ export const staffController = {
       if (!existingStaff || !STAFF_MANAGEMENT_ROLES.includes(existingStaff.role as any)) {
         throw new AppError('Staff member not found.', 404);
       }
-      if (existingStaff.role === 'ADMIN') {
-        throw new AppError('Cannot modify or delete ADMIN account.', 403);
-      }
+      assertTeamManagement(req, existingStaff);
 
-      await prisma.user.delete({ where: { id } });
+      await prisma.user.delete({ where: { id, isOwner: false, role: existingStaff.role } });
+      notifySessionsRevoked(id);
 
       if (req.userId) {
-        await logActivity(req.userId, 'DELETE', 'STAFF', id, existingStaff, req.ip);
+        await logActivity(req.userId, 'DELETE', 'STAFF', id, publicTeamMember(existingStaff), req.ip);
       }
 
       res.status(200).json({ success: true, message: 'Deleted' });
     } catch (error) {
       next(error);
     }
-  }
+  },
+  getStaffHistory: async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const id = Number(req.params.id);
+      const target = await prisma.user.findUnique({ where: { id }, select: { id: true, role: true, isOwner: true } });
+      if (!target || !(TEAM_ROLES as readonly string[]).includes(publicTeamMember(target).role)) {
+        throw new AppError('Staff member not found.', 404);
+      }
+      const logs = await prisma.activityLog.findMany({
+        where: { entityId: id, entityType: { in: ['STAFF', 'ROLE'] } },
+        orderBy: { createdAt: 'desc' }, take: 50,
+        select: { id: true, action: true, createdAt: true, details: true, user: { select: { id: true, fullName: true, username: true } } },
+      });
+      res.json({ success: true, data: logs.map(log => {
+        const details = log.details && typeof log.details === 'object' && !Array.isArray(log.details)
+          ? log.details as Record<string, unknown> : {};
+        return { id: log.id, action: log.action, createdAt: log.createdAt, user: log.user, details: {
+          previous: safeSnapshot(details.previous), current: safeSnapshot(details.current || details),
+          passwordChanged: details.passwordChanged === true,
+        } };
+      }) });
+    } catch (error) { next(error); }
+  },
 };

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import config from '../config/index.js';
 import { AppError } from './errorHandler.js';
 import { getAuthenticatedUser } from '../services/session.service.js';
+import { hasFullAdminAccess, TEAM_ROLES } from '../utils/teamAccess.js';
 
 export const ADMIN_PERMISSIONS = [
   'MANAGE_BANNERS',
@@ -131,7 +132,7 @@ export const requireAdmin = (
   _res: Response,
   next: NextFunction,
 ): void => {
-  if (req.userRole !== 'ADMIN') {
+  if (!hasFullAdminAccess(req.userRole)) {
     return next(new AppError('Admin access required.', 403));
   }
   next();
@@ -142,7 +143,7 @@ export const requireAdminAccess = (
   _res: Response,
   next: NextFunction,
 ): void => {
-  if (req.userRole !== 'ADMIN' && req.userRole !== 'STAFF' && req.userRole !== 'MANAGER') {
+  if (!(TEAM_ROLES as readonly string[]).includes(req.userRole || '')) {
     return next(new AppError('Admin panel access required.', 403));
   }
   next();
@@ -164,7 +165,7 @@ export const requirePermission = (...permissions: AdminPermission[]) => (
   _res: Response,
   next: NextFunction,
 ): void => {
-  if (req.userRole === 'ADMIN') {
+  if (hasFullAdminAccess(req.userRole)) {
     next();
     return;
   }
